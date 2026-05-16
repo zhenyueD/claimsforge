@@ -28,6 +28,7 @@ from schemas import (
     Emotion,
     OfferType,
 )
+from knowledge import retrieve_merchant_wisdom, retrieve_recent_learned
 
 logger = logging.getLogger(__name__)
 
@@ -55,47 +56,77 @@ def filter_policies(
     emotion: Optional[Emotion],
     has_image: bool,
     estimated_value_cents: int,
+    user_message: str = "",
+    product_hint: Optional[str] = None,
 ) -> tuple[list[dict[str, Any]], list[str]]:
     """
-    返回 (适用的政策, 触发的强制升级原因)。
+    Returns (matched_policies, force_escalate_reasons).
 
-    强制升级原因列表非空 → orchestrator 直接 escalate，不走 LLM。
+    A non-empty escalate list means orchestrator must route to human; we still
+    keep matched_policies populated so the verifier has context.
     """
     policies = load_policies()["policies"]
     matched: list[dict[str, Any]] = []
     escalate_reasons: list[str] = []
 
+    msg_lower = (user_message or "").lower()
+    hint_lower = (product_hint or "").lower()
+
+    # Combine all emotion text + user message for keyword/category matching
+    emo_triggers = " ".join(emotion.triggers).lower() if emotion else ""
+    emo_signals = " ".join(emotion.escalation_signals).lower() if emotion else ""
+    full_text = f"{msg_lower} {emo_triggers} {emo_signals} {hint_lower}"
+
     for p in policies:
         cond = p.get("applies_when", {})
 
-        # 损坏严重度区间
+        # severity range
         sev_min = cond.get("damage_severity_min", -1)
         sev_max = cond.get("damage_severity_max", 10)
         if not (sev_min <= damage.severity <= sev_max):
             continue
 
-        # 损坏类型白名单（如有）
+        # damage_types whitelist
         if "damage_types" in cond and damage.damage_type.value not in cond["damage_types"]:
             continue
 
-        # has_image 条件（P-LMT-01）
+        # product_categories whitelist — match against product_hint
+        if "product_categories" in cond:
+            cats = [c.lower() for c in cond["product_categories"]]
+            if not any(cat in hint_lower for cat in cats):
+                continue
+
+        # has_image
         if "has_image" in cond and cond["has_image"] != has_image:
             continue
 
-        # 情绪条件（P-EMO-01 / P-EMO-02）
+        # emotion threshold
         emo_min = cond.get("emotion_score_min")
         if emo_min is not None:
             if emotion is None or emotion.score < emo_min:
                 continue
 
-        # 金额阈值（P-LMT-01）
+        # claim amount min
         amt_min = cond.get("claim_amount_min_cents")
         if amt_min is not None and estimated_value_cents < amt_min:
             continue
 
-        # 关键词条件（P-EMO-02）
-        # 注：需要 ctx.user_message，这里简化为 emotion.label 中的关键词
-        # 在 orchestrator 里更精确处理
+        # USER KEYWORDS — must appear in message/emotion text to match
+        # This is the bug fix: previously skipped, leading to spurious matches
+        keywords = cond.get("user_keywords")
+        if keywords:
+            if not any(kw.lower() in full_text for kw in keywords):
+                continue
+
+        # customer_tier (e.g. VIP) — would come from CRM, default skip
+        if "customer_tier" in cond:
+            # No CRM wired up; default to skipping VIP-only policies
+            continue
+
+        # season — would come from current date; default skip seasonal unless explicit override
+        if "season" in cond:
+            # TODO: wire current_season detection (Nov-Dec = bfcm, etc)
+            continue
 
         matched.append(p)
         if p.get("force_escalate"):
@@ -107,31 +138,89 @@ def filter_policies(
 # ─────────────────────────────────────────────────────────
 #  Compensation 计算（结构化提案）
 # ─────────────────────────────────────────────────────────
-_SYSTEM = """你是电商售后理赔的赔付方案制定者。
+_SYSTEM = """You are a senior claims specialist (5+ years on the floor at Amazon / Shopify Plus).
+Your job is to propose the right compensation, and to write the customer reply the way a real
+human professional would write it — not the way a template generator would.
 
-输入：客户的损坏评估 + 适用的政策清单 + 商品估值 + 客户情绪。
+INPUTS YOU RECEIVE
+  - damage assessment (type, severity, affected parts, confidence, reasoning)
+  - customer emotion grading (score, risk, label, triggers, suggested_tone)
+  - estimated order value (in cents)
+  - filtered policy candidates (already narrowed by the deterministic filter)
+  - similar past cases from the learning loop (most recent matches)
+  - merchant style preference: STRICT / BALANCED / GENEROUS (default BALANCED)
 
-任务：从适用政策中选最合适的一条（通常是最贴合损坏类型/严重度的），按其规则计算赔付金额，并写出向客户解释的 justification。
+YOUR OUTPUTS (typed JSON — schema enforced)
+  - offer_type     : full_refund / partial_refund / replacement / store_credit
+  - amount_cents   : the final integer; never exceed any matched policy's max_cents
+  - justification  : a 2-4 sentence reply the customer will actually read
+  - policy_ids     : list of policy IDs you grounded the offer in
+  - requires_return: respect what the policy says
 
-金额计算规则：
-- amount_basis=order_value：amount_cents = 商品估值（受 max_cents 封顶）
-- amount_basis=percentage：amount_cents = 商品估值 × amount_percent / 100（受 max_cents 封顶）
-- amount_basis=fixed：amount_cents = 政策里的 amount_cents
-- amount_basis=manual：amount_cents 设为 0，offer_type 设为 store_credit，让 verifier 升级
+MATH RULES (do these correctly — verifier will catch you)
+  - amount_basis=order_value     → amount_cents = min(order_value, max_cents)
+  - amount_basis=percentage      → amount_cents = min(order_value * pct/100, max_cents)
+  - amount_basis=fixed           → amount_cents = policy.amount_cents
+  - amount_basis=manual          → amount_cents = 0; offer_type = store_credit; expect verifier escalation
+  - Emotion uplift P-EMO-01      → after computing base, multiply by 1.2; still capped by max_cents
+  - When multiple policies match, prefer the one that LEAST surprises the customer
+    (full refund on visible damage beats store credit unless policy mandates)
 
-情绪上浮：
-- 如果适用政策里含 P-EMO-01（情绪 >= 8），把最终 amount_cents × 1.2（不超过原始 max_cents）
+VOICE RULES — this is the hard part
+  Open with acknowledgement. Reference the SPECIFIC damage the customer reported
+  (the chipped rim, the scratched lid, the missing screw — not "your product").
+  If the customer is HIGH/CRITICAL emotion, lead with explicit apology and name
+  the inconvenience. If LOW, stay warm but matter-of-fact.
 
-输出：
-- offer_type：选择的赔付方式
-- amount_cents：最终金额（分为单位）
-- justification：1-2 句话给客户解释为什么是这个方案（不要透露内部政策 ID）
-- policy_ids：引用的政策 ID 列表
-- requires_return：根据政策填
+  State the resolution in concrete terms a human cares about, in this order:
+    1. What we are doing (full refund / replacement / etc.)
+    2. The actual money or item, with currency symbol
+    3. What happens next on OUR side (refund hits the card in 1-3 business days,
+       replacement ships within 24h, no need to return the damaged item, etc.)
 
-注意：
-- justification 用温和、共情的语气，不要冷冰冰报数字
-- 不要替客户决定他不需要的方案（比如客户要退款，你不要给 replacement 除非政策强制）
+  NEVER:
+    - Say "as per our policy" or quote internal IDs like "P-RET-01"
+    - Use phrases like "we apologize for any inconvenience this may have caused"
+      (this is the most flagged AI phrase in customer support audits — banned)
+    - Promise things outside the offer (compensation for time, free shipping forever)
+    - Use exclamation marks unless mirroring the customer's energy
+    - Use the word "valuable" to describe the customer
+    - Refer to yourself as a system, AI, agent, or model
+
+  ALWAYS:
+    - Use the customer's language. Reply in the language they wrote in (EN / ZH).
+    - Be brief. 2-4 sentences. A great reply is shorter than a mediocre one.
+    - Be specific. The reply should be unmistakably about THEIR claim, not boilerplate.
+
+FEW-SHOT — what good looks like
+
+  EX 1 · severity 8 crack, calm customer ($24 mug)
+  → offer_type: full_refund, amount_cents: 2400
+  → "That crack along the rim makes the mug unusable — I've issued a full refund
+     of $24.00 to your original payment method. You'll see it in 1–3 business days,
+     and please don't bother shipping the mug back."
+
+  EX 2 · severity 4 scratch, mildly frustrated ($299 headphones)
+  → offer_type: partial_refund, amount_cents: 8970 (30%)
+  → "I can see the scuff on the left ear cup — annoying on a brand-new pair.
+     I'm refunding 30% ($89.70) so you can keep using them, and the credit will
+     hit your card in 1–3 business days. If you'd rather have a replacement instead,
+     just reply and I'll swap that to a new unit."
+
+  EX 3 · severity 9 + CRITICAL emotion + legal mention ($420 jacket)
+  → escalate to human (CompensationAgent should still propose, but flag policy P-EMO-02)
+  → "I'm sorry — a torn jacket on arrival is not an experience I can fix from here.
+     I'm pulling our senior team into this within the hour and we will not ask
+     you to return the jacket. You'll hear back at this email by EOD with the
+     full resolution path."
+
+  EX 4 · 中文，calm ($24 杯)
+  → "看到杯口那道裂纹，确实没法用了。已经给您发起全额退款 ¥24.00，
+     1-3 个工作日到账，破损的杯子不用寄回，您留着或者直接处理就好。"
+
+PRINCIPLE
+  The customer should not be able to tell whether a human or a system handled
+  their claim. If they can tell, you wrote it wrong.
 """
 
 
@@ -139,13 +228,19 @@ def propose(
     damage: DamageAssessment,
     emotion: Optional[Emotion],
     has_image: bool,
-    estimated_value_cents: int = 5000,  # 默认 50 元商品估值（demo 用）
+    estimated_value_cents: int = 5000,
+    user_message: str = "",
+    product_hint: Optional[str] = None,
 ) -> tuple[Optional[CompensationOffer], list[str]]:
     """
-    返回 (offer, escalate_reasons)。
-    如果有强制升级原因，offer 仍会出（作为参考），但 orchestrator 会让 verifier escalate。
+    Returns (offer, escalate_reasons).
+    Even with escalate_reasons set, we still emit a candidate offer so the verifier
+    has full context — orchestrator decides routing.
     """
-    matched, escalate_reasons = filter_policies(damage, emotion, has_image, estimated_value_cents)
+    matched, escalate_reasons = filter_policies(
+        damage, emotion, has_image, estimated_value_cents,
+        user_message=user_message, product_hint=product_hint,
+    )
 
     if not matched:
         return None, ["no_matching_policy"]
@@ -166,12 +261,36 @@ def propose(
         for p in matched
     ]
 
+    # Pull in merchant wisdom + recent learned cases to ground the decision.
+    wisdom = retrieve_merchant_wisdom(
+        damage_type=damage.damage_type.value,
+        emotion_label=emotion.label if emotion else None,
+        user_message="",  # the orchestrator passes via system context already
+        top_k=4,
+    )
+    learned = retrieve_recent_learned(damage_type=damage.damage_type.value, top_k=3)
+
+    wisdom_block = (
+        "\n".join(f"  • [{w['source']}] {w['scenario']} → {w['decision']}" for w in wisdom)
+        if wisdom else "  (no specific merchant wisdom matched)"
+    )
+    learned_block = (
+        "\n".join(
+            f"  • last {i+1}: {c.get('damage',{}).get('damage_type')} sev={c.get('damage',{}).get('severity')} "
+            f"→ {c.get('final_offer',{}).get('offer_type','escalated')} ¥{(c.get('final_offer',{}).get('amount_cents',0)/100):.2f}"
+            for i, c in enumerate(learned)
+        )
+        if learned else "  (no recent learned cases for this damage type yet)"
+    )
+
     prompt = (
-        f"损坏评估：\n{damage.model_dump_json(indent=2)}\n\n"
-        f"商品估值（分）：{estimated_value_cents}\n\n"
-        f"客户情绪：{emotion.model_dump_json() if emotion else 'null'}\n\n"
-        f"适用政策：\n{json.dumps(policy_summaries, ensure_ascii=False, indent=2)}\n\n"
-        f"请输出赔付方案。"
+        f"## Damage assessment\n{damage.model_dump_json(indent=2)}\n\n"
+        f"## Estimated order value\n{estimated_value_cents} cents\n\n"
+        f"## Customer emotion\n{emotion.model_dump_json() if emotion else 'null'}\n\n"
+        f"## Applicable policies (already filtered)\n{json.dumps(policy_summaries, ensure_ascii=False, indent=2)}\n\n"
+        f"## Merchant wisdom (curated from Amazon/eBay/Shopify/Reddit)\n{wisdom_block}\n\n"
+        f"## Recent precedent (live learned cases)\n{learned_block}\n\n"
+        f"## Task\nWrite the offer."
     )
 
     try:
@@ -199,6 +318,8 @@ def run(ctx: ClaimContext, estimated_value_cents: int = 5000) -> ClaimContext:
         emotion=ctx.emotion,
         has_image=ctx.image_bytes is not None,
         estimated_value_cents=estimated_value_cents,
+        user_message=ctx.user_message,
+        product_hint=ctx.intent.product_hint if ctx.intent else None,
     )
     ctx.offer = offer
     elapsed = int((time.monotonic() - t0) * 1000)

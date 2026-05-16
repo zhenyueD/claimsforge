@@ -18,25 +18,40 @@ from schemas import AgentName, ClaimContext, IntentLabel, IntentResult
 logger = logging.getLogger(__name__)
 
 
-_SYSTEM = """你是电商客服的意图分类器。
+_SYSTEM = """You classify the customer's intent on an e-commerce support channel.
 
-任务：根据客户消息判断意图，并尽可能提取订单号和商品类别。
+Output ONE label:
 
-意图分类（三选一）：
-- claim_with_image：客户在投诉商品损坏/缺陷/质量问题，且伴随了图片证据
-- claim_text_only：客户在投诉商品损坏/缺陷/质量问题，但只有文字描述（无图）
-- general_inquiry：一般咨询（询问政策、物流、推荐、寒暄等），不是理赔诉求
+  claim_with_image   — customer is reporting a damaged/defective/wrong product
+                       AND has attached an image
+  claim_text_only    — same as above but no image
+  general_inquiry    — anything else (policy questions, shipping ETA, thanks,
+                       greetings, "can I order Y?", subscription changes)
 
-提取规则：
-- order_id：识别"订单号"、"订单"、"ORD-xxx"、"#12345" 等格式；找不到返回 null
-- product_hint：识别商品类别（杯子 / 笔电 / 外套 / 手机等），找不到返回 null
-- confidence：你对意图分类的置信度，0-1
+CRITICAL RULES (don't get this wrong)
+  - A customer who mentions a lawyer, regulator (12315 / FTC / BBB / consumer
+    protection / 消协), media exposure, chargeback, or "third time I have written"
+    IS a claim — they're escalating an existing problem. NOT general_inquiry.
+    If they reference a damaged item or a refund demand, classify as claim_text_only
+    (or claim_with_image if attached). The downstream pipeline will route them
+    to a human via emotion_agent + verifier.
 
-注意：
-- "我想退款" 不算理赔，除非提到具体损坏或缺陷
-- "刚收到货很满意" 是 general_inquiry
-- 含"破/裂/坏/碎/损坏/缺/划/撕/裂纹"等明确损坏关键词 + 有图 → claim_with_image
-- 同上但无图 → claim_text_only
+  - A refund request without any mention of damage/defect/wrong-item is still
+    general_inquiry (the customer just changed their mind). Don't auto-route to
+    the claims pipeline.
+
+  - A photo attached without ANY problem description → still
+    general_inquiry (could be a product question / unboxing share). Don't assume.
+
+EXTRACTION
+  - order_id      — formats: ORD-XXX, #12345, "order number 88712", 订单号 XYZ.
+                    null if not present. Don't guess.
+  - product_hint  — single noun: mug, laptop, jacket, headphones, phone, ...
+                    null if not present.
+  - confidence    — your subjective certainty 0-1. Be honest; ≤0.5 on ambiguous.
+
+The customer might write in English, Chinese, or other languages. Identify intent
+regardless of language.
 """
 
 

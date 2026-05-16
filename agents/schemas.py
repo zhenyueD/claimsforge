@@ -51,9 +51,17 @@ class VerifierVerdict(str, Enum):
 
 class AgentName(str, Enum):
     INTENT = "IntentAgent"
+    EMOTION = "EmotionAgent"
     DAMAGE = "DamageAgent"
     COMPENSATION = "CompensationAgent"
     VERIFIER = "VerifierAgent"
+
+
+class EmotionRisk(str, Enum):
+    LOW = "LOW"
+    MEDIUM = "MEDIUM"
+    HIGH = "HIGH"
+    CRITICAL = "CRITICAL"  # 涉及法律/媒体威胁
 
 
 # ─────────────────────────────────────────────────────────────
@@ -97,9 +105,13 @@ class VerificationResult(BaseModel):
 #  Emotion / Needs（沿用 conversation_engine.py 旧结构，只 typed 化）
 # ─────────────────────────────────────────────────────────────
 class Emotion(BaseModel):
-    score: float = Field(ge=0, le=10)
-    risk: str  # "LOW" | "MEDIUM" | "HIGH"
-    label: str  # "焦虑" | "愤怒" | "中性" 等
+    """Output of EmotionAgent — Gemini-graded customer affect on this turn."""
+    score: float = Field(ge=0, le=10, description="0=happy, 5=neutral, 10=furious")
+    risk: EmotionRisk
+    label: str = Field(description="Single descriptive word: frustrated / anxious / angry / threatening / calm")
+    triggers: list[str] = Field(default_factory=list, description="Specific words/phrases that drove the score")
+    escalation_signals: list[str] = Field(default_factory=list, description="Legal threats / media mentions / repeat complaint markers")
+    suggested_tone: str = Field(default="", description="Concrete guidance for the reply: apologetic / matter-of-fact / urgent / formal")
 
 
 class Needs(BaseModel):

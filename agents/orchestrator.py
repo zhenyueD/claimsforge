@@ -34,9 +34,11 @@ from schemas import (
 )
 
 import intent_agent
+import emotion_agent
 import damage_agent
 import compensation_agent
 import verifier_agent
+from knowledge import append_learned_case
 
 logger = logging.getLogger(__name__)
 
@@ -100,11 +102,18 @@ def run(
     emit(ctx.traces[-1])
 
     if ctx.intent is None or ctx.intent.label == IntentLabel.GENERAL_INQUIRY:
-        # 不是理赔诉求，跳过后续 agent
-        ctx.final_reply = "您好，请问您是有商品损坏问题需要处理，还是希望了解我们的政策？"
+        ctx.final_reply = (
+            "Hi — happy to help. Are you reporting a damaged or defective item, "
+            "or do you have a general question about our return policy?"
+        )
         return ctx
 
-    # Stage 2: Damage（即使无图也跑，只是 confidence 会低）
+    # Stage 2: Emotion — grade the customer's affect on this turn.
+    # Done early so DamageAgent + CompensationAgent can adapt.
+    emotion_agent.run(ctx)
+    emit(ctx.traces[-1])
+
+    # Stage 3: Damage（即使无图也跑，只是 confidence 会低）
     damage_agent.run(ctx)
     emit(ctx.traces[-1])
 
@@ -149,6 +158,24 @@ def run(
 
     elapsed = int((time.monotonic() - pipeline_start) * 1000)
     logger.info("pipeline done in %dms (escalated=%s)", elapsed, ctx.escalated_to_human)
+
+    # Learning loop: persist this resolved claim so future CompensationAgent calls
+    # can retrieve it as recent precedent. Skip general_inquiry (no value).
+    try:
+        append_learned_case({
+            "session_id": ctx.session_id,
+            "user_message_preview": ctx.user_message[:200],
+            "intent": ctx.intent.model_dump() if ctx.intent else None,
+            "emotion": ctx.emotion.model_dump() if ctx.emotion else None,
+            "damage": ctx.damage.model_dump() if ctx.damage else None,
+            "final_offer": ctx.final_offer.model_dump() if ctx.final_offer else None,
+            "verification": ctx.verification.model_dump() if ctx.verification else None,
+            "escalated": ctx.escalated_to_human,
+            "pipeline_ms": elapsed,
+        })
+    except Exception as e:
+        logger.warning("learning loop write failed (non-fatal): %s", e)
+
     return ctx
 
 

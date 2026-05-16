@@ -35,6 +35,7 @@ from utils import safe_save_json, safe_load_json, sanitize_user_input, has_injec
 import orchestrator
 from schemas import ClaimContext, Emotion, AgentTrace
 import gemini_client
+from knowledge import get_learning_stats
 
 app = FastAPI(title="AI客服团队 3.0", version="3.0.0")
 
@@ -524,6 +525,12 @@ async def submit_claim(req: ClaimRequest, background_tasks: BackgroundTasks):
         "traces": [t.model_dump() for t in result.traces],
         "image_id": req.image_id,
     }
+
+
+@app.get("/api/claimsforge/learning")
+async def claimsforge_learning():
+    """Live Learning Queue — recent claims + outcome distribution."""
+    return get_learning_stats()
 
 
 @app.get("/api/claimsforge/health")

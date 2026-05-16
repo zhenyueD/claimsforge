@@ -1,63 +1,54 @@
 {
-  "version": "2026-05-16",
-  "currency": "CNY",
+  "version": "2026-05-16-v2",
+  "currency": "USD",
   "thresholds": {
-    "auto_approve_max_cents": 5000,
+    "auto_approve_max_cents": 7500,
     "manager_approve_max_cents": 50000,
     "escalate_above_cents": 50000
   },
+  "merchant_style_default": "BALANCED",
   "policies": [
+
     {
       "id": "P-RET-01",
-      "title": "破损商品全额退款（severity >= 7）",
+      "title": "Severe damage → full refund (severity ≥ 7)",
       "category": "damage",
-      "applies_when": {
-        "damage_severity_min": 7,
-        "days_since_delivery_max": 30
-      },
+      "applies_when": {"damage_severity_min": 7, "days_since_delivery_max": 30},
       "offer_type": "full_refund",
       "amount_basis": "order_value",
       "max_cents": 50000,
       "requires_return": false,
-      "rationale": "严重损坏不必寄回，节省物流成本，提升 CSAT。"
+      "rationale": "Severely damaged goods need not be returned — return shipping often costs more than the refund."
     },
     {
       "id": "P-RET-02",
-      "title": "中度损坏部分退款（severity 4-6）",
+      "title": "Moderate damage → partial refund (severity 4-6)",
       "category": "damage",
-      "applies_when": {
-        "damage_severity_min": 4,
-        "damage_severity_max": 6,
-        "days_since_delivery_max": 30
-      },
+      "applies_when": {"damage_severity_min": 4, "damage_severity_max": 6, "days_since_delivery_max": 30},
       "offer_type": "partial_refund",
       "amount_basis": "percentage",
       "amount_percent": 50,
       "max_cents": 30000,
       "requires_return": false,
-      "rationale": "可继续使用但有瑕疵，按 50% 折扣补偿。"
+      "rationale": "Usable but flawed. 50% restores fairness without forcing a return."
     },
     {
       "id": "P-RET-03",
-      "title": "轻微损坏店铺积分（severity 1-3）",
+      "title": "Cosmetic only → store credit (severity 1-3)",
       "category": "damage",
-      "applies_when": {
-        "damage_severity_min": 1,
-        "damage_severity_max": 3,
-        "days_since_delivery_max": 30
-      },
+      "applies_when": {"damage_severity_min": 1, "damage_severity_max": 3, "days_since_delivery_max": 30},
       "offer_type": "store_credit",
       "amount_basis": "fixed",
       "amount_cents": 1000,
       "requires_return": false,
-      "rationale": "外包装/轻微划痕赠送 10 元店铺积分，留客优先。"
+      "rationale": "Outer-box / packaging scuffs. Store credit retains the customer at lowest cost."
     },
     {
       "id": "P-RET-04",
-      "title": "易碎品破裂换新",
+      "title": "Fragile category broken → replacement",
       "category": "damage",
       "applies_when": {
-        "product_categories": ["mug", "glassware", "ceramics", "ornament"],
+        "product_categories": ["mug", "glassware", "ceramics", "ornament", "kitchenware"],
         "damage_types": ["crack", "tear"],
         "damage_severity_min": 5
       },
@@ -65,11 +56,11 @@
       "amount_basis": "order_value",
       "max_cents": 30000,
       "requires_return": false,
-      "rationale": "易碎品破裂直接换新，无需寄回。"
+      "rationale": "Customers buying breakables expect a working item, not a refund."
     },
     {
       "id": "P-RET-05",
-      "title": "电子产品进水/水损升级人工",
+      "title": "Electronics water damage → escalate to human",
       "category": "damage",
       "applies_when": {
         "product_categories": ["laptop", "phone", "tablet", "electronics"],
@@ -77,70 +68,285 @@
       },
       "offer_type": "store_credit",
       "amount_basis": "manual",
-      "rationale": "水损情况复杂，需要人工核验保修条款。",
+      "rationale": "Liquid damage requires warranty interpretation; never auto-decide.",
       "force_escalate": true
     },
     {
       "id": "P-RET-06",
-      "title": "配件缺失补发",
+      "title": "Missing parts → replacement of part",
       "category": "missing_part",
-      "applies_when": {
-        "damage_types": ["missing_part"]
-      },
+      "applies_when": {"damage_types": ["missing_part"]},
       "offer_type": "replacement",
       "amount_basis": "fixed",
       "amount_cents": 0,
       "requires_return": false,
-      "rationale": "配件缺失补发即可，不需要退款。"
+      "rationale": "Ship the missing part. Refunding the whole order is bad UX."
     },
     {
       "id": "P-RET-07",
-      "title": "制造缺陷全额退款",
+      "title": "Manufacturing defect within warranty → full refund + return",
       "category": "defect",
-      "applies_when": {
-        "damage_types": ["defect"],
-        "days_since_delivery_max": 365
-      },
+      "applies_when": {"damage_types": ["defect"], "days_since_delivery_max": 365},
       "offer_type": "full_refund",
       "amount_basis": "order_value",
       "max_cents": 100000,
       "requires_return": true,
-      "rationale": "制造缺陷在保修期内全额退款，需要寄回作质检。"
+      "rationale": "Defects need QA review; the item must come back for inspection."
+    },
+
+    {
+      "id": "P-APP-01",
+      "title": "Apparel · tear / hole → full refund, no return",
+      "category": "category:apparel",
+      "applies_when": {
+        "product_categories": ["clothing", "apparel", "shoes", "accessories"],
+        "damage_types": ["tear"],
+        "damage_severity_min": 4
+      },
+      "offer_type": "full_refund",
+      "amount_basis": "order_value",
+      "max_cents": 30000,
+      "requires_return": false,
+      "rationale": "Used apparel can't be resold. Return shipping is wasted handling."
     },
     {
-      "id": "P-EMO-01",
-      "title": "高情绪客户上浮 20%",
-      "category": "emotion_adjustment",
+      "id": "P-APP-02",
+      "title": "Apparel · stain / dye transfer → 70% partial refund",
+      "category": "category:apparel",
       "applies_when": {
-        "emotion_score_min": 8
+        "product_categories": ["clothing", "apparel"],
+        "damage_types": ["stain"]
       },
-      "adjustment": {
-        "amount_multiplier": 1.2,
-        "offer_type_override": null
+      "offer_type": "partial_refund",
+      "amount_basis": "percentage",
+      "amount_percent": 70,
+      "max_cents": 20000,
+      "requires_return": false,
+      "rationale": "Often salvageable with cleaning. 70% covers professional cleaning + dissatisfaction."
+    },
+    {
+      "id": "P-APP-03",
+      "title": "Apparel · size mismatch (not damage) → return + exchange",
+      "category": "category:apparel",
+      "applies_when": {
+        "product_categories": ["clothing", "apparel", "shoes"],
+        "damage_types": ["unclear"],
+        "user_keywords": ["too small", "too big", "doesn't fit", "wrong size"]
       },
-      "rationale": "客户情绪 >= 8 时上浮 20%（封顶不变），降低投诉/差评/退店风险。"
+      "offer_type": "replacement",
+      "amount_basis": "fixed",
+      "amount_cents": 0,
+      "requires_return": true,
+      "rationale": "Fit issues need exchange, not refund. Reduces refund rate."
+    },
+
+    {
+      "id": "P-ELE-01",
+      "title": "Electronics · screen damage > $200 → escalate",
+      "category": "category:electronics",
+      "applies_when": {
+        "product_categories": ["laptop", "phone", "tablet", "monitor"],
+        "damage_types": ["crack", "scratch"],
+        "claim_amount_min_cents": 20000
+      },
+      "force_escalate": true,
+      "rationale": "High-value electronics screens involve warranty + insurance interplay."
+    },
+    {
+      "id": "P-ELE-02",
+      "title": "Electronics · accessory damaged (cable/case) → replacement",
+      "category": "category:electronics",
+      "applies_when": {
+        "product_categories": ["accessory", "cable", "case", "charger"],
+        "damage_severity_min": 4
+      },
+      "offer_type": "replacement",
+      "amount_basis": "order_value",
+      "max_cents": 5000,
+      "requires_return": false,
+      "rationale": "Low-cost accessory — replacement is cheaper than dispute time."
+    },
+    {
+      "id": "P-ELE-03",
+      "title": "Electronics · DOA (dead on arrival) → full refund + free return label",
+      "category": "category:electronics",
+      "applies_when": {
+        "product_categories": ["laptop", "phone", "tablet", "monitor", "headphones"],
+        "damage_types": ["defect"],
+        "user_keywords": ["dead on arrival", "doesn't turn on", "won't power on"]
+      },
+      "offer_type": "full_refund",
+      "amount_basis": "order_value",
+      "max_cents": 200000,
+      "requires_return": true,
+      "rationale": "DOA is a manufacturing issue — full refund + we pay return shipping."
+    },
+
+    {
+      "id": "P-PER-01",
+      "title": "Perishables (food / cosmetics / supplements) → instant full refund",
+      "category": "category:perishables",
+      "applies_when": {
+        "product_categories": ["food", "beverage", "cosmetics", "supplements", "skincare"],
+        "damage_severity_min": 3
+      },
+      "offer_type": "full_refund",
+      "amount_basis": "order_value",
+      "max_cents": 15000,
+      "requires_return": false,
+      "rationale": "Perishables can never be returned. Auto-refund is industry standard."
+    },
+    {
+      "id": "P-PER-02",
+      "title": "Perishables · expiry-close at delivery → 30% + apology",
+      "category": "category:perishables",
+      "applies_when": {
+        "product_categories": ["food", "beverage", "supplements"],
+        "user_keywords": ["expires", "expiry", "almost expired", "best before"]
+      },
+      "offer_type": "partial_refund",
+      "amount_basis": "percentage",
+      "amount_percent": 30,
+      "max_cents": 5000,
+      "requires_return": false,
+      "rationale": "Stock rotation issue. 30% acknowledges the inconvenience without giving away margin."
+    },
+    {
+      "id": "P-PER-03",
+      "title": "Perishables · spillage in transit → full refund, no return",
+      "category": "category:perishables",
+      "applies_when": {
+        "product_categories": ["food", "beverage", "cosmetics"],
+        "damage_types": ["water_damage", "stain"]
+      },
+      "offer_type": "full_refund",
+      "amount_basis": "order_value",
+      "max_cents": 20000,
+      "requires_return": false,
+      "rationale": "Leaked product is unsellable and unsafe to handle. Refund and discard."
+    },
+
+    {
+      "id": "P-LUX-01",
+      "title": "Luxury (> $500) · ANY damage → escalate to human",
+      "category": "category:luxury",
+      "applies_when": {
+        "claim_amount_min_cents": 50000
+      },
+      "force_escalate": true,
+      "rationale": "Luxury brand voice + premium customer expectation requires a human touch."
+    },
+    {
+      "id": "P-LUX-02",
+      "title": "Luxury packaging damage (item OK) → store credit 10% of order",
+      "category": "category:luxury",
+      "applies_when": {
+        "claim_amount_min_cents": 50000,
+        "damage_severity_max": 3,
+        "user_keywords": ["box", "packaging", "presentation", "gift box"]
+      },
+      "offer_type": "store_credit",
+      "amount_basis": "percentage",
+      "amount_percent": 10,
+      "max_cents": 30000,
+      "requires_return": false,
+      "rationale": "Luxury customers buy the unboxing experience. Credit them, keep them."
+    },
+    {
+      "id": "P-LUX-03",
+      "title": "Luxury · authentication concern → escalate immediately",
+      "category": "category:luxury",
+      "applies_when": {
+        "claim_amount_min_cents": 50000,
+        "user_keywords": ["fake", "authentic", "counterfeit", "serial number"]
+      },
+      "force_escalate": true,
+      "rationale": "Authentication disputes are legal/brand risk — human only."
+    },
+    {
+      "id": "P-LUX-04",
+      "title": "Luxury · customer is repeat VIP → upgrade to replacement + apology gift",
+      "category": "category:luxury",
+      "applies_when": {
+        "claim_amount_min_cents": 50000,
+        "customer_tier": "VIP"
+      },
+      "offer_type": "replacement",
+      "amount_basis": "order_value",
+      "max_cents": 300000,
+      "requires_return": false,
+      "rationale": "VIP retention NPV > replacement cost."
+    },
+
+    {
+      "id": "P-INT-01",
+      "title": "Cross-border · damaged in customs → full refund, no return",
+      "category": "logistics:cross_border",
+      "applies_when": {
+        "user_keywords": ["customs", "international shipping", "import", "海关"],
+        "damage_severity_min": 5
+      },
+      "offer_type": "full_refund",
+      "amount_basis": "order_value",
+      "max_cents": 80000,
+      "requires_return": false,
+      "rationale": "Cross-border returns cost more than the refund; customs adds 2-4 weeks."
+    },
+    {
+      "id": "P-INT-02",
+      "title": "Cross-border · duty/tax overcharge claim → refund difference",
+      "category": "logistics:cross_border",
+      "applies_when": {
+        "user_keywords": ["duty", "import tax", "customs fee", "tariff"]
+      },
+      "offer_type": "partial_refund",
+      "amount_basis": "manual",
+      "rationale": "Duty disputes need human verification of receipts.",
+      "force_escalate": true
+    },
+
+    {
+      "id": "P-SEA-01",
+      "title": "Peak-season delay (BFCM / 11.11 / 618) → store credit",
+      "category": "logistics:seasonal",
+      "applies_when": {
+        "user_keywords": ["late", "delay", "still hasn't arrived", "ordered weeks ago"],
+        "season": ["bfcm", "11.11", "618", "boxing_day"]
+      },
+      "offer_type": "store_credit",
+      "amount_basis": "fixed",
+      "amount_cents": 1500,
+      "requires_return": false,
+      "rationale": "Bulk-season carrier delays are systemic. $15 credit reduces churn."
+    },
+
+    {
+      "id": "P-EMO-01",
+      "title": "Emotion ≥ 8 → +20% offer uplift",
+      "category": "emotion_adjustment",
+      "applies_when": {"emotion_score_min": 8},
+      "adjustment": {"amount_multiplier": 1.2, "offer_type_override": null},
+      "rationale": "High emotion = high churn risk = high CSAT recovery cost. 20% uplift wins back loyalty cheaper than re-acquisition."
     },
     {
       "id": "P-EMO-02",
-      "title": "极端情绪强制升级",
+      "title": "Legal / media / regulator threat → force escalate",
       "category": "emotion_adjustment",
       "applies_when": {
-        "emotion_score_min": 9,
-        "keywords": ["起诉", "律师", "12315", "曝光", "媒体", "sue", "lawyer"]
+        "emotion_score_min": 7,
+        "user_keywords": ["sue", "lawyer", "12315", "consumer protection", "media", "social", "TikTok", "Twitter complaint", "BBB"]
       },
       "force_escalate": true,
-      "rationale": "出现法律/舆情威胁时立刻升级到人工，不让 agent 自动决策。"
+      "rationale": "Brand & legal risk — humans handle reputational exposure."
     },
+
     {
       "id": "P-LMT-01",
-      "title": "无图无证拒绝自动赔付",
+      "title": "No image + claim ≥ $50 → escalate",
       "category": "evidence_required",
-      "applies_when": {
-        "has_image": false,
-        "claim_amount_min_cents": 5000
-      },
+      "applies_when": {"has_image": false, "claim_amount_min_cents": 5000},
       "force_escalate": true,
-      "rationale": "无照片证据且金额 >= 50 元的赔付请求需要人工介入。"
+      "rationale": "Photo evidence is the standard for auto-pay above $50. Below, friction > fraud risk."
     }
   ]
 }

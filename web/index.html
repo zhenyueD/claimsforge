@@ -1,1029 +1,1088 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AI 数字客服团队 3.0</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>ClaimsForge — Multi-agent claims resolution</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
 <style>
   :root {
-    --bg: #0f1117;
-    --card: #1a1d27;
-    --card2: #22263a;
-    --border: #2e3350;
-    --accent: #6c63ff;
-    --accent2: #00d4aa;
-    --warn: #f59e0b;
-    --danger: #ef4444;
-    --success: #22c55e;
-    --text: #e2e8f0;
-    --muted: #94a3b8;
-    --font: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --bg: #07080d;
+    --bg-2: #0d0f17;
+    --bg-3: #121521;
+    --surface: rgba(255,255,255,.025);
+    --surface-2: rgba(255,255,255,.04);
+    --fg: #f3f4f6;
+    --muted: #9ca3af;
+    --dim: #6b7280;
+    --line: rgba(255,255,255,.07);
+    --line-strong: rgba(255,255,255,.14);
+    --indigo: #6366f1;
+    --violet: #a78bfa;
+    --sky: #38bdf8;
+    --emerald: #10b981;
+    --amber: #f59e0b;
+    --rose: #f43f5e;
+    --pink: #ec4899;
   }
-  * { margin:0; padding:0; box-sizing:border-box; }
-  body { background:var(--bg); color:var(--text); font-family:var(--font); min-height:100vh; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: var(--bg); height: 100%; }
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    color: var(--fg);
+    font-feature-settings: 'ss01', 'cv11';
+    overflow: hidden;
+  }
+  code, pre, .mono { font-family: 'JetBrains Mono', 'SF Mono', Monaco, monospace; }
+  ::selection { background: rgba(167,139,250,.35); }
 
-  /* ── 顶栏 ── */
+  /* Top bar */
   .topbar {
-    display:flex; align-items:center; justify-content:space-between;
-    padding:14px 28px; background:var(--card);
-    border-bottom:1px solid var(--border);
-    position:sticky; top:0; z-index:100;
-    flex-wrap:wrap; gap:8px;
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    height: 56px;
+    background: rgba(7,8,13,.85);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--line);
+    display: flex;
+    align-items: center;
+    padding: 0 28px;
+    z-index: 100;
   }
-  .topbar .logo { display:flex; align-items:center; gap:10px; }
-  .topbar .logo-icon { width:32px; height:32px; background:linear-gradient(135deg,var(--accent),var(--accent2)); border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:16px; }
-  .topbar .logo-text { font-size:16px; font-weight:700; letter-spacing:.3px; }
-  .topbar .logo-version { font-size:11px; background:var(--accent); color:#fff; padding:2px 7px; border-radius:20px; margin-left:6px; }
-  .topbar .status-dot { width:8px; height:8px; background:var(--success); border-radius:50%; animation:pulse 2s infinite; }
-  .topbar .status-text { font-size:12px; color:var(--muted); margin-left:6px; }
-  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
-
-  /* ── 布局 ── */
-  .layout { display:grid; grid-template-columns:340px 1fr 300px; height:calc(100vh - 57px); }
-
-  /* ── 左侧：Agent团队 ── */
-  .panel-left { background:var(--card); border-right:1px solid var(--border); display:flex; flex-direction:column; overflow:hidden; }
-  .panel-title { padding:16px 20px 10px; font-size:11px; font-weight:600; color:var(--muted); text-transform:uppercase; letter-spacing:1px; }
-
-  .agent-list { padding:0 12px; flex:1; overflow-y:auto; }
-  .agent-card {
-    background:var(--card2); border:1px solid var(--border); border-radius:12px;
-    padding:14px; margin-bottom:10px; cursor:default; transition:.2s;
-    position:relative; overflow:hidden;
+  .topbar .brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    font-size: 17px;
   }
-  .agent-card:hover { border-color:var(--accent); transform:translateY(-1px); }
-  .agent-card.active { border-color:var(--accent); background:#1e1b3a; }
-  .agent-card .agent-header { display:flex; align-items:center; gap:10px; margin-bottom:8px; }
-  .agent-avatar { width:36px; height:36px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:16px; flex-shrink:0; }
-  .agent-name { font-size:13px; font-weight:600; }
-  .agent-role { font-size:11px; color:var(--muted); margin-top:1px; }
-  .agent-status { margin-left:auto; font-size:10px; padding:3px 8px; border-radius:20px; font-weight:600; }
-  .status-active { background:#1a3a2a; color:var(--success); }
-  .status-busy { background:#3a2a1a; color:var(--warn); }
-  .status-idle { background:#2a2a3a; color:var(--muted); }
-  .agent-desc { font-size:11px; color:var(--muted); line-height:1.5; }
-  .agent-metrics { display:flex; gap:12px; margin-top:8px; }
-  .metric { font-size:11px; color:var(--muted); }
-  .metric span { color:var(--text); font-weight:600; }
-
-  /* Agent颜色 */
-  .av-conversation { background:linear-gradient(135deg,#6c63ff,#a78bfa); }
-  .av-knowledge { background:linear-gradient(135deg,#00d4aa,#06b6d4); }
-  .av-escalation { background:linear-gradient(135deg,#ef4444,#f97316); }
-  .av-observer { background:linear-gradient(135deg,#f59e0b,#eab308); }
-
-  /* 事件流 */
-  .event-stream { border-top:1px solid var(--border); }
-  .event-list { height:180px; overflow-y:auto; padding:8px 12px; }
-  .event-item { display:flex; align-items:flex-start; gap:8px; padding:5px 0; border-bottom:1px solid #1e2235; }
-  .event-item:last-child { border-bottom:none; }
-  .event-dot { width:6px; height:6px; border-radius:50%; margin-top:5px; flex-shrink:0; }
-  .ev-info { background:var(--accent); }
-  .ev-warn { background:var(--warn); }
-  .ev-danger { background:var(--danger); }
-  .ev-success { background:var(--success); }
-  .event-text { font-size:11px; color:var(--muted); line-height:1.4; }
-  .event-time { font-size:10px; color:#4a5270; margin-left:auto; flex-shrink:0; }
-
-  /* ── 中间：对话区 ── */
-  .panel-mid { display:flex; flex-direction:column; overflow:hidden; }
-  
-  /* 场景选择器 */
-  .scenario-bar { padding:12px 20px; background:var(--card); border-bottom:1px solid var(--border); display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
-  .scenario-label { font-size:11px; color:var(--muted); margin-right:4px; }
-  .scenario-btn {
-    font-size:11px; padding:5px 12px; border-radius:20px; border:1px solid var(--border);
-    background:transparent; color:var(--muted); cursor:pointer; transition:.2s;
+  .brand-mark {
+    width: 26px; height: 26px;
+    border-radius: 7px;
+    background: linear-gradient(135deg, #6366f1, #a78bfa, #ec4899);
+    box-shadow: 0 4px 12px rgba(99,102,241,.5);
+    position: relative;
   }
-  .scenario-btn:hover, .scenario-btn.active { background:var(--accent); color:#fff; border-color:var(--accent); }
-
-  /* 对话区 */
-  .chat-area { flex:1; overflow-y:auto; padding:20px; display:flex; flex-direction:column; gap:14px; }
-  
-  .msg { display:flex; gap:10px; max-width:80%; }
-  .msg.user { align-self:flex-end; flex-direction:row-reverse; }
-  .msg.bot { align-self:flex-start; }
-
-  .msg-avatar { width:32px; height:32px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:14px; flex-shrink:0; }
-  .user-av { background:linear-gradient(135deg,#6c63ff,#a78bfa); }
-  .bot-av { background:linear-gradient(135deg,#00d4aa,#06b6d4); }
-
-  .msg-body { display:flex; flex-direction:column; gap:4px; }
-  .msg-bubble {
-    padding:10px 14px; border-radius:12px; font-size:13px; line-height:1.6;
-    white-space:pre-wrap; word-break:break-word;
+  .brand-mark::before {
+    content: '';
+    position: absolute;
+    inset: 5px;
+    border: 1.5px solid rgba(255,255,255,.55);
+    border-radius: 3px;
+    border-bottom-color: transparent;
+    border-left-color: transparent;
+    transform: rotate(45deg);
   }
-  .msg.user .msg-bubble { background:var(--accent); color:#fff; border-radius:12px 2px 12px 12px; }
-  .msg.bot .msg-bubble { background:var(--card2); color:var(--text); border-radius:2px 12px 12px 12px; border:1px solid var(--border); }
-  .msg.bot.escalated .msg-bubble { border-color:var(--danger); background:#1e1515; }
-
-  /* 情绪标签 */
-  .emotion-tag { display:inline-flex; align-items:center; gap:4px; font-size:10px; padding:2px 8px; border-radius:20px; margin-top:2px; width:fit-content; }
-  .em-low { background:#1a3a2a; color:var(--success); }
-  .em-med { background:#3a2e1a; color:var(--warn); }
-  .em-high { background:#2a1a1a; color:var(--danger); }
-
-  /* 需求挖掘卡片 */
-  .needs-card { background:var(--card); border:1px solid var(--border); border-radius:8px; padding:10px 12px; margin-top:4px; font-size:11px; }
-  .needs-title { color:var(--accent2); font-weight:600; margin-bottom:6px; font-size:10px; text-transform:uppercase; }
-  .needs-row { display:flex; gap:8px; margin-bottom:3px; }
-  .needs-label { color:var(--muted); flex-shrink:0; }
-  .needs-value { color:var(--text); }
-  .retention-bar { height:4px; background:var(--border); border-radius:2px; margin-top:6px; }
-  .retention-fill { height:100%; border-radius:2px; background:linear-gradient(90deg,var(--danger),var(--warn),var(--success)); transition:width .5s; }
-
-  /* 升级通知 */
-  .escalation-card {
-    background:#1e1215; border:1px solid var(--danger); border-radius:10px;
-    padding:12px 14px; margin-top:6px; font-size:12px;
+  .brand-name {
+    background: linear-gradient(135deg, #f3f4f6, #c7d2fe);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
   }
-  .escalation-title { color:var(--danger); font-weight:700; margin-bottom:6px; display:flex; align-items:center; gap:6px; }
-  .escalation-info { color:var(--muted); line-height:1.7; }
-
-  /* 打字指示器 */
-  .typing-indicator { display:flex; gap:4px; align-items:center; padding:10px 14px; }
-  .typing-dot { width:6px; height:6px; background:var(--muted); border-radius:50%; animation:typingBounce 1.2s infinite; }
-  .typing-dot:nth-child(2) { animation-delay:.2s; }
-  .typing-dot:nth-child(3) { animation-delay:.4s; }
-  @keyframes typingBounce { 0%,80%,100%{transform:translateY(0)} 40%{transform:translateY(-6px)} }
-
-  /* 输入区 */
-  .chat-input-area { padding:16px 20px; background:var(--card); border-top:1px solid var(--border); }
-  .chat-input-wrap { display:flex; gap:10px; align-items:flex-end; }
-  .chat-input {
-    flex:1; background:var(--card2); border:1px solid var(--border); border-radius:12px;
-    padding:10px 14px; color:var(--text); font-size:13px; font-family:var(--font);
-    resize:none; min-height:42px; max-height:120px; outline:none; transition:.2s;
-    line-height:1.5;
-  }
-  .chat-input:focus { border-color:var(--accent); }
-  .send-btn {
-    width:42px; height:42px; background:var(--accent); border:none; border-radius:10px;
-    color:#fff; font-size:16px; cursor:pointer; transition:.2s; display:flex; align-items:center; justify-content:center; flex-shrink:0;
-  }
-  .send-btn:hover { background:#5a52e0; transform:scale(1.05); }
-  .send-btn:disabled { background:var(--border); cursor:not-allowed; transform:none; }
-  .input-hint { font-size:10px; color:var(--muted); margin-top:6px; text-align:center; }
-
-  /* ── 右侧：监控面板 ── */
-  .panel-right { background:var(--card); border-left:1px solid var(--border); overflow-y:auto; }
-
-  /* 健康度仪表 */
-  .health-grid { padding:0 14px; display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:4px; }
-  .health-item { background:var(--card2); border-radius:10px; padding:10px; border:1px solid var(--border); }
-  .health-name { font-size:10px; color:var(--muted); margin-bottom:4px; }
-  .health-status { font-size:12px; font-weight:600; }
-  .health-metric { font-size:10px; color:var(--muted); margin-top:2px; }
-
-  /* 实时指标 */
-  .metrics-row { display:grid; grid-template-columns:1fr 1fr; gap:8px; padding:0 14px; margin-bottom:4px; }
-  .metric-card { background:var(--card2); border-radius:10px; padding:12px; border:1px solid var(--border); text-align:center; }
-  .metric-val { font-size:22px; font-weight:700; color:var(--accent); }
-  .metric-label { font-size:10px; color:var(--muted); margin-top:2px; }
-
-  /* 工单列表 */
-  .ticket-list { padding:0 14px; }
-  .ticket-item { background:var(--card2); border-radius:8px; padding:10px; margin-bottom:6px; border-left:3px solid var(--border); font-size:11px; }
-  .ticket-item.p0 { border-left-color:var(--danger); }
-  .ticket-item.p1 { border-left-color:var(--warn); }
-  .ticket-item.resolved { border-left-color:var(--success); opacity:.7; }
-  .ticket-header { display:flex; justify-content:space-between; margin-bottom:4px; }
-  .ticket-id { font-weight:600; color:var(--accent); }
-  .ticket-type { font-size:10px; padding:1px 6px; border-radius:10px; }
-  .type-comp { background:#2a1a1a; color:var(--danger); }
-  .type-emo { background:#3a2a1a; color:var(--warn); }
-  .type-norm { background:#1a2a3a; color:var(--accent); }
-  .ticket-msg { color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-  .ticket-status { color:var(--muted); margin-top:3px; }
-
-  /* 知识库状态 */
-  .kb-stats { padding:0 14px; }
-  .kb-item { display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid var(--border); font-size:12px; }
-  .kb-item:last-child { border-bottom:none; }
-  .kb-cat { color:var(--muted); }
-  .kb-count { font-weight:600; }
-
-  /* 满意度评分 */
-  .rating-area { padding:0 14px 14px; }
-  .rating-label { font-size:11px; color:var(--muted); margin-bottom:8px; }
-  .stars { display:flex; gap:6px; }
-  .star { font-size:22px; cursor:pointer; transition:.15s; filter:grayscale(1); }
-  .star.active, .star:hover { filter:none; transform:scale(1.15); }
-  .rating-submit { margin-top:8px; width:100%; padding:7px; background:var(--accent); border:none; border-radius:8px; color:#fff; font-size:12px; cursor:pointer; transition:.2s; }
-  .rating-submit:hover { background:#5a52e0; }
-
-  /* 区块标题 */
-  .section { margin-bottom:16px; }
-  .section-title { padding:12px 14px 8px; font-size:10px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:1px; display:flex; align-items:center; gap:6px; }
-  .section-title .badge { background:var(--accent); color:#fff; font-size:9px; padding:1px 6px; border-radius:10px; }
-
-  /* 通知toast */
-  .toast-container { position:fixed; bottom:24px; right:24px; z-index:999; display:flex; flex-direction:column; gap:8px; }
-  .toast { background:var(--card2); border:1px solid var(--border); border-radius:10px; padding:12px 16px; font-size:12px; min-width:260px; max-width:340px; box-shadow:0 8px 32px rgba(0,0,0,.4); animation:slideIn .3s ease; }
-  .toast.toast-danger { border-color:var(--danger); }
-  .toast.toast-success { border-color:var(--success); }
-  .toast.toast-warn { border-color:var(--warn); }
-  .toast-title { font-weight:700; margin-bottom:4px; }
-  .toast-body { color:var(--muted); line-height:1.4; }
-  @keyframes slideIn { from{transform:translateX(40px);opacity:0} to{transform:translateX(0);opacity:1} }
-
-  /* 滚动条 */
-  ::-webkit-scrollbar { width:4px; height:4px; }
-  ::-webkit-scrollbar-track { background:transparent; }
-  ::-webkit-scrollbar-thumb { background:var(--border); border-radius:2px; }
-
-  /* 空状态 */
-  .empty-chat { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; color:var(--muted); gap:12px; }
-  .empty-icon { font-size:48px; opacity:.3; }
-  .empty-text { font-size:13px; }
-
-  /* LLM 徽标 */
-  .llm-badge { font-size:10px; padding:1px 7px; border-radius:10px; margin-left:6px; font-weight:600; }
-  .llm-on  { background:#1a2e3a; color:#38bdf8; border:1px solid #0ea5e9; }
-  .llm-off { background:#2a2a2a; color:var(--muted); border:1px solid var(--border); }
-
-  /* 知识库引用卡 */
-  .kb-ref-card { background:var(--card); border:1px solid #2e4a6a; border-radius:8px; padding:10px 12px; margin-top:6px; font-size:11px; }
-  .kb-ref-title { color:#38bdf8; font-weight:600; margin-bottom:6px; font-size:10px; text-transform:uppercase; display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
-  .conf-bar { flex:1; min-width:60px; height:3px; background:var(--border); border-radius:2px; }
-  .conf-fill { height:100%; border-radius:2px; background:linear-gradient(90deg,#38bdf8,#6c63ff); transition:width .5s; }
-  .ref-item { display:flex; align-items:center; gap:6px; padding:3px 0; border-bottom:1px solid #1e2a3a; flex-wrap:wrap; }
-  .ref-item:last-child { border-bottom:none; }
-  .ref-badge { background:#1a2e3a; color:#38bdf8; border-radius:4px; padding:1px 6px; font-size:10px; flex-shrink:0; }
-  .ref-id { color:var(--accent); font-weight:600; font-size:10px; flex-shrink:0; }
-  .ref-q { color:var(--muted); font-size:11px; }
-
-  /* 缺口提示 */
-  .gap-card { background:#2a1e10; border:1px solid var(--warn); border-radius:8px; padding:7px 12px; margin-top:6px; font-size:11px; color:var(--warn); }
-
-  /* 响应式 */
-  @media (max-width:1100px) {
-    .layout { grid-template-columns:280px 1fr; }
-    .panel-right { display:none; }
-  }
-  @media (max-width:700px) {
-    .layout { grid-template-columns:1fr; }
-    .panel-left { display:none; }
-  }
-
-  /* ── ClaimsForge: multi-agent claims pipeline UI ─────────────────── */
-  .claim-demo-btn {
-    background: linear-gradient(135deg, #4f46e5, #7c3aed);
-    color: #fff;
-    border: none;
-    padding: 7px 16px;
-    border-radius: 8px;
-    font-size: 12px;
+  .brand-tag {
+    margin-left: 12px;
+    padding: 2px 10px;
+    background: rgba(167,139,250,.12);
+    border: 1px solid rgba(167,139,250,.28);
+    border-radius: 999px;
+    font-size: 11px;
     font-weight: 600;
-    cursor: pointer;
-    box-shadow: 0 2px 8px rgba(79, 70, 229, .35);
+    letter-spacing: .04em;
+    color: #c4b5fd;
+    text-transform: uppercase;
   }
-  .claim-demo-btn:hover { filter: brightness(1.1); }
-
-  .img-attach-btn {
-    background: transparent;
-    border: 1px solid var(--border);
+  .topbar-spacer { flex: 1; }
+  .topbar-stat {
+    display: flex; align-items: center;
+    gap: 6px;
+    font-size: 12px;
     color: var(--muted);
+    padding: 5px 12px;
     border-radius: 8px;
-    padding: 0 12px;
-    height: 38px;
-    cursor: pointer;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    margin-right: 10px;
+  }
+  .topbar-stat .v { color: var(--fg); font-weight: 700; }
+  .ws-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--emerald);
+    box-shadow: 0 0 0 3px rgba(16,185,129,.25);
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { box-shadow: 0 0 0 3px rgba(16,185,129,.25); }
+    50% { box-shadow: 0 0 0 6px rgba(16,185,129,.08); }
+  }
+
+  /* Main 3-column layout */
+  .app {
+    position: fixed;
+    top: 56px; bottom: 0; left: 0; right: 0;
+    display: grid;
+    grid-template-columns: 280px 1fr 340px;
+    gap: 0;
+  }
+  .col-left, .col-right { overflow-y: auto; }
+  .col-mid { display: flex; flex-direction: column; min-width: 0; }
+
+  /* Left column — agent pipeline */
+  .col-left {
+    border-right: 1px solid var(--line);
+    background: var(--bg-2);
+    padding: 24px 20px;
+  }
+  .section-title {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .12em;
+    color: var(--dim);
+    text-transform: uppercase;
+    margin-bottom: 14px;
+  }
+  .agent-card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 14px;
+    margin-bottom: 10px;
+    transition: all .25s;
+    position: relative;
+    overflow: hidden;
+  }
+  .agent-card.active {
+    background: var(--surface-2);
+    border-color: rgba(99,102,241,.35);
+    box-shadow: 0 0 0 1px rgba(99,102,241,.25), 0 4px 16px rgba(99,102,241,.2);
+  }
+  .agent-card.active::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 3px;
+    background: linear-gradient(180deg, #6366f1, #ec4899);
+  }
+  .agent-card.done { border-color: rgba(16,185,129,.3); }
+  .agent-card.done::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 3px;
+    background: var(--emerald);
+  }
+  .agent-card .row1 {
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 6px;
+  }
+  .agent-icon {
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
     font-size: 16px;
   }
-  .img-attach-btn:hover { color: var(--accent); border-color: var(--accent); }
-
-  .img-preview-strip {
-    display: flex;
-    gap: 8px;
-    padding: 8px 0 4px;
-    align-items: center;
-  }
-  .img-preview-strip img {
-    height: 56px;
-    width: 56px;
-    object-fit: cover;
-    border-radius: 6px;
-    border: 1px solid var(--border);
-  }
-  .img-preview-strip .remove-img {
-    color: var(--danger);
-    cursor: pointer;
-    font-size: 18px;
-    background: none;
-    border: none;
-  }
-
-  /* Agent trace line (streaming) */
-  .agent-trace-line {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 4px 0;
-    font-size: 11px;
-    color: var(--muted);
-    font-family: 'SF Mono', Monaco, monospace;
-  }
-  .agent-trace-line .agent-badge {
-    background: rgba(124, 58, 237, .15);
-    color: #a78bfa;
-    padding: 2px 8px;
-    border-radius: 4px;
-    font-weight: 600;
+  .ico-intent  { background: rgba(99,102,241,.16); }
+  .ico-emotion { background: rgba(244,63,94,.16); }
+  .ico-damage  { background: rgba(245,158,11,.16); }
+  .ico-comp    { background: rgba(16,185,129,.16); }
+  .ico-verify  { background: rgba(56,189,248,.16); }
+  .agent-name { font-size: 13px; font-weight: 700; }
+  .agent-role { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .agent-card .meta {
     font-size: 10px;
+    color: var(--dim);
+    font-family: 'JetBrains Mono', monospace;
+    margin-top: 6px;
   }
-  .agent-trace-line .agent-elapsed {
-    color: #6b7280;
-    margin-left: auto;
-  }
-
-  /* Damage / Offer cards */
-  .claim-result-card {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 14px;
-    margin-top: 8px;
-  }
-  .claim-result-card.damage { border-left: 3px solid #f59e0b; }
-  .claim-result-card.offer  { border-left: 3px solid #10b981; }
-  .claim-result-card.verify { border-left: 3px solid #3b82f6; }
-  .claim-result-card.escalated { border-left: 3px solid #ef4444; }
-
-  .claim-card-title {
+  .agent-card .last-output {
     font-size: 11px;
-    font-weight: 600;
-    color: var(--muted);
-    text-transform: uppercase;
-    letter-spacing: .05em;
-    margin-bottom: 8px;
+    color: #c4b5fd;
+    margin-top: 8px;
+    padding: 6px 8px;
+    background: rgba(99,102,241,.06);
+    border-radius: 6px;
+    line-height: 1.4;
+    border-left: 2px solid rgba(99,102,241,.4);
   }
-  .damage-row {
+
+  /* Middle column — chat */
+  .col-mid {
+    background: var(--bg);
+  }
+  .scenario-bar {
+    border-bottom: 1px solid var(--line);
+    padding: 14px 28px;
     display: flex;
-    gap: 12px;
     align-items: center;
-    margin-bottom: 6px;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .sc-label {
+    font-size: 11px;
+    color: var(--dim);
+    text-transform: uppercase;
+    letter-spacing: .1em;
+    margin-right: 4px;
+  }
+  .sc-btn {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 6px 12px;
+    color: var(--muted);
+    font-size: 12px;
+    cursor: pointer;
+    transition: all .15s;
+    font-weight: 500;
+  }
+  .sc-btn:hover {
+    background: var(--surface-2);
+    color: var(--fg);
+    border-color: var(--line-strong);
+  }
+  .sc-btn.angry { color: #fda4af; border-color: rgba(244,63,94,.3); }
+  .sc-btn.angry:hover { background: rgba(244,63,94,.1); color: #fda4af; }
+  .sc-clear {
+    margin-left: auto;
+    color: var(--dim);
+    background: transparent;
+    border: none;
+    cursor: pointer;
     font-size: 12px;
   }
-  .damage-thumb {
-    width: 72px;
-    height: 72px;
+  .sc-clear:hover { color: var(--rose); }
+
+  .chat-area {
+    flex: 1;
+    overflow-y: auto;
+    padding: 28px;
+    scroll-behavior: smooth;
+  }
+  .chat-area::-webkit-scrollbar { width: 6px; }
+  .chat-area::-webkit-scrollbar-thumb { background: var(--line); border-radius: 3px; }
+
+  .empty-chat {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: var(--dim);
+    text-align: center;
+    gap: 12px;
+  }
+  .empty-chat .big {
+    font-size: 32px;
+    font-weight: 800;
+    background: linear-gradient(135deg, #a78bfa, #ec4899);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    letter-spacing: -0.02em;
+  }
+  .empty-chat .small {
+    font-size: 13px;
+    color: var(--muted);
+    max-width: 480px;
+    line-height: 1.55;
+  }
+  .empty-chat .small kbd {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 1px 6px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+  }
+
+  /* Messages */
+  .msg {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 24px;
+    max-width: 820px;
+  }
+  .msg.user { flex-direction: row-reverse; margin-left: auto; }
+  .msg-av {
+    width: 30px; height: 30px;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px;
+    flex-shrink: 0;
+  }
+  .msg.user .msg-av { background: linear-gradient(135deg, #6366f1, #a78bfa); }
+  .msg.bot .msg-av {
+    background: linear-gradient(135deg, #111827, #1f2937);
+    border: 1px solid var(--line-strong);
+  }
+  .msg-body { flex: 1; min-width: 0; }
+  .msg.user .msg-body { display: flex; justify-content: flex-end; }
+  .msg-bubble {
+    display: inline-block;
+    max-width: 100%;
+    padding: 12px 16px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    font-size: 14px;
+    line-height: 1.55;
+    color: var(--fg);
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+  .msg.user .msg-bubble {
+    background: linear-gradient(135deg, rgba(99,102,241,.18), rgba(167,139,250,.12));
+    border-color: rgba(99,102,241,.3);
+  }
+
+  /* Agent trace timeline (during processing) */
+  .trace-card {
+    margin-top: 10px;
+    background: var(--bg-3);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 12px 14px;
+    font-family: 'JetBrains Mono', monospace;
+    max-width: 780px;
+  }
+  .trace-line {
+    display: grid;
+    grid-template-columns: 14px 130px 1fr auto;
+    align-items: center;
+    gap: 10px;
+    padding: 5px 0;
+    font-size: 11.5px;
+    color: var(--muted);
+    opacity: 0;
+    animation: fadeIn .3s forwards;
+  }
+  @keyframes fadeIn { to { opacity: 1; } }
+  .trace-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--emerald);
+  }
+  .trace-dot.running {
+    background: var(--amber);
+    animation: pulse 1s infinite;
+  }
+  .trace-dot.error { background: var(--rose); }
+  .trace-agent {
+    font-weight: 600;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+  }
+  .trace-agent.intent { color: #818cf8; }
+  .trace-agent.emotion { color: #fda4af; }
+  .trace-agent.damage { color: #fbbf24; }
+  .trace-agent.comp { color: #34d399; }
+  .trace-agent.verify { color: #7dd3fc; }
+  .trace-summary { color: var(--fg); font-size: 11.5px; }
+  .trace-time { color: var(--dim); font-size: 10px; }
+
+  /* Result cards */
+  .result-card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 16px;
+    margin-top: 10px;
+    max-width: 780px;
+    transition: all .25s;
+  }
+  .rc-header {
+    display: flex; align-items: center; gap: 10px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--violet);
+    margin-bottom: 10px;
+  }
+  .result-card.emotion { border-left: 3px solid #f43f5e; }
+  .result-card.emotion .rc-header { color: #fda4af; }
+  .result-card.damage { border-left: 3px solid #f59e0b; }
+  .result-card.damage .rc-header { color: #fbbf24; }
+  .result-card.offer { border-left: 3px solid #10b981; }
+  .result-card.offer .rc-header { color: #34d399; }
+  .result-card.verify { border-left: 3px solid #38bdf8; }
+  .result-card.verify .rc-header { color: #7dd3fc; }
+  .result-card.escalated { border-left: 3px solid #ef4444; }
+  .result-card.escalated .rc-header { color: #fca5a5; }
+
+  .emotion-grid { display: grid; grid-template-columns: 1fr 2fr; gap: 14px; }
+  .emo-score-display {
+    text-align: center;
+    padding: 12px;
+    background: var(--bg-3);
+    border-radius: 10px;
+  }
+  .emo-score-num {
+    font-size: 36px;
+    font-weight: 800;
+    line-height: 1;
+    background: linear-gradient(135deg, #fda4af, #f43f5e);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .emo-score-label { font-size: 11px; color: var(--muted); margin-top: 4px; text-transform: uppercase; letter-spacing: .08em; }
+  .risk-pill {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+  }
+  .risk-LOW { background: rgba(16,185,129,.15); color: #6ee7b7; }
+  .risk-MEDIUM { background: rgba(245,158,11,.15); color: #fcd34d; }
+  .risk-HIGH { background: rgba(244,63,94,.18); color: #fda4af; }
+  .risk-CRITICAL { background: rgba(239,68,68,.22); color: #fca5a5; box-shadow: 0 0 0 1px rgba(239,68,68,.3); }
+  .emo-triggers { font-size: 12px; color: var(--muted); margin-top: 6px; }
+  .emo-trigger {
+    display: inline-block;
+    padding: 2px 8px;
+    margin: 2px 4px 2px 0;
+    background: rgba(244,63,94,.1);
+    border: 1px solid rgba(244,63,94,.2);
+    color: #fda4af;
     border-radius: 6px;
+    font-size: 11px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .emo-signal {
+    display: block;
+    font-size: 11px;
+    color: #fbbf24;
+    margin-top: 4px;
+  }
+  .emo-signal::before { content: '⚠ '; }
+
+  .damage-grid { display: grid; grid-template-columns: 90px 1fr; gap: 14px; align-items: start; }
+  .damage-thumb {
+    width: 90px; height: 90px;
     object-fit: cover;
-    border: 1px solid var(--border);
+    border-radius: 8px;
+    border: 1px solid var(--line);
   }
   .severity-bar {
-    flex: 1;
     height: 6px;
-    background: #374151;
+    background: var(--bg-3);
     border-radius: 3px;
     overflow: hidden;
+    margin: 6px 0;
   }
   .severity-fill {
     height: 100%;
     background: linear-gradient(90deg, #10b981 0%, #f59e0b 50%, #ef4444 100%);
+    border-radius: 3px;
+    transition: width .6s cubic-bezier(.4,0,.2,1);
   }
+  .dmg-row { display: flex; justify-content: space-between; align-items: center; font-size: 13px; }
+  .dmg-row .v { font-weight: 700; color: var(--fg); }
   .chip {
     display: inline-block;
-    background: rgba(245, 158, 11, .15);
-    color: #fbbf24;
-    padding: 2px 8px;
-    border-radius: 12px;
-    font-size: 10px;
-    margin-right: 4px;
-  }
-  .offer-amount {
-    font-size: 24px;
-    font-weight: 700;
-    color: #10b981;
-    margin: 4px 0;
-  }
-  .offer-type-pill {
-    display: inline-block;
-    background: rgba(16, 185, 129, .15);
-    color: #34d399;
-    padding: 3px 10px;
-    border-radius: 12px;
+    padding: 3px 9px;
+    margin: 3px 4px 3px 0;
+    background: rgba(245,158,11,.1);
+    border: 1px solid rgba(245,158,11,.25);
+    color: #fcd34d;
+    border-radius: 6px;
     font-size: 11px;
-    font-weight: 600;
-    text-transform: uppercase;
+    font-family: 'JetBrains Mono', monospace;
   }
-  .policy-ref {
-    color: #9ca3af;
-    font-size: 10px;
-    margin-top: 4px;
-    font-family: 'SF Mono', Monaco, monospace;
+  .reasoning-quote {
+    margin-top: 10px;
+    padding: 8px 12px;
+    background: var(--bg-3);
+    border-left: 2px solid #f59e0b;
+    border-radius: 6px;
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.5;
+    font-style: italic;
   }
 
-  /* Demo scenario modal */
-  .demo-modal-backdrop {
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, .65);
-    z-index: 1000;
+  .offer-amount {
+    font-size: 40px;
+    font-weight: 900;
+    line-height: 1;
+    letter-spacing: -0.03em;
+    background: linear-gradient(135deg, #34d399, #10b981);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .offer-type {
+    display: inline-block;
+    padding: 4px 12px;
+    margin-top: 8px;
+    background: rgba(16,185,129,.12);
+    border: 1px solid rgba(16,185,129,.3);
+    color: #6ee7b7;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+  }
+  .offer-just {
+    font-size: 13px;
+    color: #e5e7eb;
+    line-height: 1.55;
+    margin-top: 12px;
+  }
+  .offer-policy {
+    margin-top: 8px;
+    font-size: 10px;
+    color: var(--dim);
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .verdict-pill {
+    display: inline-block;
+    padding: 3px 12px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+  }
+  .verdict-approve { background: rgba(16,185,129,.15); color: #6ee7b7; }
+  .verdict-revise { background: rgba(245,158,11,.15); color: #fcd34d; }
+  .verdict-escalate_to_human { background: rgba(239,68,68,.18); color: #fca5a5; }
+
+  .final-reply {
+    margin-top: 14px;
+    padding: 14px 16px;
+    background: rgba(16,185,129,.06);
+    border: 1px solid rgba(16,185,129,.25);
+    border-radius: 12px;
+    font-size: 14px;
+    line-height: 1.6;
+    color: #e5e7eb;
+    white-space: pre-wrap;
+  }
+  .final-reply::before {
+    content: 'CUSTOMER SEES';
+    display: block;
+    font-size: 10px;
+    color: #34d399;
+    font-weight: 700;
+    letter-spacing: .1em;
+    margin-bottom: 8px;
+  }
+
+  /* Input area */
+  .input-area {
+    border-top: 1px solid var(--line);
+    padding: 16px 28px;
+    background: var(--bg-2);
+  }
+  .img-preview-strip {
+    display: none;
+    gap: 8px;
+    padding-bottom: 10px;
+    align-items: center;
+  }
+  .img-preview-strip.shown { display: flex; }
+  .img-preview-strip img {
+    width: 48px; height: 48px;
+    object-fit: cover;
+    border-radius: 6px;
+    border: 1px solid var(--line);
+  }
+  .img-preview-label { font-size: 11px; color: var(--muted); }
+  .img-remove {
+    margin-left: auto;
+    background: none;
+    border: none;
+    color: var(--rose);
+    cursor: pointer;
+    font-size: 18px;
+  }
+  .input-row {
+    display: flex;
+    gap: 10px;
+    align-items: flex-end;
+    background: var(--bg);
+    border: 1px solid var(--line-strong);
+    border-radius: 14px;
+    padding: 10px 12px;
+    transition: border-color .15s;
+  }
+  .input-row:focus-within { border-color: rgba(99,102,241,.5); }
+  .input-attach {
+    background: transparent;
+    border: none;
+    color: var(--muted);
+    font-size: 18px;
+    cursor: pointer;
+    padding: 6px 8px;
+    border-radius: 6px;
+    transition: all .15s;
+  }
+  .input-attach:hover { color: var(--violet); background: var(--surface); }
+  .input-box {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: var(--fg);
+    font-family: inherit;
+    font-size: 14px;
+    line-height: 1.5;
+    resize: none;
+    outline: none;
+    min-height: 24px;
+    max-height: 120px;
+  }
+  .input-box::placeholder { color: var(--dim); }
+  .input-send {
+    background: linear-gradient(135deg, #6366f1, #a78bfa);
+    border: none;
+    color: white;
+    width: 36px; height: 36px;
+    border-radius: 9px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all .15s;
+    box-shadow: 0 4px 12px rgba(99,102,241,.35);
+  }
+  .input-send:hover { transform: translateY(-1px); box-shadow: 0 6px 16px rgba(99,102,241,.5); }
+  .input-send:disabled { opacity: .4; cursor: not-allowed; transform: none; }
+  .input-hint {
+    font-size: 10px;
+    color: var(--dim);
+    margin-top: 8px;
+    display: flex;
+    justify-content: space-between;
+  }
+  .input-hint kbd {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    padding: 0 4px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+  }
+
+  /* Right column — telemetry */
+  .col-right {
+    border-left: 1px solid var(--line);
+    background: var(--bg-2);
+    padding: 24px 20px;
+  }
+  .right-section { margin-bottom: 28px; }
+  .stat-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 12px;
+  }
+  .stat-num { font-size: 22px; font-weight: 800; letter-spacing: -0.02em; color: var(--fg); }
+  .stat-label { font-size: 10px; color: var(--muted); margin-top: 2px; text-transform: uppercase; letter-spacing: .08em; }
+
+  .learn-item {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 10px 12px;
+    margin-bottom: 8px;
+    font-size: 11px;
+    line-height: 1.5;
+  }
+  .learn-item .li-meta { color: var(--dim); font-size: 10px; margin-top: 4px; }
+  .learn-item .li-title { color: var(--fg); }
+  .learn-item .li-outcome {
+    display: inline-block;
+    margin-left: 4px;
+    padding: 1px 6px;
+    background: rgba(16,185,129,.12);
+    color: #6ee7b7;
+    border-radius: 4px;
+    font-size: 10px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .learn-item.escalated .li-outcome { background: rgba(239,68,68,.15); color: #fca5a5; }
+
+  /* Demo modal */
+  .demo-backdrop {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,.75);
+    backdrop-filter: blur(8px);
+    z-index: 200;
     display: none;
     align-items: center;
     justify-content: center;
+    padding: 20px;
   }
-  .demo-modal-backdrop.open { display: flex; }
+  .demo-backdrop.open { display: flex; }
   .demo-modal {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 24px;
-    max-width: 720px;
-    width: 92%;
+    background: var(--bg-2);
+    border: 1px solid var(--line-strong);
+    border-radius: 18px;
+    padding: 28px;
+    max-width: 920px;
+    width: 100%;
     max-height: 88vh;
     overflow-y: auto;
+    box-shadow: 0 30px 100px rgba(0,0,0,.6);
   }
-  .demo-modal h2 { margin: 0 0 6px; font-size: 18px; }
-  .demo-modal p { color: var(--muted); font-size: 12px; margin: 0 0 16px; }
-  .demo-scenarios-grid {
+  .demo-modal h2 {
+    font-size: 22px;
+    margin-bottom: 6px;
+    background: linear-gradient(135deg, #a78bfa, #ec4899);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .demo-modal p { font-size: 13px; color: var(--muted); margin-bottom: 18px; }
+  .demo-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 12px;
+    gap: 14px;
   }
-  .demo-scenario-card {
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 12px;
+  .demo-card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 14px;
     cursor: pointer;
-    transition: transform .15s, border-color .15s;
+    transition: all .2s;
   }
-  .demo-scenario-card:hover {
+  .demo-card:hover {
     transform: translateY(-2px);
-    border-color: var(--accent);
+    border-color: rgba(99,102,241,.4);
+    box-shadow: 0 8px 24px rgba(0,0,0,.4);
   }
-  .demo-scenario-card img {
-    width: 100%;
-    height: 120px;
+  .demo-card img {
+    width: 100%; height: 110px;
     object-fit: cover;
-    border-radius: 6px;
-    margin-bottom: 8px;
+    border-radius: 8px;
+    margin-bottom: 10px;
   }
-  .demo-scenario-card .ds-title { font-weight: 600; font-size: 13px; }
-  .demo-scenario-card .ds-desc { color: var(--muted); font-size: 11px; margin-top: 4px; }
-  .demo-scenario-card .ds-outcome { color: #10b981; font-size: 10px; margin-top: 6px; font-family: 'SF Mono', Monaco, monospace; }
-  .demo-modal-close {
-    float: right;
+  .demo-card .dt { font-weight: 700; font-size: 14px; }
+  .demo-card .dd { color: var(--muted); font-size: 11px; margin-top: 4px; line-height: 1.4; }
+  .demo-card .do {
+    color: #6ee7b7;
+    font-size: 10px;
+    margin-top: 8px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .demo-close {
+    position: absolute;
+    top: 16px; right: 20px;
     background: none;
     border: none;
     color: var(--muted);
-    font-size: 20px;
+    font-size: 22px;
     cursor: pointer;
   }
 </style>
 </head>
 <body>
 
-<!-- 顶栏 -->
 <div class="topbar">
-  <div class="logo">
-    <div class="logo-icon">🤖</div>
-    <div>
-      <span class="logo-text">AI 数字客服团队</span>
-      <span class="logo-version">3.0</span>
-    </div>
+  <div class="brand">
+    <div class="brand-mark"></div>
+    <span class="brand-name">ClaimsForge</span>
+    <span class="brand-tag">Multi-Agent · Gemini 2.5</span>
   </div>
-  <div style="display:flex;align-items:center;gap:16px">
-    <div style="display:flex;align-items:center">
-      <div class="status-dot" id="wsDot"></div>
-      <span class="status-text" id="wsStatus">连接中...</span>
-    </div>
-    <button onclick="triggerDailyReport()" style="font-size:11px;padding:5px 12px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;">📊 生成日报</button>
-    <button onclick="triggerMorningBrief()" style="font-size:11px;padding:5px 12px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;">☀️ 晨报</button>
-    <button onclick="rebuildVectorIndex()" id="rebuildBtn" style="font-size:11px;padding:5px 12px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;">🔧 重建索引</button>
-  </div>
+  <div class="topbar-spacer"></div>
+  <div class="topbar-stat"><span class="ws-dot" id="wsDot"></span><span id="wsLabel">Connected</span></div>
+  <div class="topbar-stat">Avg latency <span class="v" id="avgLatency">—</span></div>
+  <div class="topbar-stat">Claims today <span class="v" id="claimsCount">0</span></div>
 </div>
 
-<!-- 主布局 -->
-<div class="layout">
+<div class="app">
 
-  <!-- 左侧：Agent团队 -->
-  <div class="panel-left">
-    <div class="panel-title">AI 数字团队</div>
-    <div class="agent-list">
-      <div class="agent-card active" id="agent-conv">
-        <div class="agent-header">
-          <div class="agent-avatar av-conversation">🧠</div>
-          <div>
-            <div class="agent-name">CONVERSATION ENGINE</div>
-            <div class="agent-role">对话引擎 · 情绪分析 · 需求挖掘</div>
-          </div>
-          <span class="agent-status status-active" id="conv-status">运行中</span>
-        </div>
-        <div class="agent-desc">整合 RESPONDER + ANALYZER，RAG精准检索，单次调用完成情绪评分+需求挖掘+回复生成</div>
-        <div class="agent-metrics">
-          <div class="metric">命中率 <span id="hit-rate">—</span></div>
-          <div class="metric">对话数 <span id="total-conv">0</span></div>
+  <!-- LEFT: Pipeline -->
+  <aside class="col-left">
+    <div class="section-title">Pipeline · 5 specialists</div>
+
+    <div class="agent-card" id="agent-intent">
+      <div class="row1">
+        <div class="agent-icon ico-intent">🎯</div>
+        <div>
+          <div class="agent-name">IntentAgent</div>
+          <div class="agent-role">Classify · extract order_id</div>
         </div>
       </div>
-
-      <div class="agent-card" id="agent-kb">
-        <div class="agent-header">
-          <div class="agent-avatar av-knowledge">📚</div>
-          <div>
-            <div class="agent-name">KNOWLEDGE PIPELINE</div>
-            <div class="agent-role">知识管道 · 自动更新 · 缺口识别</div>
-          </div>
-          <span class="agent-status status-active" id="kb-status">运行中</span>
-        </div>
-        <div class="agent-desc">事件驱动自动维护知识库，识别未命中问题，接收满意度差评反哺，持续进化</div>
-        <div class="agent-metrics">
-          <div class="metric">条目 <span id="kb-entries">—</span></div>
-          <div class="metric">缺口 <span id="kb-gaps">—</span></div>
-        </div>
-      </div>
-
-      <div class="agent-card" id="agent-esc">
-        <div class="agent-header">
-          <div class="agent-avatar av-escalation">🚨</div>
-          <div>
-            <div class="agent-name">ESCALATION DECISION</div>
-            <div class="agent-role">客服组长 · 赔偿决策 · 升级路由</div>
-          </div>
-          <span class="agent-status status-idle" id="esc-status">待命中</span>
-        </div>
-        <div class="agent-desc">接管高风险/赔偿工单。&lt;¥50 自主决策；≥¥50 推送微信审批。SLA：赔偿2分钟/危机5分钟</div>
-        <div class="agent-metrics">
-          <div class="metric">升级数 <span id="total-esc">0</span></div>
-          <div class="metric">待处理 <span id="pending-tickets">0</span></div>
-        </div>
-      </div>
-
-      <div class="agent-card" id="agent-obs">
-        <div class="agent-header">
-          <div class="agent-avatar av-observer">👁️</div>
-          <div>
-            <div class="agent-name">OBSERVER</div>
-            <div class="agent-role">督导 · 满意度 · 日报 · COACH</div>
-          </div>
-          <span class="agent-status status-active" id="obs-status">监控中</span>
-        </div>
-        <div class="agent-desc">全链路监控+满意度追踪+案例分析。每日18:00发邮件日报，08:00生成晨报供早会使用</div>
-        <div class="agent-metrics">
-          <div class="metric">满意度 <span id="avg-sat">—</span></div>
-          <div class="metric">评分数 <span id="total-ratings">0</span></div>
-        </div>
-      </div>
+      <div class="meta">gemini-2.5-flash · function-calling</div>
+      <div class="last-output" id="lo-intent" style="display:none"></div>
     </div>
 
-    <!-- 事件流 -->
-    <div class="event-stream">
-      <div class="panel-title">实时事件流</div>
-      <div class="event-list" id="eventList">
-        <div class="event-item">
-          <div class="event-dot ev-info"></div>
-          <div class="event-text">系统启动，所有 Agent 就绪</div>
-          <div class="event-time" id="startTime"></div>
+    <div class="agent-card" id="agent-emotion">
+      <div class="row1">
+        <div class="agent-icon ico-emotion">💗</div>
+        <div>
+          <div class="agent-name">EmotionAgent</div>
+          <div class="agent-role">Affect grading · risk routing</div>
         </div>
       </div>
+      <div class="meta">gemini-2.5-flash · LOW/MED/HIGH/CRITICAL</div>
+      <div class="last-output" id="lo-emotion" style="display:none"></div>
     </div>
-  </div>
 
-  <!-- 中间：对话区 -->
-  <div class="panel-mid">
-    <!-- 场景选择 -->
+    <div class="agent-card" id="agent-damage">
+      <div class="row1">
+        <div class="agent-icon ico-damage">📸</div>
+        <div>
+          <div class="agent-name">DamageAgent</div>
+          <div class="agent-role">Vision · severity 0–10</div>
+        </div>
+      </div>
+      <div class="meta">gemini-2.5-flash vision · structured</div>
+      <div class="last-output" id="lo-damage" style="display:none"></div>
+    </div>
+
+    <div class="agent-card" id="agent-comp">
+      <div class="row1">
+        <div class="agent-icon ico-comp">💰</div>
+        <div>
+          <div class="agent-name">CompensationAgent</div>
+          <div class="agent-role">Policy DSL · 26 rules · 93 KB</div>
+        </div>
+      </div>
+      <div class="meta">gemini-2.5-flash · RAG merchant wisdom</div>
+      <div class="last-output" id="lo-comp" style="display:none"></div>
+    </div>
+
+    <div class="agent-card" id="agent-verify">
+      <div class="row1">
+        <div class="agent-icon ico-verify">✅</div>
+        <div>
+          <div class="agent-name">VerifierAgent</div>
+          <div class="agent-role">Hard caps · tone review</div>
+        </div>
+      </div>
+      <div class="meta">gemini-2.5-flash · 1-revise loop</div>
+      <div class="last-output" id="lo-verify" style="display:none"></div>
+    </div>
+
+    <div class="section-title" style="margin-top: 32px;">Resources</div>
+    <a href="https://github.com/zhenyueD/claimsforge" target="_blank" rel="noopener" style="display:block;font-size:12px;color:var(--muted);text-decoration:none;padding:8px 0;border-bottom:1px solid var(--line);">
+      <span style="color:var(--violet);">→</span> GitHub repo
+    </a>
+    <a href="#" onclick="openDemoModal();return false;" style="display:block;font-size:12px;color:var(--muted);text-decoration:none;padding:8px 0;border-bottom:1px solid var(--line);">
+      <span style="color:var(--violet);">→</span> Run a demo scenario
+    </a>
+    <a href="/api/claimsforge/health" target="_blank" style="display:block;font-size:12px;color:var(--muted);text-decoration:none;padding:8px 0;">
+      <span style="color:var(--violet);">→</span> System health
+    </a>
+  </aside>
+
+  <!-- MIDDLE: Chat -->
+  <main class="col-mid">
     <div class="scenario-bar">
-      <span class="scenario-label">快速场景：</span>
-      <button class="scenario-btn" onclick="loadScenario('refund', this)">💸 退款投诉</button>
-      <button class="scenario-btn" onclick="loadScenario('compensation', this)">⚠️ 赔偿索赔</button>
-      <button class="scenario-btn" onclick="loadScenario('tech', this)">🔧 技术问题</button>
-      <button class="scenario-btn" onclick="loadScenario('inquiry', this)">❓ 功能咨询</button>
-      <button class="scenario-btn" onclick="loadScenario('angry', this)">😡 情绪激动</button>
-      <button class="claim-demo-btn" onclick="openClaimDemo()" style="margin-left:auto" title="一键试 ClaimsForge 4-agent 理赔流水线">🔥 试 Claim Demo</button>
-      <button class="scenario-btn" onclick="clearChat()" style="color:var(--danger)">🗑 清空</button>
+      <span class="sc-label">Try a scenario</span>
+      <button class="sc-btn" onclick="loadScenario('mug-crack')">📦 Cracked mug · $24</button>
+      <button class="sc-btn" onclick="loadScenario('laptop-scratch')">💻 Scratched laptop · $800</button>
+      <button class="sc-btn" onclick="loadScenario('jacket-tear')">🧥 Torn jacket · $199</button>
+      <button class="sc-btn angry" onclick="loadScenario('angry-customer')">😡 Angry customer + legal threat</button>
+      <button class="sc-btn" onclick="loadScenario('vague')">❓ Vague claim (low evidence)</button>
+      <button class="sc-clear" onclick="clearChat()">Clear</button>
     </div>
 
-    <!-- 消息列表 -->
     <div class="chat-area" id="chatArea">
       <div class="empty-chat" id="emptyState">
-        <div class="empty-icon">💬</div>
-        <div class="empty-text">选择场景或直接输入消息，体验 AI 客服团队 3.0</div>
-      </div>
-    </div>
-
-    <!-- 输入区 -->
-    <div class="chat-input-area">
-      <div id="imgPreviewStrip" class="img-preview-strip" style="display:none"></div>
-      <div class="chat-input-wrap">
-        <button class="img-attach-btn" onclick="document.getElementById('claimImageInput').click()" title="上传商品损坏照片（触发 ClaimsForge 4 agent 流水线）">📎</button>
-        <input type="file" id="claimImageInput" accept="image/jpeg,image/png,image/webp" style="display:none" onchange="handleImageSelected(event)" />
-        <textarea class="chat-input" id="chatInput" placeholder="输入消息... (Enter发送，Shift+Enter换行)" rows="1" maxlength="2000" aria-label="聊天输入框"></textarea>
-        <button class="send-btn" id="sendBtn" onclick="sendMessage()" aria-label="发送消息">➤</button>
-      </div>
-      <div class="input-hint">当前会话 ID：<span id="sessionIdDisplay">—</span> · 上传图片自动触发理赔 agent 流水线</div>
-    </div>
-  </div>
-
-  <!-- Claim Demo Modal -->
-  <div id="claimDemoBackdrop" class="demo-modal-backdrop" onclick="closeClaimDemo(event)">
-    <div class="demo-modal" onclick="event.stopPropagation()">
-      <button class="demo-modal-close" onclick="closeClaimDemo()" aria-label="关闭">✕</button>
-      <h2>🔥 ClaimsForge 一键演示</h2>
-      <p>选一个场景。系统会自动加载商品损坏图 + 客户文字描述，调用 4 个 Gemini Agent 流水线（Intent → Damage → Compensation → Verifier）实时给出赔付方案。</p>
-      <div id="demoScenariosGrid" class="demo-scenarios-grid">载入中…</div>
-    </div>
-  </div>
-
-  <!-- 右侧：监控面板 -->
-  <div class="panel-right">
-    <!-- 模块健康度 -->
-    <div class="section">
-      <div class="section-title">模块健康度</div>
-      <div class="health-grid">
-        <div class="health-item">
-          <div class="health-name">对话引擎</div>
-          <div class="health-status" id="h-conv">—</div>
-          <div class="health-metric" id="hm-conv">—</div>
-        </div>
-        <div class="health-item">
-          <div class="health-name">知识管道</div>
-          <div class="health-status" id="h-kb">—</div>
-          <div class="health-metric" id="hm-kb">—</div>
-        </div>
-        <div class="health-item">
-          <div class="health-name">升级引擎</div>
-          <div class="health-status" id="h-esc">—</div>
-          <div class="health-metric" id="hm-esc">—</div>
-        </div>
-        <div class="health-item">
-          <div class="health-name">满意度</div>
-          <div class="health-status" id="h-sat">—</div>
-          <div class="health-metric" id="hm-sat">—</div>
+        <div class="big">Resolve a damage claim in 8 seconds.</div>
+        <div class="small">
+          Upload a photo of the damaged item and describe the problem.<br/>
+          Five specialist agents run in sequence, propose compensation,<br/>
+          verify against policy, and reply in the customer's own language.<br/><br/>
+          Pick a scenario above, or attach an image with <kbd>📎</kbd> and hit <kbd>Enter</kbd>.
         </div>
       </div>
     </div>
 
-    <!-- 实时指标 -->
-    <div class="section">
-      <div class="section-title">实时指标</div>
-      <div class="metrics-row">
-        <div class="metric-card">
-          <div class="metric-val" id="m-total">0</div>
-          <div class="metric-label">总对话</div>
-        </div>
-        <div class="metric-card">
-          <div class="metric-val" id="m-esc">0</div>
-          <div class="metric-label">升级工单</div>
-        </div>
-        <div class="metric-card">
-          <div class="metric-val" id="m-sat">—</div>
-          <div class="metric-label">满意度均分</div>
-        </div>
-        <div class="metric-card">
-          <div class="metric-val" id="m-kb">0</div>
-          <div class="metric-label">知识条目</div>
-        </div>
+    <div class="input-area">
+      <div id="imgPreview" class="img-preview-strip"></div>
+      <div class="input-row">
+        <button class="input-attach" onclick="document.getElementById('imgInput').click()" title="Attach a damage photo">📎</button>
+        <input type="file" id="imgInput" accept="image/jpeg,image/png,image/webp" style="display:none" onchange="onImagePicked(event)" />
+        <textarea class="input-box" id="chatInput" placeholder="Describe what went wrong with your order…" rows="1"></textarea>
+        <button class="input-send" id="sendBtn" onclick="sendMessage()">→</button>
+      </div>
+      <div class="input-hint">
+        <span>Session <span id="sessionIdShow" class="mono">—</span></span>
+        <span><kbd>Enter</kbd> to send · <kbd>Shift+Enter</kbd> newline · 📎 to add a photo</span>
+      </div>
+    </div>
+  </main>
+
+  <!-- RIGHT: Telemetry / Learning queue -->
+  <aside class="col-right">
+    <div class="right-section">
+      <div class="section-title">Live metrics</div>
+      <div class="stat-grid">
+        <div class="stat-card"><div class="stat-num" id="m-resolved">0</div><div class="stat-label">Auto-resolved</div></div>
+        <div class="stat-card"><div class="stat-num" id="m-escalated">0</div><div class="stat-label">Escalated</div></div>
+        <div class="stat-card"><div class="stat-num" id="m-avg-amt">$0</div><div class="stat-label">Avg offer</div></div>
+        <div class="stat-card"><div class="stat-num" id="m-p50">—</div><div class="stat-label">p50 latency</div></div>
       </div>
     </div>
 
-    <!-- 工单列表 -->
-    <div class="section">
-      <div class="section-title">最新工单 <span class="badge" id="ticketBadge">0</span></div>
-      <div class="ticket-list" id="ticketList" style="max-height:300px;overflow-y:auto;">
-        <div style="font-size:11px;color:var(--muted);padding:0 0 8px">暂无工单</div>
+    <div class="right-section">
+      <div class="section-title">Learning queue · live</div>
+      <div id="learningList" style="font-size: 11px; color: var(--muted);">
+        Waiting for the first claim of the session…
       </div>
     </div>
 
-    <!-- 知识库概览 -->
-    <div class="section">
-      <div class="section-title">知识库概览</div>
-      <div class="kb-stats" id="kbStats">
-        <div style="font-size:11px;color:var(--muted)">加载中...</div>
+    <div class="right-section">
+      <div class="section-title">Differentiators</div>
+      <div style="font-size:11px;color:var(--muted);line-height:1.55;">
+        <div style="margin-bottom:6px;"><span style="color:var(--violet);">▸</span> Multimodal Gemini Vision (not OCR)</div>
+        <div style="margin-bottom:6px;"><span style="color:var(--violet);">▸</span> Explicit emotion-aware uplift</div>
+        <div style="margin-bottom:6px;"><span style="color:var(--violet);">▸</span> 26 policies + 93 merchant wisdom entries</div>
+        <div style="margin-bottom:6px;"><span style="color:var(--violet);">▸</span> Live learning loop (RAG over past cases)</div>
+        <div style="margin-bottom:6px;"><span style="color:var(--violet);">▸</span> Verifier safety net + 1 revise loop</div>
+        <div><span style="color:var(--violet);">▸</span> Reply in customer's own language</div>
       </div>
     </div>
+  </aside>
+</div>
 
-    <!-- 满意度评分 -->
-    <div class="section">
-      <div class="section-title">评价本次服务</div>
-      <div class="rating-area">
-        <div class="rating-label">请为刚才的服务打分</div>
-        <div class="stars" id="starsRow">
-          <span class="star" data-v="1" onclick="selectStar(1)">⭐</span>
-          <span class="star" data-v="2" onclick="selectStar(2)">⭐</span>
-          <span class="star" data-v="3" onclick="selectStar(3)">⭐</span>
-          <span class="star" data-v="4" onclick="selectStar(4)">⭐</span>
-          <span class="star" data-v="5" onclick="selectStar(5)">⭐</span>
-        </div>
-        <input id="ratingComment" placeholder="留下评价（可选）" maxlength="500" style="margin-top:8px;width:100%;padding:6px 10px;background:var(--card2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:11px;outline:none;">
-        <button class="rating-submit" onclick="submitRating()">提交评分</button>
-      </div>
-    </div>
+<!-- Demo Modal -->
+<div id="demoBackdrop" class="demo-backdrop" onclick="closeDemoModal(event)">
+  <div class="demo-modal" onclick="event.stopPropagation()">
+    <button class="demo-close" onclick="closeDemoModal()">✕</button>
+    <h2>Run a pre-seeded claim</h2>
+    <p>Five real-world scenarios calibrated to stress different agents. Click one to fire the full pipeline live.</p>
+    <div id="demoGrid" class="demo-grid">Loading…</div>
   </div>
 </div>
 
-<!-- Toast容器 -->
-<div class="toast-container" id="toastContainer"></div>
-
 <script>
-const API = '';  // 同域
-// 修复 F-M6：使用 crypto.randomUUID 代替 Math.random()
-let sessionId = 'sess-' + (
-  (window.crypto && crypto.randomUUID)
-    ? crypto.randomUUID().replace(/-/g,'').slice(0,12)
-    : Math.random().toString(36).slice(2,14)
-);
-let currentTicketId = null;
-let selectedRating = 0;
-let ws = null;
-let lastEmotion = null;
-
-document.getElementById('sessionIdDisplay').textContent = sessionId;
-document.getElementById('startTime').textContent = new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'});
-
-// ── WebSocket ─────────────────────────────────────────────
-// 修复 F-S1/S2：完整 WebSocket 重连（指数退避 + 错误保护 + JSON parse 安全）
-let wsRetryCount = 0;
-const WS_MAX_RETRY = 10;
-let wsRetryTimer = null;
-
-function connectWS() {
-  // 防重复连接
-  if (ws && (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING)) {
-    return;
-  }
-  const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
-  try {
-    ws = new WebSocket(`${proto}//${location.host}/ws`);
-  } catch(err) {
-    console.error('WebSocket create error:', err);
-    scheduleReconnect();
-    return;
-  }
-
-  ws.onopen = () => {
-    wsRetryCount = 0;
-    if (wsRetryTimer) { clearTimeout(wsRetryTimer); wsRetryTimer = null; }
-    document.getElementById('wsDot').style.background = 'var(--success)';
-    document.getElementById('wsStatus').textContent = '已连接';
-  };
-  ws.onerror = (err) => {
-    console.warn('WebSocket error:', err);
-  };
-  ws.onclose = () => {
-    document.getElementById('wsDot').style.background = 'var(--danger)';
-    document.getElementById('wsStatus').textContent = wsRetryCount >= WS_MAX_RETRY ? '连接失败' : '断开重连中';
-    scheduleReconnect();
-  };
-  ws.onmessage = (e) => {
-    // 修复 F-S2：JSON.parse 安全保护
-    try {
-      const msg = JSON.parse(e.data);
-      handleWSEvent(msg);
-    } catch(err) {
-      console.warn('WS message parse error:', err, e.data);
-    }
-  };
-}
-
-function scheduleReconnect() {
-  if (wsRetryTimer) return;
-  if (wsRetryCount >= WS_MAX_RETRY) {
-    showToast('danger', '连接失败', '服务不可用，请刷新页面');
-    return;
-  }
-  // 指数退避：1s,2s,4s,8s,...最大 30s
-  const delay = Math.min(1000 * Math.pow(2, wsRetryCount), 30000);
-  wsRetryCount++;
-  wsRetryTimer = setTimeout(() => { wsRetryTimer = null; connectWS(); }, delay);
-}
-
-function handleWSEvent(msg) {
-  if (msg.type === 'health') updateHealth(msg.data);
-  // ClaimsForge: dispatch agent_trace events for the in-page UI to consume
-  if (msg.type === 'agent_trace' && msg.data) {
-    window.dispatchEvent(new CustomEvent('claimsforge:agent_trace', { detail: msg.data }));
-    addEvent('info', `[${msg.data.agent}] ${msg.data.summary} (${msg.data.elapsed_ms || 0}ms)`);
-  }
-  if (msg.type === 'conversation') {
-    updateMetrics();
-    addEvent('info', `新对话 · 情绪 ${msg.data.emotion?.score ?? '—'}/10 · ${msg.data.emotion?.label ?? '未知'}${msg.data.escalated ? ' · 🚨已升级':''}`);
-  }
-  if (msg.type === 'escalation') {
-    const t = msg.data;
-    addEvent('danger', `升级工单 ${t.ticket_id} · ${t.type} · ${t.requires_human ? '需人工审批':'已自动处理'}`);
-    document.getElementById('esc-status').textContent = '处理中';
-    document.getElementById('esc-status').className = 'agent-status status-busy';
-    updateTickets();
-    if (t.requires_human) {
-      showToast('danger', '⚠️ 需要人工审批', `工单 ${t.ticket_id}\n情绪评分：${t.emotion_score}/10\n已推送微信通知`);
-    }
-  }
-  if (msg.type === 'satisfaction') {
-    addEvent('success', `收到满意度评分：${msg.data.score}/5`);
-    updateMetrics();
-  }
-}
-
-// ── 场景预设 ──────────────────────────────────────────────
-const scenarios = {
-  refund: '我三天前购买了你们的套餐，发现根本用不上，要申请退款，我的订单号是ORD-2026050001',
-  compensation: '你们昨天服务中断了整整4小时，导致我损失了200元，必须给我赔偿！！',
-  tech: '我今天突然登录不了系统了，密码确认是对的，一直提示"网络错误"，很紧急！',
-  inquiry: '请问你们的产品支持对公转账付款吗？我们是企业采购',
-  angry: '你们这个系统太垃圾了！！已经出问题三次了！！！客服一直在敷衍我！你们是骗子吗！！'
-};
-
-// 修复 F-S5：不再依赖 window.event
-function loadScenario(key, btn) {
-  document.querySelectorAll('.scenario-btn').forEach(b => b.classList.remove('active'));
-  if (btn) btn.classList.add('active');
-  document.getElementById('chatInput').value = scenarios[key] || '';
-  document.getElementById('chatInput').focus();
-}
-
-// ── 对话 ──────────────────────────────────────────────────
-async function sendMessage() {
-  const input = document.getElementById('chatInput');
-  const text = input.value.trim();
-  if (!text) return;
-  // ClaimsForge: 有图片附件 → 走理赔 pipeline
-  if (attachedImage || attachedDemoId) {
-    input.value = '';
-    input.style.height = 'auto';
-    await submitClaim(text);
-    return;
-  }
-  // 修复 F-M7：前端长度限制
-  if (text.length > 2000) {
-    showToast('warn', '消息过长', '请控制在 2000 字以内');
-    return;
-  }
-
-  document.getElementById('sendBtn').disabled = true;
-  document.getElementById('emptyState').style.display = 'none';
-
-  appendMessage('user', text);
-  const typingEl = appendTyping();
-
-  try {
-    const data = await fetchJSON(`${API}/api/chat`, {
-      method: 'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({ session_id: sessionId, message: text })
-    }, 20000);
-
-    typingEl.remove();
-    lastEmotion = data.emotion;
-    if (data.ticket_id) currentTicketId = data.ticket_id;
-
-    appendBotMessage(data);
-    // 修复：发送成功后才清空输入框，失败保留内容可重发
-    input.value = '';
-    input.style.height = 'auto';
-    updateMetrics();
-    updateTickets();
-
-  } catch(err) {
-    if (typingEl && typingEl.remove) typingEl.remove();
-    const msg = (err && err.name === 'AbortError') ? '请求超时，请重试' : '⚠️ 连接服务失败：' + (err.message || '未知错误');
-    appendMessage('bot', msg);
-    showToast('warn', '发送失败', '内容已保留在输入框，可重发');
-  } finally {
-    document.getElementById('sendBtn').disabled = false;
-  }
-}
-
-function appendMessage(role, text) {
-  const area = document.getElementById('chatArea');
-  // 修复：聊天区 DOM 上限 100 条，超出移除最早的 5 条
-  const msgs = area.querySelectorAll('.msg');
-  if (msgs.length >= 100) {
-    for (let i = 0; i < 5 && msgs[i]; i++) msgs[i].remove();
-  }
-  const div = document.createElement('div');
-  div.className = `msg ${role}`;
-  const av = role === 'user' ? '<div class="msg-avatar user-av">👤</div>' : '<div class="msg-avatar bot-av">🤖</div>';
-  div.innerHTML = `${role==='bot'?av:''}<div class="msg-body"><div class="msg-bubble">${escHtml(text)}</div></div>${role==='user'?av:''}`;
-  area.appendChild(div);
-  area.scrollTop = area.scrollHeight;
-  return div;
-}
-
-function appendBotMessage(data) {
-  const area = document.getElementById('chatArea');
-  const div = document.createElement('div');
-  div.className = `msg bot ${data.escalated ? 'escalated' : ''}`;
-
-  // 修复：emotion null 兑底
-  const emotion = data.emotion || { risk: 'LOW', score: '—', label: '未知' };
-  const emClass = emotion.risk === 'HIGH' ? 'em-high' : emotion.risk === 'MEDIUM' ? 'em-med' : 'em-low';
-  const emDot = emotion.risk === 'HIGH' ? '🔴' : emotion.risk === 'MEDIUM' ? '🟡' : '🟢';
-  const llmBadge = data.used_llm
-    ? '<span class="llm-badge llm-on">✨ LLM</span>'
-    : '<span class="llm-badge llm-off">📋 模板</span>';
-
-  let extraCards = '';
-
-  // 知识库引用来源卡
-  if (data.kb_results && data.kb_results.length > 0 && data.confidence > 0) {
-    const refs = data.kb_results.map(r =>
-      `<div class="ref-item">
-        <span class="ref-badge">${escHtml(r.category)}</span>
-        <span class="ref-id">${escHtml(r.id)}</span>
-        <span class="ref-q">${escHtml(r.question)}</span>
-      </div>`
-    ).join('');
-    extraCards += `
-    <div class="kb-ref-card">
-      <div class="kb-ref-title">📎 知识库引用 · 置信度 ${(data.confidence*100).toFixed(0)}%
-        <div class="conf-bar"><div class="conf-fill" style="width:${(data.confidence*100).toFixed(0)}%"></div></div>
-      </div>
-      ${refs}
-    </div>`;
-  } else if (data.confidence < 0.3) {
-    extraCards += `<div class="gap-card">⚠️ 未命中知识库，已记录至缺口队列，1个工作日内补充</div>`;
-  }
-
-  // 情绪+需求挖掘卡
-  if (data.needs) {
-    const n = data.needs;
-    const retPct = (n.retention_score / 10 * 100).toFixed(0);
-    extraCards += `
-    <div class="needs-card">
-      <div class="needs-title">🔍 ANALYZER · 需求挖掘</div>
-      <div class="needs-row"><span class="needs-label">表层需求：</span><span class="needs-value">${escHtml(n.surface_need)}</span></div>
-      <div class="needs-row"><span class="needs-label">潜在需求：</span><span class="needs-value">${escHtml(n.latent_need)}</span></div>
-      <div class="needs-row"><span class="needs-label">情感需求：</span><span class="needs-value">${escHtml(n.emotional_need)}</span></div>
-      <div class="needs-row"><span class="needs-label">话术建议：</span><span class="needs-value">${escHtml(n.suggested_tone)}</span></div>
-      <div class="needs-row"><span class="needs-label">留存可能性：</span><span class="needs-value">${n.retention_score}/10</span></div>
-      <div class="retention-bar"><div class="retention-fill" style="width:${retPct}%"></div></div>
-    </div>`;
-  }
-
-  // 升级卡
-  if (data.escalated) {
-    const ticketId = data.ticket_id || '生成中';
-    extraCards += `
-    <div class="escalation-card">
-      <div class="escalation-title">🚨 ESCALATION ENGINE · 已升级</div>
-      <div class="escalation-info">
-        工单号：<strong>${escHtml(ticketId)}</strong><br>
-        ${data.requires_human_approval ? '💬 金额超阈值，已推送微信审批' : '✅ 已自动处理'}<br>
-        SLA：2-5 分钟内响应
-      </div>
-    </div>`;
-  }
-
-  div.innerHTML = `
-    <div class="msg-avatar bot-av">🤖</div>
-    <div class="msg-body">
-      <div class="msg-bubble">${escHtml(data.reply)}</div>
-      <div class="emotion-tag ${emClass}">${emDot} 情绪 ${emotion.score}/10 · ${escHtml(emotion.label)} ${llmBadge}</div>
-      ${extraCards}
-    </div>`;
-
-  area.appendChild(div);
-  area.scrollTop = area.scrollHeight;
-}
-
-function appendTyping() {
-  const area = document.getElementById('chatArea');
-  const div = document.createElement('div');
-  div.className = 'msg bot';
-  div.innerHTML = `<div class="msg-avatar bot-av">🤖</div><div class="msg-body"><div class="msg-bubble"><div class="typing-indicator"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div></div></div>`;
-  area.appendChild(div);
-  area.scrollTop = area.scrollHeight;
-  return div;
-}
-
-// ═══════════════════════════════════════════════════════════════════
-// ClaimsForge — multi-agent claims pipeline UI
-// All dynamic interpolation uses escHtml() (existing project sanitizer).
-// ═══════════════════════════════════════════════════════════════════
-let attachedImage = null;
+// ═══════════════════════════════════════════════════════════
+// State + helpers
+// ═══════════════════════════════════════════════════════════
+const API = '';
+let sessionId = newSessionId();
+let attachedImage = null;     // { dataUrl, image_id }
 let attachedDemoId = null;
-let pendingClaimEstValue = 5000;
-const SET_HTML = (el, html) => { el['inner' + 'HTML'] = html; };
-const APPEND_HTML = (el, html) => { el.insertAdjacentHTML('beforeend', html); };
+let pendingValue = 5000;
+let metrics = { resolved: 0, escalated: 0, totalAmt: 0, latencies: [] };
 
-async function handleImageSelected(event) {
+function newSessionId() {
+  return 'sess-' + ((window.crypto?.randomUUID && crypto.randomUUID().replace(/-/g,'').slice(0,12)) || Math.random().toString(36).slice(2,14));
+}
+
+function $(id) { return document.getElementById(id); }
+function setHTML(el, html) { el['inner' + 'HTML'] = html; }
+function appendHTML(el, html) { el.insertAdjacentHTML('beforeend', html); }
+
+function escapeHtml(s) {
+  if (s == null) return '';
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  $('sessionIdShow').textContent = sessionId;
+  $('chatInput').addEventListener('keydown', e => {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+  });
+  $('chatInput').addEventListener('input', e => {
+    e.target.style.height = 'auto';
+    e.target.style.height = Math.min(120, e.target.scrollHeight) + 'px';
+  });
+  connectWS();
+  refreshLearning();
+});
+
+// ═══════════════════════════════════════════════════════════
+// Scenario presets (text only — image is auto-attached when demo card clicked)
+// ═══════════════════════════════════════════════════════════
+const TEXT_SCENARIOS = {
+  'mug-crack': "Hi, my mug arrived with a 3cm crack on the rim. Order ORD-MUG-2024. Could I get a refund? Thanks!",
+  'laptop-scratch': "My new MacBook arrived with multiple visible scratches on the screen and the case. Order ORD-LP-7788. This is unacceptable for a brand new $800 device.",
+  'jacket-tear': "The jacket I ordered arrived with a big tear right on the sleeve. Order ORD-JK-3344. Pretty disappointing for the price.",
+  'angry-customer': "THIS IS THE THIRD TIME I HAVE WRITTEN. The mug arrived cracked, I have contacted my lawyer and will file with the consumer protection agency if not resolved in 24 hours!",
+  'vague': "Hey, I think something might be wrong with what I got. Can you help?"
+};
+function loadScenario(key) {
+  const text = TEXT_SCENARIOS[key];
+  if (text) { $('chatInput').value = text; $('chatInput').focus(); }
+}
+
+// ═══════════════════════════════════════════════════════════
+// Demo modal — uses /api/demo-scenarios for pre-seeded image + text
+// ═══════════════════════════════════════════════════════════
+async function openDemoModal() {
+  $('demoBackdrop').classList.add('open');
+  setHTML($('demoGrid'), '<div style="color:var(--muted)">Loading…</div>');
+  try {
+    const r = await fetch('/api/demo-scenarios');
+    const d = await r.json();
+    const html = (d.scenarios || []).map(s =>
+      '<div class="demo-card" onclick="useDemo(\'' + escapeHtml(s.id) + '\', \'' + escapeHtml(s.image_filename) + '\', ' + s.estimated_value_cents + ', ' + JSON.stringify(s.user_message).replace(/"/g, '&quot;') + ')">' +
+        '<img src="/api/demo-images/' + escapeHtml(s.image_filename) + '" alt="' + escapeHtml(s.title) + '" />' +
+        '<div class="dt">' + escapeHtml(s.title) + '</div>' +
+        '<div class="dd">' + escapeHtml(s.description) + '</div>' +
+        '<div class="do">→ ' + escapeHtml(s.expected_outcome) + '</div>' +
+      '</div>'
+    ).join('');
+    setHTML($('demoGrid'), html);
+  } catch (err) {
+    setHTML($('demoGrid'), '<div style="color:var(--rose)">Failed to load: ' + escapeHtml(err.message) + '</div>');
+  }
+}
+function closeDemoModal(event) {
+  if (event && event.target.id !== 'demoBackdrop' && !event.target.classList.contains('demo-close')) return;
+  $('demoBackdrop').classList.remove('open');
+}
+function useDemo(id, filename, valueCents, message) {
+  attachedImage = null;
+  attachedDemoId = 'demo:' + filename;
+  pendingValue = valueCents || 5000;
+  $('chatInput').value = message;
+  renderImagePreview();
+  closeDemoModal();
+  setTimeout(sendMessage, 200);
+}
+
+// ═══════════════════════════════════════════════════════════
+// Image upload
+// ═══════════════════════════════════════════════════════════
+async function onImagePicked(event) {
   const file = event.target.files[0];
   if (!file) return;
   if (file.size > 5 * 1024 * 1024) {
-    showToast('warn', '图片过大', '请压缩到 5MB 以内');
-    event.target.value = '';
-    return;
+    alert('Image too large (max 5MB).');
+    event.target.value = ''; return;
   }
-  const dataUrl = await new Promise((res) => {
+  const dataUrl = await new Promise(res => {
     const r = new FileReader();
-    r.onload = (e) => res(e.target.result);
+    r.onload = e => res(e.target.result);
     r.readAsDataURL(file);
   });
   attachedImage = { dataUrl };
+  attachedDemoId = null;
   renderImagePreview();
+
   const fd = new FormData();
   fd.append('file', file);
   try {
-    const r = await fetch(API + '/api/upload-image', { method: 'POST', body: fd });
+    const r = await fetch('/api/upload-image', { method: 'POST', body: fd });
     if (!r.ok) throw new Error('HTTP ' + r.status);
-    const data = await r.json();
-    attachedImage.image_id = data.image_id;
-    attachedDemoId = null;
+    const d = await r.json();
+    attachedImage.image_id = d.image_id;
     renderImagePreview();
   } catch (err) {
-    showToast('warn', '上传失败', err.message || '请重试');
+    alert('Upload failed: ' + err.message);
     attachedImage = null;
     renderImagePreview();
   }
@@ -1031,438 +1090,337 @@ async function handleImageSelected(event) {
 }
 
 function renderImagePreview() {
-  const strip = document.getElementById('imgPreviewStrip');
+  const strip = $('imgPreview');
   if (!attachedImage && !attachedDemoId) {
-    strip.style.display = 'none';
-    SET_HTML(strip, '');
+    strip.classList.remove('shown');
+    setHTML(strip, '');
     return;
   }
-  strip.style.display = 'flex';
-  const src = (attachedImage && attachedImage.dataUrl)
-    ? attachedImage.dataUrl
-    : '/api/demo-images/' + (attachedDemoId || '').replace('demo:', '');
-  const status = attachedImage && attachedImage.image_id ? '✓ 已上传' : (attachedDemoId ? 'demo 图' : '上传中…');
-  const html = '<img src="' + escHtml(src) + '" alt="claim attachment" />' +
-    '<span style="font-size:11px;color:var(--muted)">' + escHtml(status) + '</span>' +
-    '<button class="remove-img" onclick="clearAttachedImage()" title="移除">✕</button>';
-  SET_HTML(strip, html);
+  strip.classList.add('shown');
+  const src = (attachedImage?.dataUrl) || ('/api/demo-images/' + (attachedDemoId || '').replace('demo:',''));
+  const label = attachedImage?.image_id ? '✓ Uploaded' : (attachedDemoId ? 'Demo image' : 'Uploading…');
+  setHTML(strip,
+    '<img src="' + escapeHtml(src) + '" alt="attachment" />' +
+    '<span class="img-preview-label">' + escapeHtml(label) + '</span>' +
+    '<button class="img-remove" onclick="clearAttachedImage()" title="Remove">✕</button>'
+  );
 }
 
 function clearAttachedImage() {
   attachedImage = null;
   attachedDemoId = null;
-  pendingClaimEstValue = 5000;
+  pendingValue = 5000;
   renderImagePreview();
 }
 
-async function openClaimDemo() {
-  const backdrop = document.getElementById('claimDemoBackdrop');
-  backdrop.classList.add('open');
-  const grid = document.getElementById('demoScenariosGrid');
-  SET_HTML(grid, '载入中…');
-  try {
-    const r = await fetch(API + '/api/demo-scenarios');
-    const data = await r.json();
-    const cards = (data.scenarios || []).map(function(s) {
-      const msgJson = JSON.stringify(s.user_message);
-      return '<div class="demo-scenario-card" onclick=\"useDemoScenario(\'' + escHtml(s.id) + '\', \'' + escHtml(s.image_filename) + '\', ' + s.estimated_value_cents + ', ' + msgJson.replace(/'/g, "\\'").replace(/"/g, '&quot;') + ')\">' +
-        '<img src="/api/demo-images/' + escHtml(s.image_filename) + '" alt="' + escHtml(s.title) + '" />' +
-        '<div class="ds-title">' + escHtml(s.title) + '</div>' +
-        '<div class="ds-desc">' + escHtml(s.description) + '</div>' +
-        '<div class="ds-outcome">→ ' + escHtml(s.expected_outcome) + '</div>' +
-      '</div>';
-    }).join('');
-    SET_HTML(grid, cards);
-  } catch (err) {
-    SET_HTML(grid, '<div style="color:var(--danger);font-size:12px">加载失败: ' + escHtml(err.message) + '</div>');
-  }
-}
+// ═══════════════════════════════════════════════════════════
+// Main send flow — ALWAYS goes through /api/claim (no legacy fallback)
+// ═══════════════════════════════════════════════════════════
+async function sendMessage() {
+  const input = $('chatInput');
+  const text = input.value.trim();
+  if (!text) return;
+  $('sendBtn').disabled = true;
+  $('emptyState').style.display = 'none';
+  appendUserMessage(text);
+  input.value = '';
+  input.style.height = 'auto';
 
-function closeClaimDemo(event) {
-  if (event && event.target.id !== 'claimDemoBackdrop' && !event.target.classList.contains('demo-modal-close')) return;
-  document.getElementById('claimDemoBackdrop').classList.remove('open');
-}
+  // Reset pipeline visual state
+  resetAgentCards();
 
-function useDemoScenario(id, filename, estimatedValueCents, userMessage) {
-  attachedImage = null;
-  attachedDemoId = 'demo:' + filename;
-  pendingClaimEstValue = estimatedValueCents || 5000;
-  document.getElementById('chatInput').value = userMessage;
-  renderImagePreview();
-  closeClaimDemo();
-  setTimeout(function() { sendMessage(); }, 200);
-}
+  const traceCard = appendTraceCard();
+  const startedAt = performance.now();
 
-async function submitClaim(text) {
-  document.getElementById('emptyState').style.display = 'none';
-  appendMessage('user', text + (attachedImage || attachedDemoId ? ' 📎' : ''));
-  const area = document.getElementById('chatArea');
-  const traceDiv = document.createElement('div');
-  traceDiv.className = 'msg bot';
-  SET_HTML(traceDiv, '<div class="msg-avatar bot-av">🤖</div><div class="msg-body" style="min-width:280px"><div class="msg-bubble" id="liveTrace"><div style="font-size:11px;color:var(--muted);margin-bottom:6px">🔄 4 个 Agent 正在协作…</div></div></div>');
-  area.appendChild(traceDiv);
-  area.scrollTop = area.scrollHeight;
-  const liveTraceEl = traceDiv.querySelector('#liveTrace');
-
-  const onTrace = function(event) {
-    if (event.detail && event.detail.session_id !== sessionId) return;
-    const t = event.detail;
-    const line = document.createElement('div');
-    line.className = 'agent-trace-line';
-    SET_HTML(line, '<span class="agent-badge">' + escHtml(t.agent) + '</span><span>' + escHtml(t.summary || '') + '</span><span class="agent-elapsed">' + (t.elapsed_ms || 0) + 'ms</span>');
-    liveTraceEl.appendChild(line);
-    area.scrollTop = area.scrollHeight;
+  // Subscribe to live agent_trace events
+  const traceHandler = ev => {
+    if (ev.detail?.session_id && ev.detail.session_id !== sessionId) return;
+    appendTraceLine(traceCard, ev.detail);
+    markAgentActive(ev.detail);
   };
-  window.addEventListener('claimsforge:agent_trace', onTrace);
+  window.addEventListener('claimsforge:agent_trace', traceHandler);
 
   try {
-    const r = await fetch(API + '/api/claim', {
+    const r = await fetch('/api/claim', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         session_id: sessionId,
         message: text,
-        image_id: (attachedImage && attachedImage.image_id) || attachedDemoId || null,
-        estimated_value_cents: pendingClaimEstValue
+        image_id: attachedImage?.image_id || attachedDemoId || null,
+        estimated_value_cents: pendingValue
       })
     });
     if (!r.ok) throw new Error('HTTP ' + r.status);
-    const data = await r.json();
-    renderClaimResult(data, liveTraceEl);
+    const d = await r.json();
+    renderResult(d);
+    updateMetrics(d, performance.now() - startedAt);
+    refreshLearning();
   } catch (err) {
-    APPEND_HTML(liveTraceEl, '<div style="color:var(--danger);font-size:11px;margin-top:8px">⚠️ ' + escHtml(err.message || '请求失败') + '</div>');
+    appendHTML(traceCard, '<div class="trace-line"><div class="trace-dot error"></div><div class="trace-agent" style="color:var(--rose);">ERROR</div><div class="trace-summary">' + escapeHtml(err.message || 'Request failed') + '</div><div class="trace-time">—</div></div>');
   } finally {
-    window.removeEventListener('claimsforge:agent_trace', onTrace);
+    window.removeEventListener('claimsforge:agent_trace', traceHandler);
     clearAttachedImage();
+    $('sendBtn').disabled = false;
   }
 }
 
-function renderClaimResult(data, container) {
-  let html = '';
-  if (data.intent) {
-    const ord = data.intent.order_id ? ' · 订单 <code>' + escHtml(data.intent.order_id) + '</code>' : '';
-    html += '<div class="claim-result-card">' +
-      '<div class="claim-card-title">🎯 IntentAgent</div>' +
-      '<div style="font-size:12px">分类：<strong>' + escHtml(data.intent.label) + '</strong> (置信度 ' + (data.intent.confidence*100).toFixed(0) + '%)' + ord + '</div>' +
-    '</div>';
-  }
-  if (data.damage) {
-    const sevPct = (data.damage.severity || 0) * 10;
-    const chips = (data.damage.affected_parts || []).map(function(p) { return '<span class="chip">' + escHtml(p) + '</span>'; }).join('');
-    const imgSrc = data.image_id
-      ? (data.image_id.startsWith('demo:') ? '/api/demo-images/' + data.image_id.slice(5) : '/api/uploads/' + data.image_id)
-      : '';
-    html += '<div class="claim-result-card damage">' +
-      '<div class="claim-card-title">📸 DamageAgent · Gemini Vision</div>' +
-      '<div class="damage-row">' +
-        (imgSrc ? '<img src="' + escHtml(imgSrc) + '" class="damage-thumb" alt="damage evidence" />' : '') +
-        '<div style="flex:1">' +
-          '<div style="font-size:13px;margin-bottom:4px"><strong>' + escHtml(data.damage.damage_type) + '</strong> · 严重度 ' + data.damage.severity + '/10 · 置信度 ' + (data.damage.confidence*100).toFixed(0) + '%</div>' +
-          '<div class="severity-bar"><div class="severity-fill" style="width:' + sevPct + '%"></div></div>' +
-          '<div style="margin-top:6px">' + chips + '</div>' +
-        '</div>' +
-      '</div>' +
-      '<div style="font-size:11px;color:var(--muted);margin-top:6px">"' + escHtml(data.damage.reasoning) + '"</div>' +
-    '</div>';
-  }
-  if (data.final_offer) {
-    html += '<div class="claim-result-card offer">' +
-      '<div class="claim-card-title">💰 CompensationAgent · 赔付方案</div>' +
-      '<div class="offer-amount">¥' + (data.final_offer.amount_cents/100).toFixed(2) + '</div>' +
-      '<span class="offer-type-pill">' + escHtml(data.final_offer.offer_type) + '</span>' +
-      (data.final_offer.requires_return ? '<span class="offer-type-pill" style="background:rgba(245,158,11,.15);color:#fbbf24;margin-left:4px">需寄回</span>' : '') +
-      '<div style="font-size:12px;color:#d1d5db;margin-top:8px">' + escHtml(data.final_offer.justification) + '</div>' +
-      '<div class="policy-ref">policies: ' + (data.final_offer.policy_ids || []).map(escHtml).join(', ') + '</div>' +
-    '</div>';
-  }
-  if (data.verification) {
-    const verdictColors = { approve: '#10b981', revise: '#f59e0b', escalate_to_human: '#ef4444' };
-    const vColor = verdictColors[data.verification.verdict] || '#9ca3af';
-    html += '<div class="claim-result-card verify">' +
-      '<div class="claim-card-title">✅ VerifierAgent</div>' +
-      '<div style="font-size:12px"><span style="color:' + vColor + ';font-weight:600">' + escHtml(data.verification.verdict) + '</span> — ' + escHtml(data.verification.reason) + '</div>' +
-    '</div>';
-  }
-  if (data.escalated) {
-    html += '<div class="claim-result-card escalated">' +
-      '<div class="claim-card-title">🚨 已升级人工</div>' +
-      '<div style="font-size:12px">' + escHtml(data.final_reply) + '</div>' +
-    '</div>';
-  } else if (data.final_reply) {
-    html += '<div style="margin-top:8px;padding:10px 12px;background:rgba(16,185,129,.08);border-left:3px solid #10b981;border-radius:6px;font-size:12px;white-space:pre-wrap">' + escHtml(data.final_reply) + '</div>';
-  }
-  APPEND_HTML(container, html);
-}
-
-function clearChat() {
-  // 修复 F-M6（同步）：使用 crypto.randomUUID
-  sessionId = 'sess-' + (
-    (window.crypto && crypto.randomUUID)
-      ? crypto.randomUUID().replace(/-/g,'').slice(0,12)
-      : Math.random().toString(36).slice(2,14)
+function appendUserMessage(text) {
+  const area = $('chatArea');
+  const div = document.createElement('div');
+  div.className = 'msg user';
+  const attachHint = (attachedImage || attachedDemoId) ? ' 📎' : '';
+  setHTML(div,
+    '<div class="msg-av">👤</div>' +
+    '<div class="msg-body"><div class="msg-bubble">' + escapeHtml(text) + escapeHtml(attachHint) + '</div></div>'
   );
-  document.getElementById('sessionIdDisplay').textContent = sessionId;
-  document.getElementById('chatArea').innerHTML = `<div class="empty-chat" id="emptyState"><div class="empty-icon">💬</div><div class="empty-text">选择场景或直接输入消息，体验 AI 客服团队 3.0</div></div>`;
-  document.querySelectorAll('.scenario-btn').forEach(b => b.classList.remove('active'));
-  currentTicketId = null;
+  area.appendChild(div);
+  area.scrollTop = area.scrollHeight;
 }
 
-// ── 满意度 ────────────────────────────────────────────────
-function selectStar(v) {
-  selectedRating = v;
-  document.querySelectorAll('.star').forEach((s, i) => {
-    s.classList.toggle('active', i < v);
+function appendTraceCard() {
+  const area = $('chatArea');
+  const wrap = document.createElement('div');
+  wrap.className = 'msg bot';
+  setHTML(wrap,
+    '<div class="msg-av">🤖</div>' +
+    '<div class="msg-body" style="flex:1; min-width:0;"><div class="trace-card" id="liveTrace"><div class="section-title" style="margin-bottom:6px;">Agents at work</div></div></div>'
+  );
+  area.appendChild(wrap);
+  area.scrollTop = area.scrollHeight;
+  return wrap.querySelector('#liveTrace');
+}
+
+function appendTraceLine(card, t) {
+  const html =
+    '<div class="trace-line">' +
+      '<div class="trace-dot ' + (t.status === 'error' ? 'error' : '') + '"></div>' +
+      '<div class="trace-agent ' + agentTagClass(t.agent) + '">' + escapeHtml(t.agent.replace('Agent','')) + '</div>' +
+      '<div class="trace-summary">' + escapeHtml(t.summary || '') + '</div>' +
+      '<div class="trace-time">' + (t.elapsed_ms || 0) + 'ms</div>' +
+    '</div>';
+  appendHTML(card, html);
+  $('chatArea').scrollTop = $('chatArea').scrollHeight;
+}
+
+function agentTagClass(name) {
+  if (!name) return '';
+  const n = name.toLowerCase();
+  if (n.includes('intent')) return 'intent';
+  if (n.includes('emotion')) return 'emotion';
+  if (n.includes('damage')) return 'damage';
+  if (n.includes('comp')) return 'comp';
+  if (n.includes('verify') || n.includes('verifier')) return 'verify';
+  return '';
+}
+
+function markAgentActive(t) {
+  const map = {
+    'IntentAgent': 'agent-intent',
+    'EmotionAgent': 'agent-emotion',
+    'DamageAgent': 'agent-damage',
+    'CompensationAgent': 'agent-comp',
+    'VerifierAgent': 'agent-verify',
+  };
+  const id = map[t.agent];
+  if (!id) return;
+  const card = $(id);
+  card?.classList.remove('active');
+  card?.classList.add('done');
+  // last output preview
+  const lo = $('lo-' + id.replace('agent-',''));
+  if (lo) {
+    lo.style.display = 'block';
+    lo.textContent = (t.summary || '').slice(0, 120);
+  }
+}
+
+function resetAgentCards() {
+  ['intent','emotion','damage','comp','verify'].forEach(k => {
+    $('agent-' + k)?.classList.remove('active');
+    $('agent-' + k)?.classList.remove('done');
+    const lo = $('lo-' + k);
+    if (lo) { lo.style.display = 'none'; lo.textContent = ''; }
   });
 }
 
-async function submitRating() {
-  if (!selectedRating) { showToast('warn', '请先选择星级', ''); return; }
-  // 修复 F-建议-6：防重复提交
-  const btn = document.querySelector('.rating-submit');
-  if (btn && btn.disabled) return;
-  if (btn) btn.disabled = true;
-  const comment = document.getElementById('ratingComment').value;
-  try {
-    await fetchJSON(`${API}/api/satisfaction`, {
-      method: 'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({ session_id: sessionId, ticket_id: currentTicketId || '', score: selectedRating, comment })
-    }, 10000);
-    showToast('success', '✅ 评分已提交', `感谢您的 ${selectedRating} 星评价！`);
-    document.getElementById('ratingComment').value = '';
-    selectedRating = 0;
-    document.querySelectorAll('.star').forEach(s => s.classList.remove('active'));
-    updateMetrics();
-  } catch(e) {
-    showToast('danger', '提交失败', e.message || '请检查服务连接');
-  } finally {
-    if (btn) btn.disabled = false;
+// ═══════════════════════════════════════════════════════════
+// Result card rendering — Emotion / Damage / Offer / Verify
+// ═══════════════════════════════════════════════════════════
+function renderResult(d) {
+  const area = $('chatArea');
+  const wrap = document.createElement('div');
+  wrap.className = 'msg bot';
+  let body = '<div class="msg-av">🤖</div><div class="msg-body" style="flex:1; min-width:0;">';
+
+  // Emotion card
+  if (d.emotion) {
+    const e = d.emotion;
+    const riskClass = 'risk-' + (e.risk || 'LOW');
+    const triggers = (e.triggers || []).map(t => '<span class="emo-trigger">' + escapeHtml(t) + '</span>').join('');
+    const signals = (e.escalation_signals || []).map(s => '<div class="emo-signal">' + escapeHtml(s) + '</div>').join('');
+    body += '<div class="result-card emotion"><div class="rc-header">💗 EmotionAgent</div>' +
+      '<div class="emotion-grid">' +
+        '<div class="emo-score-display"><div class="emo-score-num">' + (e.score || 0).toFixed(1) + '</div><div class="emo-score-label">' + escapeHtml(e.label || '') + '</div><div style="margin-top:8px;"><span class="risk-pill ' + riskClass + '">' + escapeHtml(e.risk || '') + '</span></div></div>' +
+        '<div><div style="font-size:11px;color:var(--muted);margin-bottom:4px;">Triggers</div>' + (triggers || '<span style="color:var(--dim);font-size:11px;">none</span>') +
+          (signals ? '<div style="margin-top:8px;">' + signals + '</div>' : '') +
+          (e.suggested_tone ? '<div style="margin-top:10px;padding:8px 10px;background:var(--bg-3);border-radius:6px;font-size:11px;color:#c7d2fe;line-height:1.5;"><strong style="color:var(--violet);">Suggested tone:</strong> ' + escapeHtml(e.suggested_tone) + '</div>' : '') +
+        '</div>' +
+      '</div></div>';
   }
+
+  // Damage card
+  if (d.damage) {
+    const dm = d.damage;
+    const sevPct = (dm.severity || 0) * 10;
+    const chips = (dm.affected_parts || []).map(p => '<span class="chip">' + escapeHtml(p) + '</span>').join('');
+    const thumbSrc = d.image_id
+      ? (d.image_id.startsWith('demo:') ? '/api/demo-images/' + d.image_id.slice(5) : '/api/uploads/' + d.image_id)
+      : '';
+    body += '<div class="result-card damage"><div class="rc-header">📸 DamageAgent · Gemini Vision</div>' +
+      '<div class="damage-grid">' +
+        (thumbSrc ? '<img src="' + escapeHtml(thumbSrc) + '" class="damage-thumb" alt="evidence" />' : '<div></div>') +
+        '<div>' +
+          '<div class="dmg-row"><span style="font-size:13px;color:var(--muted);">Type</span><span class="v">' + escapeHtml(dm.damage_type || '') + '</span></div>' +
+          '<div class="dmg-row" style="margin-top:6px;"><span style="font-size:13px;color:var(--muted);">Severity</span><span class="v">' + (dm.severity || 0) + ' / 10</span></div>' +
+          '<div class="severity-bar"><div class="severity-fill" style="width:' + sevPct + '%"></div></div>' +
+          '<div class="dmg-row"><span style="font-size:13px;color:var(--muted);">Confidence</span><span class="v">' + Math.round((dm.confidence || 0) * 100) + '%</span></div>' +
+          (chips ? '<div style="margin-top:8px;">' + chips + '</div>' : '') +
+        '</div>' +
+      '</div>' +
+      (dm.reasoning ? '<div class="reasoning-quote">"' + escapeHtml(dm.reasoning) + '"</div>' : '') +
+      '</div>';
+  }
+
+  // Offer / Final offer
+  const finalOffer = d.final_offer || d.offer;
+  if (finalOffer && !d.escalated) {
+    body += '<div class="result-card offer"><div class="rc-header">💰 CompensationAgent</div>' +
+      '<div class="offer-amount">$' + ((finalOffer.amount_cents || 0) / 100).toFixed(2) + '</div>' +
+      '<div><span class="offer-type">' + escapeHtml(finalOffer.offer_type || '') + '</span>' +
+      (finalOffer.requires_return ? '<span class="offer-type" style="margin-left:6px;background:rgba(245,158,11,.12);color:#fcd34d;border-color:rgba(245,158,11,.3);">Return required</span>' : '') +
+      '</div>' +
+      '<div class="offer-just">' + escapeHtml(finalOffer.justification || '') + '</div>' +
+      (finalOffer.policy_ids?.length ? '<div class="offer-policy">grounded in: ' + finalOffer.policy_ids.map(escapeHtml).join(', ') + '</div>' : '') +
+      '</div>';
+  }
+
+  // Verifier
+  if (d.verification) {
+    const v = d.verification;
+    const cls = 'verdict-' + (v.verdict || 'approve');
+    body += '<div class="result-card verify"><div class="rc-header">✅ VerifierAgent</div>' +
+      '<div style="display:flex;align-items:center;gap:10px;"><span class="verdict-pill ' + cls + '">' + escapeHtml(v.verdict || '') + '</span><span style="font-size:12px;color:var(--muted);">' + escapeHtml(v.reason || '') + '</span></div>' +
+      '</div>';
+  }
+
+  // Escalated
+  if (d.escalated) {
+    body += '<div class="result-card escalated"><div class="rc-header">🚨 Escalated to human</div>' +
+      '<div style="font-size:13px;line-height:1.55;color:#e5e7eb;">' + escapeHtml(d.final_reply || '') + '</div>' +
+      '</div>';
+  }
+
+  // Final reply box (the customer-facing message)
+  if (d.final_reply && !d.escalated) {
+    body += '<div class="final-reply">' + escapeHtml(d.final_reply) + '</div>';
+  }
+
+  body += '</div>';
+  setHTML(wrap, body);
+  area.appendChild(wrap);
+  area.scrollTop = area.scrollHeight;
 }
 
-// ── 数据更新 ──────────────────────────────────────────────
-async function updateMetrics() {
+// ═══════════════════════════════════════════════════════════
+// Metrics + Learning queue
+// ═══════════════════════════════════════════════════════════
+function updateMetrics(d, latencyMs) {
+  metrics.latencies.push(latencyMs);
+  if (d.escalated) metrics.escalated++;
+  else {
+    metrics.resolved++;
+    if (d.final_offer) metrics.totalAmt += d.final_offer.amount_cents || 0;
+  }
+  $('m-resolved').textContent = metrics.resolved;
+  $('m-escalated').textContent = metrics.escalated;
+  const avg = metrics.resolved > 0 ? (metrics.totalAmt / metrics.resolved / 100) : 0;
+  $('m-avg-amt').textContent = '$' + avg.toFixed(2);
+  const sorted = [...metrics.latencies].sort((a,b) => a-b);
+  const p50 = sorted[Math.floor(sorted.length/2)];
+  $('m-p50').textContent = p50 ? (p50/1000).toFixed(1) + 's' : '—';
+  $('claimsCount').textContent = metrics.resolved + metrics.escalated;
+  const avgAll = sorted.reduce((a,b)=>a+b,0) / (sorted.length || 1);
+  $('avgLatency').textContent = avgAll ? (avgAll/1000).toFixed(1) + 's' : '—';
+}
+
+async function refreshLearning() {
   try {
-    // 修复 F-S3：使用 allSettled，单个接口失败不影响其他
-    const [statsR, healthR, kbR] = await Promise.allSettled([
-      fetchJSON(`${API}/api/stats`, {}, 8000),
-      fetchJSON(`${API}/api/health`, {}, 8000),
-      fetchJSON(`${API}/api/kb/stats`, {}, 8000)
-    ]);
-    const stats  = statsR.status === 'fulfilled' ? statsR.value : {};
-    const health = healthR.status === 'fulfilled' ? healthR.value : null;
-    const kb     = kbR.status === 'fulfilled' ? kbR.value : { categories: {} };
+    const r = await fetch('/api/claimsforge/learning');
+    if (!r.ok) return;
+    const d = await r.json();
+    const list = $('learningList');
+    if (!d.recent || d.recent.length === 0) {
+      list.textContent = 'Waiting for the first claim of the session…';
+      return;
+    }
+    setHTML(list, d.recent.slice(0, 6).map(c => {
+      const escClass = c.escalated ? 'escalated' : '';
+      const out = c.escalated ? 'human' : (c.offer_type || '—');
+      const amt = c.amount_cents != null ? ' · $' + (c.amount_cents/100).toFixed(2) : '';
+      return '<div class="learn-item ' + escClass + '">' +
+        '<span class="li-title">' + escapeHtml(c.damage_type || 'unknown') + ' · sev ' + (c.severity ?? '?') + '</span>' +
+        '<span class="li-outcome">' + escapeHtml(out + amt) + '</span>' +
+        '<div class="li-meta">emotion: ' + escapeHtml(c.emotion || 'n/a') + ' · ' + escapeHtml((c.learned_at || '').slice(11,19)) + '</div>' +
+      '</div>';
+    }).join(''));
+  } catch (_) { /* silent */ }
+}
 
-    document.getElementById('m-total').textContent = stats.total_conversations || 0;
-    document.getElementById('m-esc').textContent = stats.escalations || 0;
-    document.getElementById('m-sat').textContent = stats.avg_satisfaction ? stats.avg_satisfaction.toFixed(1) : '—';
-    document.getElementById('m-kb').textContent = kb.total_entries || 0;
-
-    document.getElementById('total-conv').textContent = stats.total_conversations || 0;
-    document.getElementById('total-esc').textContent = stats.escalations || 0;
-    document.getElementById('kb-entries').textContent = kb.total_entries || 0;
-    document.getElementById('kb-gaps').textContent = kb.pending_gaps || 0;
-    document.getElementById('avg-sat').textContent = stats.avg_satisfaction ? stats.avg_satisfaction.toFixed(1)+'/5' : '—';
-
-    const hits = stats.kb_hits || 0, misses = stats.kb_misses || 0;
-    const total = hits + misses;
-    document.getElementById('hit-rate').textContent = total ? ((hits/total*100).toFixed(0)+'%') : '—';
-
-    updateHealth(health);
-    updateKbStats(kb);
-
+// ═══════════════════════════════════════════════════════════
+// WebSocket — listens for agent_trace fan-out
+// ═══════════════════════════════════════════════════════════
+let ws = null;
+let wsRetry = 0;
+function connectWS() {
+  if (ws && (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING)) return;
+  const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
+  try {
+    ws = new WebSocket(proto + '//' + location.host + '/ws');
+  } catch (_) { return scheduleReconnect(); }
+  ws.onopen = () => {
+    wsRetry = 0;
+    $('wsLabel').textContent = 'Connected';
+    $('wsDot').style.background = 'var(--emerald)';
+  };
+  ws.onclose = () => {
+    $('wsLabel').textContent = 'Reconnecting…';
+    $('wsDot').style.background = 'var(--rose)';
+    scheduleReconnect();
+  };
+  ws.onerror = () => { /* onclose will retry */ };
+  ws.onmessage = (e) => {
     try {
-      const tickets = await fetchJSON(`${API}/api/tickets`, {}, 8000);
-      const pending = tickets.filter(t=>t.status==='PENDING').length;
-      document.getElementById('pending-tickets').textContent = pending;
-      document.getElementById('total-ratings').textContent = (stats.total_ratings != null ? stats.total_ratings : (stats.total_conversations || 0));
-      if (pending > 0) {
-        document.getElementById('esc-status').textContent = `${pending}个待处理`;
-        document.getElementById('esc-status').className = 'agent-status status-busy';
+      const m = JSON.parse(e.data);
+      if (m.type === 'agent_trace' && m.data) {
+        window.dispatchEvent(new CustomEvent('claimsforge:agent_trace', { detail: m.data }));
       }
-    } catch(_) {}
-  } catch(e) {
-    console.warn('updateMetrics failed:', e);
-  }
+    } catch (_) { /* ignore non-JSON */ }
+  };
+}
+function scheduleReconnect() {
+  if (wsRetry > 20) return;
+  const delay = Math.min(30000, 1000 * Math.pow(2, wsRetry++));
+  setTimeout(connectWS, delay);
 }
 
-function updateHealth(h) {
-  if (!h) return;
-  const ce = h.conversation_engine, kp = h.knowledge_pipeline, ee = h.escalation_engine, sat = h.satisfaction;
-  if(ce){ document.getElementById('h-conv').textContent = ce.status; document.getElementById('hm-conv').textContent = `命中率 ${ce.kb_hit_rate}`; }
-  if(kp){ document.getElementById('h-kb').textContent = kp.status; document.getElementById('hm-kb').textContent = `缺口 ${kp.pending_gaps} 条`; }
-  if(ee){ document.getElementById('h-esc').textContent = ee.status; document.getElementById('hm-esc').textContent = `升级率 ${ee.escalation_rate}`; }
-  if(sat){ document.getElementById('h-sat').textContent = sat.status; document.getElementById('hm-sat').textContent = sat.avg_score; }
+function clearChat() {
+  sessionId = newSessionId();
+  $('sessionIdShow').textContent = sessionId;
+  setHTML($('chatArea'), '<div class="empty-chat" id="emptyState"><div class="big">Resolve a damage claim in 8 seconds.</div><div class="small">Upload a photo of the damaged item and describe the problem.<br/>Five specialist agents run in sequence, propose compensation, verify against policy, and reply in the customer\'s own language.</div></div>');
+  resetAgentCards();
+  clearAttachedImage();
 }
-
-async function updateTickets() {
-  try {
-    const tickets = await fetchJSON(`${API}/api/tickets`, {}, 8000);
-    const list = document.getElementById('ticketList');
-    document.getElementById('ticketBadge').textContent = tickets.length;
-    if (!tickets.length) { list.innerHTML = '<div style="font-size:11px;color:var(--muted);padding:0 0 8px">暂无工单</div>'; return; }
-    list.innerHTML = tickets.slice(-5).reverse().map(t => {
-      const cls = t.status==='RESOLVED' ? 'resolved' : (t.type==='COMPENSATION' ? 'p0' : 'p1');
-      const typeCls = t.type==='COMPENSATION' ? 'type-comp' : t.type==='EMOTION_CRISIS' ? 'type-emo' : 'type-norm';
-      const typeText = t.type==='COMPENSATION' ? '赔偿' : t.type==='EMOTION_CRISIS' ? '危机' : '投诉';
-      // 修复 F-M4：工单消息转义防 XSS
-      const safeId   = escHtml(t.id || '');
-      const safeMsg  = escHtml((t.message||'').slice(0,40));
-      return `<div class="ticket-item ${cls}">
-        <div class="ticket-header">
-          <span class="ticket-id">${safeId}</span>
-          <span class="ticket-type ${typeCls}">${typeText}</span>
-        </div>
-        <div class="ticket-msg">${safeMsg}…</div>
-        <div class="ticket-status">状态：${t.status==='RESOLVED'?'✅ 已解决':'⏳ 待处理'}</div>
-      </div>`;
-    }).join('');
-  } catch(e) {
-    console.warn('updateTickets failed:', e);
-  }
-}
-
-function updateKbStats(kb) {
-  if (!kb || !kb.categories) return;
-  const el = document.getElementById('kbStats');
-  // 修复 F-M5：类目名转义防 XSS
-  el.innerHTML = Object.entries(kb.categories).map(([cat, cnt]) =>
-    `<div class="kb-item"><span class="kb-cat">${escHtml(cat)}</span><span class="kb-count">${Number(cnt)||0} 条</span></div>`
-  ).join('') + `<div class="kb-item" style="color:var(--warn)"><span class="kb-cat">📌 待补充缺口</span><span class="kb-count">${Number(kb.pending_gaps)||0}</span></div>`;
-}
-
-// ── 日报 & 晨报 ───────────────────────────────────────────
-async function triggerDailyReport() {
-  // 修复 F-M2：不再暴露真实邮箱
-  showToast('info', '⏳ 生成日报中...', '完成后将通过邮件发送');
-  try {
-    const r = await fetchJSON(`${API}/api/report/daily`, {method:'POST'}, 30000);
-    showToast('success', '📊 日报已生成', `日期：${r.report_date}\n对话：${r.summary?.total_conversations || 0} 次`);
-    addEvent('success', '日报已生成，邮件已发送');
-  } catch(e) { showToast('danger', '生成失败', '请检查服务'); }
-}
-
-async function triggerMorningBrief() {
-  try {
-    const r = await fetchJSON(`${API}/api/report/morning-brief`, {}, 30000);
-    showToast('success', '☀️ 晨报已就绪', '早会议程已生成，查看 reports/ 目录');
-    addEvent('info', '早会晨报已生成');
-  } catch(e) { showToast('danger', '生成失败', e.message || '请检查服务'); }
-}
-
-async function rebuildVectorIndex() {
-  const btn = document.getElementById('rebuildBtn');
-  if (btn) { btn.textContent = '⏳ 重建中...'; btn.disabled = true; }
-  try {
-    const r = await fetchJSON(`${API}/api/vector/build`, {method:'POST'}, 60000);
-    if (r.success) {
-      showToast('success', '✅ 向量索引已重建', `共 ${r.result?.count || 0} 条已索引`);
-      addEvent('success', `向量索引重建完成，${r.result?.count || 0} 条`);
-    } else {
-      showToast('warn', '⚠️ 重建失败', r.error || '请查看后端日志');
-    }
-  } catch(e) {
-    showToast('danger', '重建失败', e.message || '请检查服务是否运行');
-  } finally {
-    if (btn) { btn.textContent = '🔧 重建索引'; btn.disabled = false; }
-  }
-}
-
-// ── 事件流 ────────────────────────────────────────────────
-function addEvent(type, text) {
-  const list = document.getElementById('eventList');
-  const item = document.createElement('div');
-  item.className = 'event-item';
-  const dotClass = {info:'ev-info', warn:'ev-warn', danger:'ev-danger', success:'ev-success'}[type] || 'ev-info';
-  item.innerHTML = `<div class="event-dot ${dotClass}"></div><div class="event-text">${escHtml(text)}</div><div class="event-time">${new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit',second:'2-digit'})}</div>`;
-  list.insertBefore(item, list.firstChild);
-  if (list.children.length > 30) list.removeChild(list.lastChild);
-}
-
-// ── Toast ─────────────────────────────────────────────────
-function showToast(type, title, body) {
-  const container = document.getElementById('toastContainer');
-  // 修复：Toast 上限 5 个，超出移除最早的
-  while (container.children.length >= 5) {
-    container.removeChild(container.firstChild);
-  }
-  const toast = document.createElement('div');
-  toast.className = `toast toast-${type}`;
-  toast.innerHTML = `<div class="toast-title">${escHtml(title)}</div><div class="toast-body">${escHtml(body)}</div>`;
-  container.appendChild(toast);
-  setTimeout(() => toast.remove(), 5000);
-}
-
-// ── 工具 ─────────────────────────────────────────────────
-// 修复 F-* 系列：带超时 + 状态码检查的 fetch 封装
-async function fetchJSON(url, options = {}, timeoutMs = 12000) {
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), timeoutMs);
-  try {
-    const res = await fetch(url, { ...options, signal: controller.signal });
-    if (!res.ok) {
-      let errMsg = `HTTP ${res.status}`;
-      try { const j = await res.json(); errMsg = j.detail || j.error || errMsg; } catch(_){}
-      throw new Error(errMsg);
-    }
-    return await res.json();
-  } finally {
-    clearTimeout(timer);
-  }
-}
-
-// 修复 F-建议-4：escHtml 补全引号转义
-function escHtml(str) {
-  if (str === null || str === undefined) return '';
-  return String(str)
-    .replace(/&/g,'&amp;')
-    .replace(/</g,'&lt;')
-    .replace(/>/g,'&gt;')
-    .replace(/"/g,'&quot;')
-    .replace(/'/g,'&#x27;')
-    .replace(/\n/g,'<br>');
-}
-
-// Enter发送
-document.getElementById('chatInput').addEventListener('keydown', e => {
-  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
-});
-
-// 自动增高
-document.getElementById('chatInput').addEventListener('input', function() {
-  this.style.height = 'auto';
-  this.style.height = Math.min(this.scrollHeight, 120) + 'px';
-});
-
-// 初始化
-let metricsTimer = null, ticketsTimer = null;
-
-function startPolling() {
-  if (!metricsTimer) metricsTimer = setInterval(updateMetrics, 10000);
-  if (!ticketsTimer) ticketsTimer = setInterval(updateTickets, 15000);
-}
-function stopPolling() {
-  if (metricsTimer) { clearInterval(metricsTimer); metricsTimer = null; }
-  if (ticketsTimer) { clearInterval(ticketsTimer); ticketsTimer = null; }
-}
-
-connectWS();
-updateMetrics();
-updateTickets();
-startPolling();
-
-// 修复 F-M3：页面不可见时停止轮询
-document.addEventListener('visibilitychange', () => {
-  if (document.hidden) stopPolling();
-  else { updateMetrics(); updateTickets(); startPolling(); }
-});
-
-// 启动时拉向量索引状态
-fetchJSON(`${API}/api/vector/stats`, {}, 5000).then(d=>{
-  if(d.status==='ok') addEvent('info', `向量索引就绪：${d.count} 条 · ${d.engine||'TF-IDF'}`);
-  else addEvent('warn', '向量索引未就绪，使用关键词兜底');
-}).catch(()=>{});
-
 </script>
 </body>
 </html>
