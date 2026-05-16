@@ -1,0 +1,32 @@
+flowchart LR
+    User([👤 Customer<br/>uploads photo + text])
+    User --> Upload[POST /api/upload-image<br/>multipart, ≤5MB, auto-resize 1024px]
+    Upload --> Claim[POST /api/claim]
+
+    Claim --> Orchestrator{🎼 Orchestrator}
+
+    Orchestrator --> Intent[🎯 IntentAgent<br/>gemini-2.5-flash<br/>+ function calling]
+    Intent --> Damage[📸 DamageAgent<br/>gemini-2.5-flash Vision<br/>+ structured output]
+    Damage --> Comp[💰 CompensationAgent<br/>gemini-2.5-flash<br/>+ RAG policy lookup]
+    Comp --> Verify[✅ VerifierAgent<br/>hard-cap checks<br/>+ tone review]
+
+    Verify -->|approve| Final[Final Offer]
+    Verify -->|revise| Comp
+    Verify -->|escalate| Human[🚨 Human Queue]
+
+    subgraph Data
+        Policies[(📋 policies.json<br/>10 rules)]
+        KB[(📚 knowledge_base.json<br/>30 entries)]
+    end
+    Comp -.uses.-> Policies
+    Damage -.uses.-> KB
+
+    Final --> WS[WebSocket /ws<br/>streams agent_trace events]
+    WS --> UI[💻 Web UI<br/>Damage Card / Offer Card / Live Trace]
+
+    style Intent fill:#4f46e5,color:#fff
+    style Damage fill:#f59e0b,color:#fff
+    style Comp fill:#10b981,color:#fff
+    style Verify fill:#3b82f6,color:#fff
+    style Human fill:#ef4444,color:#fff
+    style Orchestrator fill:#7c3aed,color:#fff

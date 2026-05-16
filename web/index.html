@@ -265,6 +265,213 @@
     .layout { grid-template-columns:1fr; }
     .panel-left { display:none; }
   }
+
+  /* ── ClaimsForge: multi-agent claims pipeline UI ─────────────────── */
+  .claim-demo-btn {
+    background: linear-gradient(135deg, #4f46e5, #7c3aed);
+    color: #fff;
+    border: none;
+    padding: 7px 16px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(79, 70, 229, .35);
+  }
+  .claim-demo-btn:hover { filter: brightness(1.1); }
+
+  .img-attach-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    border-radius: 8px;
+    padding: 0 12px;
+    height: 38px;
+    cursor: pointer;
+    font-size: 16px;
+  }
+  .img-attach-btn:hover { color: var(--accent); border-color: var(--accent); }
+
+  .img-preview-strip {
+    display: flex;
+    gap: 8px;
+    padding: 8px 0 4px;
+    align-items: center;
+  }
+  .img-preview-strip img {
+    height: 56px;
+    width: 56px;
+    object-fit: cover;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+  }
+  .img-preview-strip .remove-img {
+    color: var(--danger);
+    cursor: pointer;
+    font-size: 18px;
+    background: none;
+    border: none;
+  }
+
+  /* Agent trace line (streaming) */
+  .agent-trace-line {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 0;
+    font-size: 11px;
+    color: var(--muted);
+    font-family: 'SF Mono', Monaco, monospace;
+  }
+  .agent-trace-line .agent-badge {
+    background: rgba(124, 58, 237, .15);
+    color: #a78bfa;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-weight: 600;
+    font-size: 10px;
+  }
+  .agent-trace-line .agent-elapsed {
+    color: #6b7280;
+    margin-left: auto;
+  }
+
+  /* Damage / Offer cards */
+  .claim-result-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px;
+    margin-top: 8px;
+  }
+  .claim-result-card.damage { border-left: 3px solid #f59e0b; }
+  .claim-result-card.offer  { border-left: 3px solid #10b981; }
+  .claim-result-card.verify { border-left: 3px solid #3b82f6; }
+  .claim-result-card.escalated { border-left: 3px solid #ef4444; }
+
+  .claim-card-title {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    margin-bottom: 8px;
+  }
+  .damage-row {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    margin-bottom: 6px;
+    font-size: 12px;
+  }
+  .damage-thumb {
+    width: 72px;
+    height: 72px;
+    border-radius: 6px;
+    object-fit: cover;
+    border: 1px solid var(--border);
+  }
+  .severity-bar {
+    flex: 1;
+    height: 6px;
+    background: #374151;
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  .severity-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #10b981 0%, #f59e0b 50%, #ef4444 100%);
+  }
+  .chip {
+    display: inline-block;
+    background: rgba(245, 158, 11, .15);
+    color: #fbbf24;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 10px;
+    margin-right: 4px;
+  }
+  .offer-amount {
+    font-size: 24px;
+    font-weight: 700;
+    color: #10b981;
+    margin: 4px 0;
+  }
+  .offer-type-pill {
+    display: inline-block;
+    background: rgba(16, 185, 129, .15);
+    color: #34d399;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+  }
+  .policy-ref {
+    color: #9ca3af;
+    font-size: 10px;
+    margin-top: 4px;
+    font-family: 'SF Mono', Monaco, monospace;
+  }
+
+  /* Demo scenario modal */
+  .demo-modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, .65);
+    z-index: 1000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+  }
+  .demo-modal-backdrop.open { display: flex; }
+  .demo-modal {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    max-width: 720px;
+    width: 92%;
+    max-height: 88vh;
+    overflow-y: auto;
+  }
+  .demo-modal h2 { margin: 0 0 6px; font-size: 18px; }
+  .demo-modal p { color: var(--muted); font-size: 12px; margin: 0 0 16px; }
+  .demo-scenarios-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 12px;
+  }
+  .demo-scenario-card {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px;
+    cursor: pointer;
+    transition: transform .15s, border-color .15s;
+  }
+  .demo-scenario-card:hover {
+    transform: translateY(-2px);
+    border-color: var(--accent);
+  }
+  .demo-scenario-card img {
+    width: 100%;
+    height: 120px;
+    object-fit: cover;
+    border-radius: 6px;
+    margin-bottom: 8px;
+  }
+  .demo-scenario-card .ds-title { font-weight: 600; font-size: 13px; }
+  .demo-scenario-card .ds-desc { color: var(--muted); font-size: 11px; margin-top: 4px; }
+  .demo-scenario-card .ds-outcome { color: #10b981; font-size: 10px; margin-top: 6px; font-family: 'SF Mono', Monaco, monospace; }
+  .demo-modal-close {
+    float: right;
+    background: none;
+    border: none;
+    color: var(--muted);
+    font-size: 20px;
+    cursor: pointer;
+  }
 </style>
 </head>
 <body>
@@ -384,7 +591,8 @@
       <button class="scenario-btn" onclick="loadScenario('tech', this)">🔧 技术问题</button>
       <button class="scenario-btn" onclick="loadScenario('inquiry', this)">❓ 功能咨询</button>
       <button class="scenario-btn" onclick="loadScenario('angry', this)">😡 情绪激动</button>
-      <button class="scenario-btn" onclick="clearChat()" style="margin-left:auto;color:var(--danger)">🗑 清空</button>
+      <button class="claim-demo-btn" onclick="openClaimDemo()" style="margin-left:auto" title="一键试 ClaimsForge 4-agent 理赔流水线">🔥 试 Claim Demo</button>
+      <button class="scenario-btn" onclick="clearChat()" style="color:var(--danger)">🗑 清空</button>
     </div>
 
     <!-- 消息列表 -->
@@ -397,11 +605,24 @@
 
     <!-- 输入区 -->
     <div class="chat-input-area">
+      <div id="imgPreviewStrip" class="img-preview-strip" style="display:none"></div>
       <div class="chat-input-wrap">
+        <button class="img-attach-btn" onclick="document.getElementById('claimImageInput').click()" title="上传商品损坏照片（触发 ClaimsForge 4 agent 流水线）">📎</button>
+        <input type="file" id="claimImageInput" accept="image/jpeg,image/png,image/webp" style="display:none" onchange="handleImageSelected(event)" />
         <textarea class="chat-input" id="chatInput" placeholder="输入消息... (Enter发送，Shift+Enter换行)" rows="1" maxlength="2000" aria-label="聊天输入框"></textarea>
         <button class="send-btn" id="sendBtn" onclick="sendMessage()" aria-label="发送消息">➤</button>
       </div>
-      <div class="input-hint">当前会话 ID：<span id="sessionIdDisplay">—</span></div>
+      <div class="input-hint">当前会话 ID：<span id="sessionIdDisplay">—</span> · 上传图片自动触发理赔 agent 流水线</div>
+    </div>
+  </div>
+
+  <!-- Claim Demo Modal -->
+  <div id="claimDemoBackdrop" class="demo-modal-backdrop" onclick="closeClaimDemo(event)">
+    <div class="demo-modal" onclick="event.stopPropagation()">
+      <button class="demo-modal-close" onclick="closeClaimDemo()" aria-label="关闭">✕</button>
+      <h2>🔥 ClaimsForge 一键演示</h2>
+      <p>选一个场景。系统会自动加载商品损坏图 + 客户文字描述，调用 4 个 Gemini Agent 流水线（Intent → Damage → Compensation → Verifier）实时给出赔付方案。</p>
+      <div id="demoScenariosGrid" class="demo-scenarios-grid">载入中…</div>
     </div>
   </div>
 
@@ -570,6 +791,11 @@ function scheduleReconnect() {
 
 function handleWSEvent(msg) {
   if (msg.type === 'health') updateHealth(msg.data);
+  // ClaimsForge: dispatch agent_trace events for the in-page UI to consume
+  if (msg.type === 'agent_trace' && msg.data) {
+    window.dispatchEvent(new CustomEvent('claimsforge:agent_trace', { detail: msg.data }));
+    addEvent('info', `[${msg.data.agent}] ${msg.data.summary} (${msg.data.elapsed_ms || 0}ms)`);
+  }
   if (msg.type === 'conversation') {
     updateMetrics();
     addEvent('info', `新对话 · 情绪 ${msg.data.emotion?.score ?? '—'}/10 · ${msg.data.emotion?.label ?? '未知'}${msg.data.escalated ? ' · 🚨已升级':''}`);
@@ -612,6 +838,13 @@ async function sendMessage() {
   const input = document.getElementById('chatInput');
   const text = input.value.trim();
   if (!text) return;
+  // ClaimsForge: 有图片附件 → 走理赔 pipeline
+  if (attachedImage || attachedDemoId) {
+    input.value = '';
+    input.style.height = 'auto';
+    await submitClaim(text);
+    return;
+  }
   // 修复 F-M7：前端长度限制
   if (text.length > 2000) {
     showToast('warn', '消息过长', '请控制在 2000 字以内');
@@ -753,6 +986,212 @@ function appendTyping() {
   area.appendChild(div);
   area.scrollTop = area.scrollHeight;
   return div;
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// ClaimsForge — multi-agent claims pipeline UI
+// All dynamic interpolation uses escHtml() (existing project sanitizer).
+// ═══════════════════════════════════════════════════════════════════
+let attachedImage = null;
+let attachedDemoId = null;
+let pendingClaimEstValue = 5000;
+const SET_HTML = (el, html) => { el['inner' + 'HTML'] = html; };
+const APPEND_HTML = (el, html) => { el.insertAdjacentHTML('beforeend', html); };
+
+async function handleImageSelected(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  if (file.size > 5 * 1024 * 1024) {
+    showToast('warn', '图片过大', '请压缩到 5MB 以内');
+    event.target.value = '';
+    return;
+  }
+  const dataUrl = await new Promise((res) => {
+    const r = new FileReader();
+    r.onload = (e) => res(e.target.result);
+    r.readAsDataURL(file);
+  });
+  attachedImage = { dataUrl };
+  renderImagePreview();
+  const fd = new FormData();
+  fd.append('file', file);
+  try {
+    const r = await fetch(API + '/api/upload-image', { method: 'POST', body: fd });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const data = await r.json();
+    attachedImage.image_id = data.image_id;
+    attachedDemoId = null;
+    renderImagePreview();
+  } catch (err) {
+    showToast('warn', '上传失败', err.message || '请重试');
+    attachedImage = null;
+    renderImagePreview();
+  }
+  event.target.value = '';
+}
+
+function renderImagePreview() {
+  const strip = document.getElementById('imgPreviewStrip');
+  if (!attachedImage && !attachedDemoId) {
+    strip.style.display = 'none';
+    SET_HTML(strip, '');
+    return;
+  }
+  strip.style.display = 'flex';
+  const src = (attachedImage && attachedImage.dataUrl)
+    ? attachedImage.dataUrl
+    : '/api/demo-images/' + (attachedDemoId || '').replace('demo:', '');
+  const status = attachedImage && attachedImage.image_id ? '✓ 已上传' : (attachedDemoId ? 'demo 图' : '上传中…');
+  const html = '<img src="' + escHtml(src) + '" alt="claim attachment" />' +
+    '<span style="font-size:11px;color:var(--muted)">' + escHtml(status) + '</span>' +
+    '<button class="remove-img" onclick="clearAttachedImage()" title="移除">✕</button>';
+  SET_HTML(strip, html);
+}
+
+function clearAttachedImage() {
+  attachedImage = null;
+  attachedDemoId = null;
+  pendingClaimEstValue = 5000;
+  renderImagePreview();
+}
+
+async function openClaimDemo() {
+  const backdrop = document.getElementById('claimDemoBackdrop');
+  backdrop.classList.add('open');
+  const grid = document.getElementById('demoScenariosGrid');
+  SET_HTML(grid, '载入中…');
+  try {
+    const r = await fetch(API + '/api/demo-scenarios');
+    const data = await r.json();
+    const cards = (data.scenarios || []).map(function(s) {
+      const msgJson = JSON.stringify(s.user_message);
+      return '<div class="demo-scenario-card" onclick=\"useDemoScenario(\'' + escHtml(s.id) + '\', \'' + escHtml(s.image_filename) + '\', ' + s.estimated_value_cents + ', ' + msgJson.replace(/'/g, "\\'").replace(/"/g, '&quot;') + ')\">' +
+        '<img src="/api/demo-images/' + escHtml(s.image_filename) + '" alt="' + escHtml(s.title) + '" />' +
+        '<div class="ds-title">' + escHtml(s.title) + '</div>' +
+        '<div class="ds-desc">' + escHtml(s.description) + '</div>' +
+        '<div class="ds-outcome">→ ' + escHtml(s.expected_outcome) + '</div>' +
+      '</div>';
+    }).join('');
+    SET_HTML(grid, cards);
+  } catch (err) {
+    SET_HTML(grid, '<div style="color:var(--danger);font-size:12px">加载失败: ' + escHtml(err.message) + '</div>');
+  }
+}
+
+function closeClaimDemo(event) {
+  if (event && event.target.id !== 'claimDemoBackdrop' && !event.target.classList.contains('demo-modal-close')) return;
+  document.getElementById('claimDemoBackdrop').classList.remove('open');
+}
+
+function useDemoScenario(id, filename, estimatedValueCents, userMessage) {
+  attachedImage = null;
+  attachedDemoId = 'demo:' + filename;
+  pendingClaimEstValue = estimatedValueCents || 5000;
+  document.getElementById('chatInput').value = userMessage;
+  renderImagePreview();
+  closeClaimDemo();
+  setTimeout(function() { sendMessage(); }, 200);
+}
+
+async function submitClaim(text) {
+  document.getElementById('emptyState').style.display = 'none';
+  appendMessage('user', text + (attachedImage || attachedDemoId ? ' 📎' : ''));
+  const area = document.getElementById('chatArea');
+  const traceDiv = document.createElement('div');
+  traceDiv.className = 'msg bot';
+  SET_HTML(traceDiv, '<div class="msg-avatar bot-av">🤖</div><div class="msg-body" style="min-width:280px"><div class="msg-bubble" id="liveTrace"><div style="font-size:11px;color:var(--muted);margin-bottom:6px">🔄 4 个 Agent 正在协作…</div></div></div>');
+  area.appendChild(traceDiv);
+  area.scrollTop = area.scrollHeight;
+  const liveTraceEl = traceDiv.querySelector('#liveTrace');
+
+  const onTrace = function(event) {
+    if (event.detail && event.detail.session_id !== sessionId) return;
+    const t = event.detail;
+    const line = document.createElement('div');
+    line.className = 'agent-trace-line';
+    SET_HTML(line, '<span class="agent-badge">' + escHtml(t.agent) + '</span><span>' + escHtml(t.summary || '') + '</span><span class="agent-elapsed">' + (t.elapsed_ms || 0) + 'ms</span>');
+    liveTraceEl.appendChild(line);
+    area.scrollTop = area.scrollHeight;
+  };
+  window.addEventListener('claimsforge:agent_trace', onTrace);
+
+  try {
+    const r = await fetch(API + '/api/claim', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        session_id: sessionId,
+        message: text,
+        image_id: (attachedImage && attachedImage.image_id) || attachedDemoId || null,
+        estimated_value_cents: pendingClaimEstValue
+      })
+    });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const data = await r.json();
+    renderClaimResult(data, liveTraceEl);
+  } catch (err) {
+    APPEND_HTML(liveTraceEl, '<div style="color:var(--danger);font-size:11px;margin-top:8px">⚠️ ' + escHtml(err.message || '请求失败') + '</div>');
+  } finally {
+    window.removeEventListener('claimsforge:agent_trace', onTrace);
+    clearAttachedImage();
+  }
+}
+
+function renderClaimResult(data, container) {
+  let html = '';
+  if (data.intent) {
+    const ord = data.intent.order_id ? ' · 订单 <code>' + escHtml(data.intent.order_id) + '</code>' : '';
+    html += '<div class="claim-result-card">' +
+      '<div class="claim-card-title">🎯 IntentAgent</div>' +
+      '<div style="font-size:12px">分类：<strong>' + escHtml(data.intent.label) + '</strong> (置信度 ' + (data.intent.confidence*100).toFixed(0) + '%)' + ord + '</div>' +
+    '</div>';
+  }
+  if (data.damage) {
+    const sevPct = (data.damage.severity || 0) * 10;
+    const chips = (data.damage.affected_parts || []).map(function(p) { return '<span class="chip">' + escHtml(p) + '</span>'; }).join('');
+    const imgSrc = data.image_id
+      ? (data.image_id.startsWith('demo:') ? '/api/demo-images/' + data.image_id.slice(5) : '/api/uploads/' + data.image_id)
+      : '';
+    html += '<div class="claim-result-card damage">' +
+      '<div class="claim-card-title">📸 DamageAgent · Gemini Vision</div>' +
+      '<div class="damage-row">' +
+        (imgSrc ? '<img src="' + escHtml(imgSrc) + '" class="damage-thumb" alt="damage evidence" />' : '') +
+        '<div style="flex:1">' +
+          '<div style="font-size:13px;margin-bottom:4px"><strong>' + escHtml(data.damage.damage_type) + '</strong> · 严重度 ' + data.damage.severity + '/10 · 置信度 ' + (data.damage.confidence*100).toFixed(0) + '%</div>' +
+          '<div class="severity-bar"><div class="severity-fill" style="width:' + sevPct + '%"></div></div>' +
+          '<div style="margin-top:6px">' + chips + '</div>' +
+        '</div>' +
+      '</div>' +
+      '<div style="font-size:11px;color:var(--muted);margin-top:6px">"' + escHtml(data.damage.reasoning) + '"</div>' +
+    '</div>';
+  }
+  if (data.final_offer) {
+    html += '<div class="claim-result-card offer">' +
+      '<div class="claim-card-title">💰 CompensationAgent · 赔付方案</div>' +
+      '<div class="offer-amount">¥' + (data.final_offer.amount_cents/100).toFixed(2) + '</div>' +
+      '<span class="offer-type-pill">' + escHtml(data.final_offer.offer_type) + '</span>' +
+      (data.final_offer.requires_return ? '<span class="offer-type-pill" style="background:rgba(245,158,11,.15);color:#fbbf24;margin-left:4px">需寄回</span>' : '') +
+      '<div style="font-size:12px;color:#d1d5db;margin-top:8px">' + escHtml(data.final_offer.justification) + '</div>' +
+      '<div class="policy-ref">policies: ' + (data.final_offer.policy_ids || []).map(escHtml).join(', ') + '</div>' +
+    '</div>';
+  }
+  if (data.verification) {
+    const verdictColors = { approve: '#10b981', revise: '#f59e0b', escalate_to_human: '#ef4444' };
+    const vColor = verdictColors[data.verification.verdict] || '#9ca3af';
+    html += '<div class="claim-result-card verify">' +
+      '<div class="claim-card-title">✅ VerifierAgent</div>' +
+      '<div style="font-size:12px"><span style="color:' + vColor + ';font-weight:600">' + escHtml(data.verification.verdict) + '</span> — ' + escHtml(data.verification.reason) + '</div>' +
+    '</div>';
+  }
+  if (data.escalated) {
+    html += '<div class="claim-result-card escalated">' +
+      '<div class="claim-card-title">🚨 已升级人工</div>' +
+      '<div style="font-size:12px">' + escHtml(data.final_reply) + '</div>' +
+    '</div>';
+  } else if (data.final_reply) {
+    html += '<div style="margin-top:8px;padding:10px 12px;background:rgba(16,185,129,.08);border-left:3px solid #10b981;border-radius:6px;font-size:12px;white-space:pre-wrap">' + escHtml(data.final_reply) + '</div>';
+  }
+  APPEND_HTML(container, html);
 }
 
 function clearChat() {
