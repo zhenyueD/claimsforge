@@ -84,7 +84,7 @@ def _format_final_reply(ctx: ClaimContext) -> str:
         "Be brief, 2-4 sentences" voice rule
       - Eliminates the "Chinese header + English body" UX bug
     """
-    is_zh = _detect_language(ctx.user_message)
+    is_zh = _detect_language(ctx.user_message) == "zh"
 
     # Escalation — short template, in the customer's language
     if ctx.escalated_to_human:

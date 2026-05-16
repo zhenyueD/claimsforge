@@ -125,7 +125,7 @@ def retrieve_recent_learned(
     if not cases:
         return []
     if damage_type:
-        cases = [c for c in cases if c.get("damage", {}).get("damage_type") == damage_type]
+        cases = [c for c in cases if (c.get("damage") or {}).get("damage_type") == damage_type]
     return cases[-top_k:][::-1]  # newest first
 
 
@@ -143,8 +143,8 @@ def append_learned_case(record: dict[str, Any]) -> None:
             f.write(json.dumps(record, ensure_ascii=False) + "\n")
     logger.info("learned new case: %s damage=%s offer=%s",
                 record.get("session_id"),
-                record.get("damage", {}).get("damage_type"),
-                record.get("final_offer", {}).get("offer_type"))
+                (record.get("damage") or {}).get("damage_type"),
+                (record.get("final_offer") or {}).get("offer_type"))
 
 
 def get_learning_stats() -> dict[str, Any]:
@@ -153,19 +153,19 @@ def get_learning_stats() -> dict[str, Any]:
     if not cases:
         return {"total": 0, "by_damage_type": {}, "by_outcome": {}, "recent": []}
     from collections import Counter
-    by_damage = Counter(c.get("damage", {}).get("damage_type", "unknown") for c in cases)
+    by_damage = Counter((c.get("damage") or {}).get("damage_type", "unknown") for c in cases)
     by_outcome = Counter(
-        "escalated" if c.get("escalated") else c.get("final_offer", {}).get("offer_type", "?")
+        "escalated" if c.get("escalated") else (c.get("final_offer") or {}).get("offer_type", "?")
         for c in cases
     )
     recent = [
         {
             "session_id": c.get("session_id"),
-            "damage_type": c.get("damage", {}).get("damage_type"),
-            "severity": c.get("damage", {}).get("severity"),
-            "emotion": c.get("emotion", {}).get("label"),
-            "offer_type": c.get("final_offer", {}).get("offer_type") if c.get("final_offer") else None,
-            "amount_cents": c.get("final_offer", {}).get("amount_cents") if c.get("final_offer") else None,
+            "damage_type": (c.get("damage") or {}).get("damage_type"),
+            "severity": (c.get("damage") or {}).get("severity"),
+            "emotion": (c.get("emotion") or {}).get("label"),
+            "offer_type": (c.get("final_offer") or {}).get("offer_type") if c.get("final_offer") else None,
+            "amount_cents": (c.get("final_offer") or {}).get("amount_cents") if c.get("final_offer") else None,
             "escalated": c.get("escalated", False),
             "learned_at": c.get("learned_at"),
         }

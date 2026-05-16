@@ -63,6 +63,12 @@ Calibration notes:
   - All-caps and exclamation marks are weak signals; word choice is strong.
   - Mentioning a regulator/lawyer/media is CRITICAL even if the tone is calm.
   - A polite request for refund is NOT high emotion. Stay calibrated.
+
+LANGUAGE RULE
+  Write `label`, `suggested_tone`, and `escalation_signals` in the SAME LANGUAGE
+  the customer used. The customer never sees these directly, but operators
+  reviewing claims should see consistent language with the customer's message.
+  `triggers` stays in the source language (it quotes the customer verbatim).
 """
 
 

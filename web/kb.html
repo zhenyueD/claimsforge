@@ -166,12 +166,14 @@
 
   .search-bar {
     display: flex;
+    flex-wrap: wrap;
     gap: 10px;
     margin-bottom: 18px;
     align-items: center;
   }
   .search-input {
-    flex: 1;
+    flex: 1 1 220px;
+    min-width: 200px;
     background: var(--bg-2);
     border: 1px solid var(--line-strong);
     color: var(--fg);
@@ -218,8 +220,11 @@
     font-weight: 600;
     cursor: pointer;
     box-shadow: 0 4px 12px rgba(99,102,241,.35);
+    flex-shrink: 0;
+    white-space: nowrap;
   }
   .upload-btn:hover { transform: translateY(-1px); }
+  .search-mode { flex-shrink: 0; }
 
   .list-meta {
     font-size: 12px;

@@ -31,27 +31,39 @@ from compensation_agent import load_policies
 logger = logging.getLogger(__name__)
 
 
-_SYSTEM = """你是赔付方案的最终审核员。
+_SYSTEM = """You are the final reviewer on every compensation offer before it
+reaches the customer. You see: the damage assessment, the customer's emotion
+grading, the offer CompensationAgent proposed, and the policy caps that applied.
 
-输入：损坏评估、客户情绪、CompensationAgent 提出的方案、政策上限信息。
+JUDGE THE OFFER ON
+  - amount: reasonable? (not so generous it bleeds margin, not so stingy it
+    insults the customer)
+  - tone: is the justification likely to inflame an already-upset customer?
+  - offer_type fit: e.g. complex electronics break → replacement usually fits
+    better than partial_refund
 
-你要判断这个方案：
-- 金额是否合理（既不过度赔付伤公司，也不抠门激怒客户）
-- 措辞是否得体（justification 是否会让情绪激动的客户更生气）
-- offer_type 是否合适（如复杂电子产品破裂用 replacement 比 partial_refund 更合适）
+VERDICT (pick one)
+  approve              — offer is good, ship it
+  revise               — small change needed (amount tweak, gentler wording,
+                         different offer_type). Put your revision in
+                         revised_offer.
+  escalate_to_human    — material risk (amount over cap, legal exposure,
+                         evidence too weak). Bail out to a human.
 
-输出 verdict（三选一）：
-- approve：方案 OK，直接执行
-- revise：方案需要小幅修订（金额调整、换措辞、改 offer_type），在 revised_offer 给出修订版
-- escalate_to_human：方案有重大问题（金额溢出、可能涉法律纠纷、判断证据不足），转人工
+reason: ONE sentence explaining your call.
 
-reason：1 句话说明判断理由。
+PRINCIPLES
+  - Customer emotion ≥ 8 but the justification reads cold/mechanical → revise
+    with warmer wording.
+  - Amount over the policy's max_cents → revise down to the cap.
+  - damage.confidence < 0.5 AND amount > $50 → escalate (don't pay out on
+    weak evidence).
+  - Plan obviously conflicts with policy → escalate.
 
-判断原则：
-- 客户情绪 >= 8 但你看到 justification 冷漠机械 → revise，建议更共情的措辞
-- 金额超过政策 max_cents → revise，建议降到上限
-- damage.confidence < 0.5 + 金额 > 50 元 → escalate（证据不足不该自动给钱）
-- 方案明显与政策冲突 → escalate
+LANGUAGE RULE
+  Write `reason` in the SAME LANGUAGE the customer used (visible in the
+  agent trace + admin UI). If revised_offer is set, its justification must
+  also stay in the customer's language.
 """
 
 
@@ -82,13 +94,15 @@ def verify(
             reason=f"损坏置信度仅 {damage_confidence:.2f}，但赔付金额超 50 元，证据不足需人工核验。",
         )
 
-    # 软性校验 — 让 LLM 看 justification 措辞
+    # Soft check — let the LLM judge tone + fit
     prompt = (
-        f"客户消息：{user_message}\n"
-        f"损坏严重度：{damage_severity}/10，置信度：{damage_confidence:.2f}\n"
-        f"客户情绪分：{emotion_score:.1f}/10\n"
-        f"\n方案：\n{offer.model_dump_json(indent=2, ensure_ascii=False)}\n"
-        f"\n请审核。"
+        f"## Customer message (write `reason` in this language)\n"
+        f"\"\"\"\n{user_message}\n\"\"\"\n\n"
+        f"## Signals\n"
+        f"  damage severity: {damage_severity}/10, confidence: {damage_confidence:.2f}\n"
+        f"  emotion score: {emotion_score:.1f}/10\n\n"
+        f"## Proposed offer\n{offer.model_dump_json(indent=2, ensure_ascii=False)}\n\n"
+        f"Review and return your verdict."
     )
     try:
         result = structured(
