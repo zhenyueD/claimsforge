@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Unified KB · ClaimsForge</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg: #07080d;
+    --bg-2: #0d0f17;
+    --bg-3: #121521;
+    --surface: rgba(255,255,255,.03);
+    --surface-2: rgba(255,255,255,.05);
+    --fg: #f3f4f6;
+    --muted: #9ca3af;
+    --dim: #6b7280;
+    --line: rgba(255,255,255,.08);
+    --line-strong: rgba(255,255,255,.14);
+    --indigo: #6366f1;
+    --violet: #a78bfa;
+    --sky: #38bdf8;
+    --emerald: #10b981;
+    --amber: #f59e0b;
+    --rose: #f43f5e;
+    --pink: #ec4899;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--bg);
+    color: var(--fg);
+    overflow: hidden;
+    height: 100vh;
+  }
+  code, pre, .mono { font-family: 'JetBrains Mono', 'SF Mono', Monaco, monospace; }
+
+  .topbar {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    height: 56px;
+    background: rgba(7,8,13,.85);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--line);
+    display: flex; align-items: center;
+    padding: 0 28px;
+    z-index: 100;
+  }
+  .brand { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 17px; }
+  .brand-mark {
+    width: 26px; height: 26px;
+    border-radius: 7px;
+    background: linear-gradient(135deg, #6366f1, #a78bfa, #ec4899);
+    box-shadow: 0 4px 12px rgba(99,102,241,.5);
+    position: relative;
+  }
+  .brand-mark::before {
+    content: '';
+    position: absolute; inset: 5px;
+    border: 1.5px solid rgba(255,255,255,.55);
+    border-radius: 3px;
+    border-bottom-color: transparent;
+    border-left-color: transparent;
+    transform: rotate(45deg);
+  }
+  .brand-name {
+    background: linear-gradient(135deg, #f3f4f6, #c7d2fe);
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .brand-tag {
+    margin-left: 12px;
+    padding: 2px 10px;
+    background: rgba(167,139,250,.12);
+    border: 1px solid rgba(167,139,250,.28);
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: .04em;
+    color: #c4b5fd;
+    text-transform: uppercase;
+  }
+  .topbar .spacer { flex: 1; }
+  .topbar a {
+    color: var(--muted);
+    font-size: 12px;
+    text-decoration: none;
+    padding: 6px 12px;
+    border-radius: 8px;
+    margin-left: 4px;
+  }
+  .topbar a:hover { background: var(--surface); color: var(--fg); }
+  .topbar a.active { background: var(--surface-2); color: var(--violet); border: 1px solid rgba(167,139,250,.3); }
+
+  .app {
+    position: fixed;
+    top: 56px; bottom: 0; left: 0; right: 0;
+    display: grid;
+    grid-template-columns: 280px minmax(0, 1fr) 480px;
+    min-height: 0;
+  }
+  .col-left, .col-mid, .col-right {
+    overflow-y: auto;
+    overflow-x: hidden;
+    min-height: 0;
+  }
+  .col-left { border-right: 1px solid var(--line); background: var(--bg-2); padding: 24px 20px; }
+  .col-mid { padding: 24px 28px; }
+  .col-right { border-left: 1px solid var(--line); background: var(--bg-2); padding: 24px 28px; }
+  .col-right.empty { display: flex; align-items: center; justify-content: center; color: var(--dim); }
+
+  .section-title {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .12em;
+    color: var(--dim);
+    text-transform: uppercase;
+    margin-bottom: 14px;
+  }
+
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 14px;
+    margin-bottom: 10px;
+  }
+  .stat-card .num {
+    font-size: 28px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    background: linear-gradient(135deg, var(--violet), var(--sky));
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .stat-card .label { font-size: 11px; color: var(--muted); margin-top: 2px; text-transform: uppercase; letter-spacing: .08em; }
+
+  .filter-group { margin-bottom: 18px; }
+  .filter-group .label { font-size: 11px; color: var(--dim); margin-bottom: 6px; text-transform: uppercase; letter-spacing: .08em; }
+  .filter-btn {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 10px;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 12px;
+    color: var(--muted);
+    transition: all .12s;
+    width: 100%;
+    text-align: left;
+    margin-bottom: 2px;
+  }
+  .filter-btn:hover { background: var(--surface); color: var(--fg); }
+  .filter-btn.active { background: var(--surface-2); border-color: rgba(167,139,250,.3); color: var(--violet); }
+  .filter-btn .count {
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--dim);
+    font-size: 11px;
+  }
+  .filter-btn.active .count { color: var(--violet); }
+
+  .search-bar {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 18px;
+    align-items: center;
+  }
+  .search-input {
+    flex: 1;
+    background: var(--bg-2);
+    border: 1px solid var(--line-strong);
+    color: var(--fg);
+    padding: 11px 14px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-family: inherit;
+    outline: none;
+    transition: border-color .12s;
+  }
+  .search-input:focus { border-color: rgba(99,102,241,.5); }
+  .search-mode {
+    display: flex;
+    gap: 4px;
+    background: var(--bg-2);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 3px;
+  }
+  .search-mode button {
+    padding: 7px 12px;
+    background: transparent;
+    color: var(--muted);
+    border: none;
+    border-radius: 7px;
+    font-size: 12px;
+    cursor: pointer;
+    font-weight: 600;
+  }
+  .search-mode button.active {
+    background: rgba(99,102,241,.18);
+    color: var(--violet);
+  }
+  .upload-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 9px 14px;
+    background: linear-gradient(135deg, #6366f1, #a78bfa);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(99,102,241,.35);
+  }
+  .upload-btn:hover { transform: translateY(-1px); }
+
+  .list-meta {
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: 12px;
+  }
+
+  .entry-card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 14px 16px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    transition: all .12s;
+    position: relative;
+  }
+  .entry-card:hover {
+    background: var(--surface-2);
+    border-color: var(--line-strong);
+    transform: translateY(-1px);
+  }
+  .entry-card.selected {
+    border-color: rgba(99,102,241,.45);
+    background: rgba(99,102,241,.05);
+  }
+  .entry-card.selected::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 3px;
+    background: linear-gradient(180deg, #6366f1, #ec4899);
+    border-radius: 10px 0 0 10px;
+  }
+  .entry-title { font-size: 13px; font-weight: 600; margin-bottom: 5px; line-height: 1.35; }
+  .entry-meta { display: flex; gap: 6px; flex-wrap: wrap; font-size: 10px; }
+  .meta-pill {
+    padding: 1px 8px;
+    border-radius: 999px;
+    font-weight: 600;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .src-human_policy { background: rgba(99,102,241,.15); color: #818cf8; }
+  .src-human_sop { background: rgba(236,72,153,.15); color: #f9a8d4; }
+  .src-curated_wisdom { background: rgba(245,158,11,.15); color: #fcd34d; }
+  .src-learned_case { background: rgba(16,185,129,.15); color: #34d399; }
+  .src-gap { background: rgba(244,63,94,.18); color: #fda4af; }
+  .src-user_correction { background: rgba(168,85,247,.18); color: #d8b4fe; }
+  .entry-card .preview {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 6px;
+    line-height: 1.45;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .entry-card .score-badge {
+    position: absolute;
+    top: 12px; right: 12px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--emerald);
+    background: rgba(16,185,129,.1);
+    padding: 1px 7px;
+    border-radius: 999px;
+    font-weight: 600;
+  }
+
+  /* Right pane — detail view */
+  .detail-section { margin-bottom: 22px; }
+  .detail-section .label {
+    font-size: 10px;
+    color: var(--dim);
+    font-weight: 700;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .detail-section .body { font-size: 14px; line-height: 1.55; color: #e5e7eb; }
+  .detail-section .body.mono { font-family: 'JetBrains Mono', monospace; font-size: 12px; }
+
+  .detail-header h2 { font-size: 20px; font-weight: 800; line-height: 1.25; margin-bottom: 10px; }
+  .detail-pills { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 18px; }
+  .pill {
+    padding: 3px 10px;
+    background: var(--bg-3);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    font-size: 11px;
+    color: var(--muted);
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .pill.q-high { color: #6ee7b7; border-color: rgba(16,185,129,.3); }
+  .pill.q-mid { color: #fcd34d; border-color: rgba(245,158,11,.3); }
+  .pill.q-low { color: #fca5a5; border-color: rgba(244,63,94,.3); }
+  .pill.has-emb { background: rgba(56,189,248,.1); border-color: rgba(56,189,248,.3); color: #7dd3fc; }
+  .tag-chip {
+    padding: 3px 8px;
+    background: rgba(167,139,250,.1);
+    border: 1px solid rgba(167,139,250,.2);
+    border-radius: 6px;
+    color: #c4b5fd;
+    font-size: 11px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .ingest-modal-bg {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,.7);
+    backdrop-filter: blur(8px);
+    z-index: 200;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .ingest-modal-bg.open { display: flex; }
+  .ingest-modal {
+    background: var(--bg-2);
+    border: 1px solid var(--line-strong);
+    border-radius: 16px;
+    padding: 28px;
+    max-width: 560px;
+    width: 100%;
+    box-shadow: 0 30px 100px rgba(0,0,0,.6);
+  }
+  .ingest-modal h2 { margin-bottom: 8px; font-size: 20px; }
+  .ingest-modal p { font-size: 13px; color: var(--muted); margin-bottom: 18px; }
+  .ingest-dropzone {
+    border: 2px dashed var(--line-strong);
+    border-radius: 12px;
+    padding: 40px 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: all .15s;
+    margin-bottom: 14px;
+  }
+  .ingest-dropzone:hover { border-color: var(--violet); background: rgba(167,139,250,.05); }
+  .ingest-dropzone .icon { font-size: 32px; margin-bottom: 8px; }
+  .ingest-dropzone .label { font-size: 14px; }
+  .ingest-dropzone .hint { font-size: 11px; color: var(--dim); margin-top: 4px; }
+  .ingest-row { display: flex; gap: 8px; margin-bottom: 10px; }
+  .ingest-row input {
+    flex: 1; background: var(--bg-3); border: 1px solid var(--line);
+    color: var(--fg); padding: 9px 12px; border-radius: 8px; font-size: 13px;
+    font-family: inherit; outline: none;
+  }
+  .ingest-progress {
+    background: var(--bg-3);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 14px;
+    font-size: 12px;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--muted);
+    max-height: 240px;
+    overflow-y: auto;
+  }
+  .ingest-progress div { padding: 2px 0; }
+  .ingest-progress .ok { color: #6ee7b7; }
+  .ingest-progress .err { color: #fca5a5; }
+  .ingest-actions {
+    display: flex; justify-content: flex-end; gap: 8px; margin-top: 14px;
+  }
+  .btn-close {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    color: var(--fg);
+    padding: 8px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 13px;
+  }
+
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-thumb { background: var(--line); border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand">
+    <div class="brand-mark"></div>
+    <span class="brand-name">ClaimsForge</span>
+    <span class="brand-tag">Unified KB · live</span>
+  </div>
+  <div class="spacer"></div>
+  <a href="/">← Agent demo</a>
+  <a href="/kb" class="active">Knowledge Base</a>
+</div>
+
+<div class="app">
+  <aside class="col-left">
+    <div class="section-title">Overview</div>
+    <div class="stat-card"><div class="num" id="stat-total">—</div><div class="label">Total entries</div></div>
+    <div class="stat-card"><div class="num" id="stat-emb">—</div><div class="label">Embedded</div></div>
+    <div class="stat-card"><div class="num" id="stat-uses">—</div><div class="label">Total retrievals</div></div>
+    <div class="stat-card"><div class="num" id="stat-quality">—</div><div class="label">Avg quality</div></div>
+
+    <div class="filter-group" style="margin-top: 22px;">
+      <div class="label">By source</div>
+      <div id="src-filters"></div>
+    </div>
+
+    <div class="filter-group">
+      <div class="label">By domain (top)</div>
+      <div id="domain-filters"></div>
+    </div>
+  </aside>
+
+  <main class="col-mid">
+    <div class="search-bar">
+      <input class="search-input" id="searchInput" placeholder="Search by keyword or natural-language question…" />
+      <div class="search-mode">
+        <button id="mode-kw" class="active" onclick="setMode('kw')">Keyword</button>
+        <button id="mode-sem" onclick="setMode('sem')">Semantic</button>
+      </div>
+      <button class="upload-btn" onclick="openIngest()">＋ Upload SOP</button>
+    </div>
+    <div class="list-meta" id="listMeta">Loading…</div>
+    <div id="entryList"></div>
+  </main>
+
+  <aside class="col-right empty" id="detailPane">
+    Select an entry to see full details.
+  </aside>
+</div>
+
+<!-- Ingest modal -->
+<div id="ingestBg" class="ingest-modal-bg" onclick="closeIngest(event)">
+  <div class="ingest-modal" onclick="event.stopPropagation()">
+    <h2>Upload a knowledge document</h2>
+    <p>PDF, DOCX, Markdown, or plain text. We parse, split by section, run each chunk through Gemini to extract typed entries, then embed them. All agents see the new knowledge within seconds.</p>
+    <label class="ingest-dropzone" id="dropzone" for="ingestFile">
+      <div class="icon">📄</div>
+      <div class="label" id="dropLabel">Click or drop a file</div>
+      <div class="hint">≤ 20 MB</div>
+      <input type="file" id="ingestFile" accept=".pdf,.docx,.md,.txt,.json,.csv" style="display:none" />
+    </label>
+    <div class="ingest-row">
+      <input id="domainHint" placeholder="Domain hint (optional, e.g. refund / shipping)" />
+      <input id="contributor" placeholder="Contributor (e.g. ops_team)" />
+    </div>
+    <div id="ingestProgress" class="ingest-progress" style="display:none"></div>
+    <div class="ingest-actions">
+      <button class="btn-close" onclick="closeIngest()">Close</button>
+      <button class="upload-btn" id="ingestSubmit" onclick="submitIngest()" disabled>Ingest</button>
+    </div>
+  </div>
+</div>
+
+<script>
+let allEntries = [];
+let stats = {};
+let filters = { source: null, domain: null };
+let searchQuery = '';
+let searchMode = 'kw';
+let selectedId = null;
+
+function $(id) { return document.getElementById(id); }
+function setHTML(el, html) { el['inner' + 'HTML'] = html; }
+function appendHTML(el, html) { el.insertAdjacentHTML('beforeend', html); }
+function escHtml(s) {
+  if (s == null) return '';
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+async function loadStats() {
+  const r = await fetch('/api/kb/stats').then(r => r.json());
+  stats = r;
+  $('stat-total').textContent = r.total_entries;
+  $('stat-emb').textContent = r.has_embeddings || 0;
+  $('stat-uses').textContent = r.total_use_count;
+  $('stat-quality').textContent = (r.avg_quality * 100).toFixed(0) + '%';
+
+  const srcFilters = $('src-filters');
+  const srcOrder = ['human_policy','human_sop','curated_wisdom','learned_case','gap','user_correction'];
+  const srcEntries = srcOrder.filter(s => r.by_source[s]).map(s => [s, r.by_source[s]]);
+  setHTML(srcFilters,
+    '<button class="filter-btn ' + (!filters.source ? 'active' : '') + '" onclick="setFilter(\'source\', null)"><span>All sources</span><span class="count">' + r.total_entries + '</span></button>' +
+    srcEntries.map(([s, n]) =>
+      '<button class="filter-btn ' + (filters.source === s ? 'active' : '') + '" onclick="setFilter(\'source\', \'' + s + '\')"><span>' + escHtml(s.replace(/_/g, ' ')) + '</span><span class="count">' + n + '</span></button>'
+    ).join('')
+  );
+
+  const domains = Object.entries(r.by_domain || {}).sort((a,b) => b[1] - a[1]).slice(0, 10);
+  setHTML($('domain-filters'),
+    '<button class="filter-btn ' + (!filters.domain ? 'active' : '') + '" onclick="setFilter(\'domain\', null)"><span>All domains</span><span class="count">' + r.total_entries + '</span></button>' +
+    domains.map(([d, n]) =>
+      '<button class="filter-btn ' + (filters.domain === d ? 'active' : '') + '" onclick="setFilter(\'domain\', \'' + d + '\')"><span>' + escHtml(d) + '</span><span class="count">' + n + '</span></button>'
+    ).join('')
+  );
+}
+
+async function loadList() {
+  if (searchQuery && searchMode === 'sem') {
+    const r = await fetch('/api/kb/search?q=' + encodeURIComponent(searchQuery) + '&top_k=50').then(r => r.json());
+    allEntries = r.results.map(x => ({ ...x.entry, _score: x.score, _method: x.method }));
+  } else {
+    const params = new URLSearchParams();
+    if (filters.source) params.set('source', filters.source);
+    if (filters.domain) params.set('domain', filters.domain);
+    if (searchQuery) params.set('q', searchQuery);
+    params.set('limit', '500');
+    const r = await fetch('/api/kb/list?' + params).then(r => r.json());
+    allEntries = r.items;
+  }
+  renderList();
+}
+
+function renderList() {
+  let entries = allEntries;
+  if (searchMode !== 'sem') {
+    if (filters.source) entries = entries.filter(e => e.source === filters.source);
+    if (filters.domain) entries = entries.filter(e => e.domain === filters.domain);
+  }
+  $('listMeta').textContent = entries.length + ' entries' + (searchQuery ? ' for "' + searchQuery + '" (' + searchMode + ')' : '');
+
+  setHTML($('entryList'), entries.map(e =>
+    '<div class="entry-card ' + (selectedId === e.id ? 'selected' : '') + '" onclick="selectEntry(\'' + e.id + '\')">' +
+      (e._score ? '<span class="score-badge">' + (e._score * 100).toFixed(0) + '%</span>' : '') +
+      '<div class="entry-title">' + escHtml(e.title) + '</div>' +
+      '<div class="entry-meta">' +
+        '<span class="meta-pill src-' + e.source + '">' + e.source.replace(/_/g, ' ') + '</span>' +
+        '<span class="meta-pill" style="background:var(--surface);color:var(--muted)">' + escHtml(e.domain) + '</span>' +
+        '<span class="meta-pill" style="background:var(--surface);color:var(--muted)">' + e.type + '</span>' +
+      '</div>' +
+      '<div class="preview">' + escHtml(e.scenario || '') + '</div>' +
+    '</div>'
+  ).join(''));
+}
+
+async function selectEntry(id) {
+  selectedId = id;
+  renderList();
+  const r = await fetch('/api/kb/entry/' + encodeURIComponent(id)).then(r => r.json());
+  const e = r.entry;
+  const qClass = e.quality_score >= 0.7 ? 'q-high' : (e.quality_score >= 0.5 ? 'q-mid' : 'q-low');
+  $('detailPane').classList.remove('empty');
+  setHTML($('detailPane'),
+    '<div class="detail-header">' +
+      '<h2>' + escHtml(e.title) + '</h2>' +
+      '<div class="detail-pills">' +
+        '<span class="meta-pill src-' + e.source + '">' + e.source.replace(/_/g, ' ') + '</span>' +
+        '<span class="pill">domain: ' + escHtml(e.domain) + '</span>' +
+        '<span class="pill">type: ' + e.type + '</span>' +
+        '<span class="pill ' + qClass + '">quality ' + (e.quality_score * 100).toFixed(0) + '%</span>' +
+        '<span class="pill">used ' + e.use_count + '×</span>' +
+        (r.has_embedding ? '<span class="pill has-emb">📐 ' + r.embedding_dim + 'd embedded</span>' : '') +
+      '</div>' +
+    '</div>' +
+    (e.customer_facing_name ?
+      '<div class="detail-section"><div class="label">Customer-facing name</div><div class="body">' + escHtml(e.customer_facing_name) + '</div></div>' : '') +
+    '<div class="detail-section"><div class="label">When this applies (scenario)</div><div class="body">' + escHtml(e.scenario) + '</div></div>' +
+    '<div class="detail-section"><div class="label">Decision</div><div class="body">' + escHtml(e.decision) + '</div></div>' +
+    (e.rationale ? '<div class="detail-section"><div class="label">Rationale</div><div class="body">' + escHtml(e.rationale) + '</div></div>' : '') +
+    (e.tags && e.tags.length ?
+      '<div class="detail-section"><div class="label">Tags</div><div class="body" style="display:flex;flex-wrap:wrap;gap:6px;">' +
+        e.tags.map(t => '<span class="tag-chip">' + escHtml(t) + '</span>').join('') +
+      '</div></div>' : '') +
+    '<div class="detail-section"><div class="label">Provenance</div><div class="body mono" style="font-size:11px;">' +
+      'id: ' + escHtml(e.id) + '<br/>' +
+      'contributor: ' + escHtml(e.contributor || '—') + '<br/>' +
+      'created: ' + escHtml(e.created_at) + '<br/>' +
+      (e.source_doc ? 'source doc: ' + escHtml(e.source_doc) + ' (chunk ' + e.source_chunk + ')<br/>' : '') +
+      (e.upvotes || e.downvotes ? '👍 ' + e.upvotes + ' · 👎 ' + e.downvotes : '') +
+    '</div></div>'
+  );
+}
+
+function setFilter(k, v) {
+  filters[k] = v;
+  loadStats();
+  loadList();
+}
+function setMode(m) {
+  searchMode = m;
+  $('mode-kw').classList.toggle('active', m === 'kw');
+  $('mode-sem').classList.toggle('active', m === 'sem');
+  if (searchQuery) loadList();
+}
+
+let searchTimer = null;
+$('searchInput').addEventListener('input', e => {
+  searchQuery = e.target.value.trim();
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(loadList, searchMode === 'sem' ? 400 : 150);
+});
+
+// Ingestion modal
+let pendingFile = null;
+function openIngest() { $('ingestBg').classList.add('open'); }
+function closeIngest(ev) {
+  if (ev && ev.target.id !== 'ingestBg' && !ev.target.classList.contains('btn-close')) return;
+  $('ingestBg').classList.remove('open');
+}
+$('ingestFile').addEventListener('change', e => {
+  pendingFile = e.target.files[0];
+  if (pendingFile) {
+    $('dropLabel').textContent = pendingFile.name + ' (' + (pendingFile.size/1024).toFixed(1) + ' KB)';
+    $('ingestSubmit').disabled = false;
+  }
+});
+
+async function submitIngest() {
+  if (!pendingFile) return;
+  $('ingestSubmit').disabled = true;
+  const fd = new FormData();
+  fd.append('file', pendingFile);
+  if ($('domainHint').value.trim()) fd.append('domain_hint', $('domainHint').value.trim());
+  if ($('contributor').value.trim()) fd.append('contributor', $('contributor').value.trim());
+  const prog = $('ingestProgress');
+  prog.style.display = 'block';
+  setHTML(prog, '<div>📤 uploading ' + escHtml(pendingFile.name) + '…</div>');
+  try {
+    const r = await fetch('/api/kb/import', { method: 'POST', body: fd });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const data = await r.json();
+    appendHTML(prog, '<div class="ok">✓ parsed ' + data.raw_chars + ' chars → ' + data.chunks + ' chunks</div>');
+    appendHTML(prog, '<div class="ok">✓ ' + data.entries_written + ' KB entries written (' + data.skipped + ' skipped)</div>');
+    appendHTML(prog, '<div class="ok">✓ ' + data.embedded + ' new vectors indexed</div>');
+    appendHTML(prog, '<div class="ok">✓ done in ' + data.elapsed_s + 's</div>');
+    loadStats();
+    loadList();
+  } catch (err) {
+    appendHTML(prog, '<div class="err">✗ ' + escHtml(err.message) + '</div>');
+  } finally {
+    $('ingestSubmit').disabled = false;
+  }
+}
+
+loadStats();
+loadList();
+</script>
+</body>
+</html>

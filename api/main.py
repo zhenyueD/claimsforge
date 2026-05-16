@@ -620,6 +620,65 @@ async def kb_stats_unified():
     return get_kb_stats()
 
 
+@app.get("/api/kb/list")
+async def kb_list(
+    source: Optional[str] = None,
+    domain: Optional[str] = None,
+    q: Optional[str] = None,
+    limit: int = 200,
+    offset: int = 0,
+):
+    """Browse the unified KB. Supports source/domain filters + keyword query."""
+    from unified_kb import _load_kb, search as kw_search
+    if q:
+        entries = kw_search(q, top_k=limit)
+    else:
+        entries = _load_kb()
+    if source:
+        entries = [e for e in entries if e.source.value == source]
+    if domain:
+        entries = [e for e in entries if e.domain == domain]
+    total = len(entries)
+    page = entries[offset:offset + limit]
+    return {
+        "total": total,
+        "offset": offset,
+        "limit": limit,
+        "items": [e.model_dump() for e in page],
+    }
+
+
+@app.get("/api/kb/entry/{entry_id}")
+async def kb_entry_detail(entry_id: str):
+    from unified_kb import _load_kb, _load_embeddings
+    entry = next((e for e in _load_kb() if e.id == entry_id), None)
+    if not entry:
+        raise HTTPException(status_code=404, detail="entry not found")
+    embeddings = _load_embeddings()
+    has_emb = entry_id in embeddings
+    emb_dim = len(embeddings[entry_id]) if has_emb else 0
+    return {
+        "entry": entry.model_dump(),
+        "has_embedding": has_emb,
+        "embedding_dim": emb_dim,
+    }
+
+
+@app.get("/api/kb/search")
+async def kb_search(q: str, top_k: int = 10, threshold: float = 0.55):
+    """Semantic search using embeddings. Returns entries above threshold."""
+    from embedding_index import hybrid_search
+    results = hybrid_search(q, top_k=top_k, threshold=threshold)
+    return {
+        "query": q,
+        "threshold": threshold,
+        "results": [
+            {"entry": e.model_dump(), "score": round(s, 4), "method": m}
+            for e, s, m in results
+        ],
+    }
+
+
 @app.get("/api/kb/gaps")
 async def kb_gaps(limit: int = 50):
     """Show questions where no KB entry could answer with confidence."""
@@ -671,7 +730,16 @@ async def claimsforge_health():
     }
 
 
-# ── 首页重定向 ───────────────────────────────────────────────
+# ── Static page routes ──────────────────────────────────────
+
+@app.get("/kb")
+async def kb_browser():
+    from fastapi.responses import FileResponse
+    kb_html = WEB_DIR / "kb.html"
+    if kb_html.exists():
+        return FileResponse(str(kb_html))
+    raise HTTPException(status_code=404, detail="kb.html missing")
+
 
 @app.get("/")
 async def root():
