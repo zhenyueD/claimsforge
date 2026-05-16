@@ -645,6 +645,45 @@
   .fb-btn.picked-up { background: rgba(16,185,129,.15); border-color: rgba(16,185,129,.4); color: #6ee7b7; }
   .fb-btn.picked-down { background: rgba(244,63,94,.15); border-color: rgba(244,63,94,.4); color: #fda4af; }
 
+  /* Resolution row — Intercom-style accept/reject/escalate */
+  .resolution-row {
+    margin-top: 10px; padding-top: 10px;
+    border-top: 1px solid rgba(16,185,129,.2);
+    display: flex; align-items: center; flex-wrap: wrap; gap: 8px;
+    font-size: 11px; color: var(--muted);
+  }
+  .res-label { font-weight: 600; color: var(--fg); }
+  .res-btn {
+    background: rgba(255,255,255,0.04); border: 1px solid var(--line);
+    color: var(--fg); padding: 6px 12px; border-radius: 8px;
+    cursor: pointer; font-size: 12px; font-weight: 500; transition: all .12s;
+  }
+  .res-btn:hover:not(:disabled) { background: rgba(255,255,255,0.08); border-color: var(--line-strong); }
+  .res-btn:disabled { cursor: not-allowed; opacity: 0.55; }
+  .res-btn.accept { color: #6ee7b7; border-color: rgba(16,185,129,.35); }
+  .res-btn.accept.picked { background: rgba(16,185,129,.18); }
+  .res-btn.reject { color: #fcd34d; border-color: rgba(245,158,11,.35); }
+  .res-btn.reject.picked { background: rgba(245,158,11,.18); }
+  .res-btn.escalate { color: #fda4af; border-color: rgba(244,63,94,.35); }
+  .res-btn.escalate.picked { background: rgba(244,63,94,.18); }
+
+  /* Handoff briefing card — shown to demo viewer alongside escalation */
+  .result-card.handoff { border-left: 3px solid #f97316; }
+  .result-card.handoff .rc-header { color: #fdba74; }
+  .handoff-meta { display: flex; align-items: center; gap: 10px; margin: 6px 0 10px; font-size: 11px; }
+  .ho-id { color: var(--muted); font-family: var(--mono); }
+  .pri-pill {
+    display: inline-block; padding: 3px 9px; border-radius: 999px;
+    font-size: 10px; font-weight: 700; letter-spacing: 0.06em;
+  }
+  .pri-p0 { background: rgba(244,63,94,.18); color: #fda4af; border: 1px solid rgba(244,63,94,.4); }
+  .pri-p1 { background: rgba(245,158,11,.18); color: #fcd34d; border: 1px solid rgba(245,158,11,.4); }
+  .pri-p2 { background: rgba(59,130,246,.18); color: #93c5fd; border: 1px solid rgba(59,130,246,.4); }
+  .pri-p3 { background: rgba(148,163,184,.15); color: var(--muted); border: 1px solid var(--line); }
+  .handoff-body { font-size: 12px; line-height: 1.55; color: #e5e7eb; }
+  .ho-row { margin: 4px 0; }
+  .ho-row b { color: var(--fg); margin-right: 4px; }
+
   /* Input area */
   .input-area {
     border-top: 1px solid var(--line);
@@ -1475,19 +1514,39 @@ function renderResult(d) {
       '</div>';
   }
 
-  // Final reply box (the customer-facing message) — with feedback buttons
+  // Final reply box (the customer-facing message) — with resolution + feedback buttons
   if (d.final_reply && !d.escalated) {
     const sid = d.session_id || sessionId;
     // Collect cited entry ids (from offer.policy_ids if present)
     const citedIds = (d.final_offer && d.final_offer.policy_ids) || [];
     const citedJson = encodeURIComponent(JSON.stringify(citedIds));
     body += '<div class="final-reply">' + escapeHtml(d.final_reply) +
+      '<div class="resolution-row">' +
+        '<span class="res-label">Your decision:</span>' +
+        '<button class="res-btn accept" onclick="resolveClaim(this,\'' + escapeHtml(sid) + '\',\'accept\')">✅ Accept</button>' +
+        '<button class="res-btn reject" onclick="resolveClaim(this,\'' + escapeHtml(sid) + '\',\'reject\')">↩️ Reject — renegotiate</button>' +
+        '<button class="res-btn escalate" onclick="resolveClaim(this,\'' + escapeHtml(sid) + '\',\'escalate\')">👤 Talk to human</button>' +
+      '</div>' +
       '<div class="feedback-row">' +
         '<span>Was this helpful?</span>' +
         '<button class="fb-btn" onclick="sendFeedback(this,\'' + escapeHtml(sid) + '\',1,\'' + citedJson + '\')">👍 Yes</button>' +
         '<button class="fb-btn" onclick="sendFeedback(this,\'' + escapeHtml(sid) + '\',-1,\'' + citedJson + '\')">👎 No</button>' +
       '</div>' +
     '</div>';
+  }
+
+  // Escalated → show handoff summary inline so demo viewer sees the briefing
+  if (d.escalated && d.handoff) {
+    const h = d.handoff;
+    const pri = (h.priority || 'p2').toUpperCase();
+    body += '<div class="result-card handoff"><div class="rc-header">📋 Handoff briefing for human agent</div>' +
+      '<div class="handoff-meta"><span class="pri-pill pri-' + escapeHtml(h.priority || 'p2') + '">' + escapeHtml(pri) + '</span>' +
+      '<span class="ho-id">' + escapeHtml(h.handoff_id || '') + '</span></div>' +
+      '<div class="handoff-body">' +
+        '<div class="ho-row"><b>Reason:</b> ' + escapeHtml(h.escalation_reason || '') + '</div>' +
+        '<div class="ho-row"><b>Action:</b> ' + escapeHtml(h.recommended_action || '') + '</div>' +
+        (h.proposed_offer ? '<div class="ho-row"><b>Bot proposed:</b> ' + escapeHtml(h.proposed_offer) + '</div>' : '') +
+      '</div></div>';
   }
 
   body += '</div>';
@@ -1522,6 +1581,29 @@ function updateMetrics(d, latencyMs) {
   $('avgLatency').textContent = avgAll ? (avgAll/1000).toFixed(1) + 's' : '—';
   if (typeof d.history_length === 'number') {
     $('turnsCount').textContent = d.history_length;
+  }
+}
+
+async function resolveClaim(btn, sid, action) {
+  // Disable the row so customer can only resolve once per offer
+  const row = btn.parentElement;
+  row.querySelectorAll('.res-btn').forEach(b => b.disabled = true);
+  btn.classList.add('picked');
+  const label = row.querySelector('.res-label');
+  try {
+    const r = await fetch('/api/claim/resolve', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ session_id: sid, action: action }),
+    });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const data = await r.json();
+    if (action === 'accept') label.textContent = '✓ Recorded — case closed.';
+    else if (action === 'reject') label.textContent = '✓ Got it — send another message to renegotiate.';
+    else label.textContent = '✓ A human will reach out shortly. Handoff id: ' + (data.handoff_id || '—');
+  } catch (err) {
+    label.textContent = '⚠ failed — please try again';
+    row.querySelectorAll('.res-btn').forEach(b => b.disabled = false);
   }
 }
 

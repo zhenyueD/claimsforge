@@ -7,3 +7,5 @@
 - **2026-05-16 22:20** · n=0 · joint=0.0% · p50=0ms · cats={}
 - **2026-05-16 22:20** · n=1 · joint=100.0% · p50=8647ms · cats={'multi_turn': '1/1'}
 - **2026-05-16 22:21** · n=13 · joint=100.0% · p50=9963ms · cats={'language': '2/2', 'emotion': '2/2', 'intent_routing': '2/2', 'needs_inference': '1/1', 'value_threshold': '1/1', 'evidence_quality': '2/2', 'category_specific': '1/1', 'multi_turn': '1/1', 'security': '1/1'}
+- **2026-05-16 22:32** · n=13 · joint=92.3% · p50=9115ms · cats={'language': '2/2', 'emotion': '2/2', 'intent_routing': '2/2', 'needs_inference': '1/1', 'value_threshold': '1/1', 'evidence_quality': '1/2', 'category_specific': '1/1', 'multi_turn': '1/1', 'security': '1/1'}
+- **2026-05-16 22:33** · n=1 · joint=100.0% · p50=9816ms · cats={'evidence_quality': '1/1'}

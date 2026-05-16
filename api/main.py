@@ -32,7 +32,11 @@ from observer import get_health_status, generate_daily_report, submit_satisfacti
 from utils import safe_save_json, safe_load_json, sanitize_user_input, has_injection_risk
 
 # ClaimsForge multi-agent pipeline
+import logging
 import orchestrator
+import handoff as handoff_module
+
+logger = logging.getLogger(__name__)
 from schemas import ClaimContext, Emotion, AgentTrace, TurnRecord
 import gemini_client
 from knowledge import get_learning_stats
@@ -531,6 +535,7 @@ def _result_to_dict(result, session_id: str, image_id: Optional[str], history_le
         "damage": result.damage.model_dump() if result.damage else None,
         "offer": result.offer.model_dump() if result.offer else None,
         "supervisor": result.supervisor_decision,
+        "handoff": result.handoff_summary,
         "verification": result.verification.model_dump() if result.verification else None,
         "final_offer": result.final_offer.model_dump() if result.final_offer else None,
         "final_reply": result.final_reply,
@@ -1031,6 +1036,115 @@ async def training_ui():
     if p.exists():
         return FileResponse(str(p))
     raise HTTPException(status_code=404, detail="training.html missing")
+
+
+# ── Resolution node + Handoff queue ──────────────────────────
+#
+# When the bot delivers an offer, the customer needs a way to say accept/
+# reject/escalate without us having to NLP-parse the next free-text turn.
+# /api/claim/resolve takes that explicit signal and writes it into the
+# learning loop so future cases benefit.
+#
+# /api/admin/handoff-queue exposes the queue of escalations for human
+# agents to triage; resolve marks them done.
+
+class ResolveRequest(BaseModel):
+    session_id: str = Field(..., min_length=1, max_length=64)
+    action: str = Field(..., pattern="^(accept|reject|escalate)$")
+    reason: Optional[str] = Field(default=None, max_length=500)
+
+
+@app.post("/api/claim/resolve")
+async def claim_resolve(req: ResolveRequest):
+    """Record the customer's explicit decision on the most recent offer.
+
+    Why we do this even when accept is just 'thumbs up': the explicit
+    accept/reject signal is far cleaner training data than parsing the
+    next chat message ('thanks' could be sarcasm; '👍' could be a typo).
+    Reject also feeds back into the next compensation turn via history.
+
+    On escalate: build a handoff summary from whatever is in the session
+    store (we don't re-run the pipeline; we wrap the last decision).
+    """
+    turns = claim_sessions.get(req.session_id, [])
+    last_assistant = next((t for t in reversed(turns) if t.role == "assistant"), None)
+    decision_summary = last_assistant.decision_summary if last_assistant else None
+
+    # Append a synthetic turn so future history shows the customer's choice
+    now = datetime.now().isoformat()
+    label = {"accept": "[customer accepted]", "reject": "[customer rejected]",
+             "escalate": "[customer asked for human]"}[req.action]
+    user_content = f"{label}" + (f" — {req.reason}" if req.reason else "")
+    turns.append(TurnRecord(
+        role="user", content=user_content, timestamp=now,
+        decision_summary=f"resolve:{req.action}",
+    ))
+    if len(turns) > SESSION_MAX_TURNS * 2:
+        del turns[: len(turns) - SESSION_MAX_TURNS * 2]
+    claim_sessions[req.session_id] = turns
+
+    # Persist to learning loop so future RAG sees real outcomes
+    try:
+        from knowledge import append_learned_case
+        append_learned_case({
+            "session_id": req.session_id,
+            "user_message_preview": user_content[:200],
+            "resolution": {"action": req.action, "reason": req.reason,
+                           "prior_decision": decision_summary},
+            "escalated": req.action == "escalate",
+            "timestamp": now,
+        })
+    except Exception as e:
+        logger.warning("resolve learning-loop write failed: %s", e)
+
+    # On explicit escalate, synthesize a handoff entry directly
+    handoff_id = None
+    if req.action == "escalate":
+        try:
+            from handoff import HandoffSummary, HandoffPriority, enqueue
+            is_zh = any("一" <= c <= "鿿" for c in user_content)
+            summary = HandoffSummary(
+                handoff_id=f"ho-{req.session_id}-{int(datetime.now().timestamp())}",
+                session_id=req.session_id,
+                created_at=now,
+                priority=HandoffPriority.P1,
+                customer_message=(req.reason or user_content)[:240],
+                customer_language="zh" if is_zh else "en",
+                prior_turn_count=len(turns),
+                last_assistant_decision=decision_summary,
+                escalation_reason="Customer explicitly requested a human agent",
+                recommended_action=(
+                    "Customer rejected the auto-offer and asked for a human. "
+                    f"Reply in {'Chinese' if is_zh else 'English'} and review the "
+                    "prior conversation before responding."
+                ),
+            )
+            enqueue(summary)
+            handoff_id = summary.handoff_id
+        except Exception as e:
+            logger.warning("resolve enqueue failed: %s", e)
+
+    return {"ok": True, "action": req.action, "session_id": req.session_id,
+            "handoff_id": handoff_id}
+
+
+@app.get("/api/admin/handoff-queue")
+async def admin_handoff_queue(status: Optional[str] = None, limit: int = 50):
+    """List items in the handoff queue. status filter: open | claimed | resolved."""
+    items = handoff_module.list_queue(status=status, limit=limit)
+    return {
+        "items": [s.model_dump() for s in items],
+        "stats": handoff_module.queue_stats(),
+    }
+
+
+@app.post("/api/admin/handoff/{handoff_id}/resolve")
+async def admin_handoff_resolve(handoff_id: str, resolved_by: str = "human-agent",
+                                 note: str = ""):
+    result = handoff_module.resolve(handoff_id, resolved_by=resolved_by, note=note)
+    if result is None:
+        raise HTTPException(status_code=404, detail="handoff not found or already resolved")
+    return {"ok": True, "handoff": result.model_dump()}
 
 
 # ── Static page routes ──────────────────────────────────────

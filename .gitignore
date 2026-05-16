@@ -28,3 +28,4 @@ data/uploads/
 .pytest_cache/
 .coverage
 uploads_inbox/
+data/handoff_queue.jsonl

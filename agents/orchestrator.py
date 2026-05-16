@@ -38,6 +38,19 @@ from schemas import (
 )
 
 
+import intent_agent
+import emotion_agent
+import needs_agent
+import damage_agent
+import compensation_agent
+import supervisor
+import verifier_agent
+import handoff
+from knowledge import append_learned_case
+
+logger = logging.getLogger(__name__)
+
+
 def _placeholder_damage_for_followup(ctx: ClaimContext) -> DamageAssessment:
     """Followup turns rarely re-attach the image. Skip vision and synthesize a
     high-confidence carry-over damage so compensation_agent can renegotiate
@@ -51,16 +64,35 @@ def _placeholder_damage_for_followup(ctx: ClaimContext) -> DamageAssessment:
         evidence_quote=None,
     )
 
-import intent_agent
-import emotion_agent
-import needs_agent
-import damage_agent
-import compensation_agent
-import supervisor
-import verifier_agent
-from knowledge import append_learned_case
 
-logger = logging.getLogger(__name__)
+def _maybe_enqueue_handoff(ctx: ClaimContext) -> None:
+    """Build + enqueue a HandoffSummary if this turn escalated.
+
+    Failures are non-fatal — the customer reply still goes out; only the
+    human queue is degraded.
+    """
+    if not ctx.escalated_to_human:
+        return
+    try:
+        summary = handoff.build_summary(ctx)
+        handoff.enqueue(summary)
+        ctx.handoff_summary = summary.model_dump()
+        logger.info(
+            "handoff enqueued: %s priority=%s reason=%s",
+            summary.handoff_id, summary.priority.value, summary.escalation_reason,
+        )
+    except Exception as e:
+        logger.warning("handoff enqueue failed (non-fatal): %s", e)
+
+
+def _finalize_reply(ctx: ClaimContext) -> None:
+    """Set ctx.final_reply AND enqueue a handoff if escalated.
+
+    Replaces direct ctx.final_reply assignments so every exit path of the
+    pipeline gets the queue side-effect for free.
+    """
+    ctx.final_reply = _format_final_reply(ctx)
+    _maybe_enqueue_handoff(ctx)
 
 
 TraceCallback = Callable[[AgentTrace], None]
@@ -201,7 +233,7 @@ def run(
         # 损坏证据极弱直接升级 (followup carry-over has conf=0.85 so won't trigger)
         if ctx.damage and ctx.damage.confidence < 0.2:
             ctx.escalated_to_human = True
-            ctx.final_reply = _format_final_reply(ctx)
+            _finalize_reply(ctx)
             elapsed = int((time.monotonic() - pipeline_start) * 1000)
             logger.info("pipeline done (escalated, low confidence) in %dms", elapsed)
             return ctx
@@ -222,7 +254,7 @@ def run(
 
     if ctx.offer is None or ctx.escalated_to_human:
         # Supervisor or earlier stages decided this needs a human; skip Verifier.
-        ctx.final_reply = _format_final_reply(ctx)
+        _finalize_reply(ctx)
         return ctx
 
     # Stage 6: Verifier（含最多 1 次修订回路）
@@ -252,7 +284,7 @@ def run(
             ctx.final_offer = None
 
     # 最终文字
-    ctx.final_reply = _format_final_reply(ctx)
+    _finalize_reply(ctx)
 
     elapsed = int((time.monotonic() - pipeline_start) * 1000)
     logger.info("pipeline done in %dms (escalated=%s)", elapsed, ctx.escalated_to_human)
@@ -413,7 +445,7 @@ async def run_async(
     # Low-confidence short-circuit (followup carry-over has conf=0.85)
     if ctx.damage and ctx.damage.confidence < 0.2:
         ctx.escalated_to_human = True
-        ctx.final_reply = _format_final_reply(ctx)
+        _finalize_reply(ctx)
         elapsed = int((time.monotonic() - pipeline_start) * 1000)
         logger.info("pipeline_async escalate-on-low-conf in %dms (%s)", elapsed, ctx.session_id)
         return ctx
@@ -427,7 +459,7 @@ async def run_async(
     emit(ctx.traces[-1])
 
     if ctx.offer is None or ctx.escalated_to_human:
-        ctx.final_reply = _format_final_reply(ctx)
+        _finalize_reply(ctx)
         return ctx
 
     # ─── Stage 6: Verifier (with at most 1 revise loop — see Patch 2 for 2nd-revise → ESCALATE)
@@ -450,7 +482,7 @@ async def run_async(
             ctx.escalated_to_human = True
             ctx.final_offer = None
 
-    ctx.final_reply = _format_final_reply(ctx)
+    _finalize_reply(ctx)
 
     elapsed = int((time.monotonic() - pipeline_start) * 1000)
     logger.info("pipeline_async done in %dms (escalated=%s, session=%s)",

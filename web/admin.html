@@ -168,6 +168,12 @@
       <div id="fb-list">—</div>
     </div>
   </div>
+
+  <div class="panel section">
+    <h2>📋 Human handoff queue <span class="pill" id="ho-pill">—</span><button class="refresh-btn" onclick="loadHandoffQueue()">↻ Refresh</button></h2>
+    <p style="font-size:12px;color:var(--muted);margin-bottom:14px;">When the supervisor or verifier escalates, the structured briefing lands here so agents can act without re-reading the transcript. P0 = legal/regulator (act in &lt;5 min) · P1 = high emotion (&lt;30 min) · P2 = normal (same day).</p>
+    <div id="ho-list" style="display:flex;flex-direction:column;gap:10px;">—</div>
+  </div>
 </div>
 <script>
 const SET = (el, html) => { el['inner' + 'HTML'] = html; };
@@ -263,7 +269,50 @@ async function loadAll() {
       }).join(''));
     }
   } catch (e) { console.error(e); alert('Failed to load admin data: ' + e.message); }
+  loadHandoffQueue();
 }
+
+async function loadHandoffQueue() {
+  try {
+    const r = await fetch('/api/admin/handoff-queue?status=open&limit=20');
+    const d = await r.json();
+    const open = (d.stats && d.stats.by_status && d.stats.by_status.open) || 0;
+    $('ho-pill').textContent = open + ' open';
+    if (!d.items.length) {
+      SET($('ho-list'), '<div style="color:var(--dim);font-size:12px">No open handoffs. The bot is auto-resolving everything.</div>');
+      return;
+    }
+    SET($('ho-list'), d.items.map(h => {
+      const pri = (h.priority || 'p2').toUpperCase();
+      return '<div style="background:var(--bg-3);border:1px solid var(--line);border-left:3px solid #f97316;border-radius:10px;padding:14px 16px;">' +
+        '<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;font-size:11px;">' +
+          '<span class="pri-pill pri-' + escHtml(h.priority || 'p2') + '" style="display:inline-block;padding:3px 9px;border-radius:999px;font-weight:700;letter-spacing:.06em;' +
+            (h.priority === 'p0' ? 'background:rgba(244,63,94,.18);color:#fda4af;border:1px solid rgba(244,63,94,.4);' :
+             h.priority === 'p1' ? 'background:rgba(245,158,11,.18);color:#fcd34d;border:1px solid rgba(245,158,11,.4);' :
+             'background:rgba(59,130,246,.18);color:#93c5fd;border:1px solid rgba(59,130,246,.4);') + '">' + pri + '</span>' +
+          '<code style="color:var(--muted);font-family:JetBrains Mono,monospace;">' + escHtml(h.handoff_id || '') + '</code>' +
+          '<span style="color:var(--dim);font-size:10px;">' + escHtml((h.created_at || '').slice(0,19)) + '</span>' +
+          '<button class="refresh-btn" style="margin-left:auto;font-size:11px;" onclick="resolveHandoff(\'' + escHtml(h.handoff_id) + '\')">✓ Mark resolved</button>' +
+        '</div>' +
+        '<div style="font-size:13px;color:#e5e7eb;margin-bottom:6px;"><b style="color:var(--fg);">"' + escHtml((h.customer_message || '').slice(0,200)) + '"</b></div>' +
+        '<div style="font-size:12px;color:var(--muted);margin:4px 0;"><b style="color:var(--fg);">Why escalated:</b> ' + escHtml(h.escalation_reason || '') + '</div>' +
+        '<div style="font-size:12px;color:var(--muted);margin:4px 0;"><b style="color:var(--fg);">Action:</b> ' + escHtml(h.recommended_action || '') + '</div>' +
+        (h.proposed_offer ? '<div style="font-size:12px;color:var(--muted);margin:4px 0;"><b style="color:var(--fg);">Bot proposed:</b> ' + escHtml(h.proposed_offer) + '</div>' : '') +
+        (h.damage_summary ? '<div style="font-size:11px;color:var(--dim);margin-top:6px;font-family:JetBrains Mono,monospace;">damage: ' + escHtml(h.damage_summary) + ' · emotion: ' + escHtml((h.emotion_label || '—') + ' (' + (h.emotion_score || 0) + '/10)') + ' · ' + (h.prior_turn_count || 0) + ' prior turns</div>' : '') +
+      '</div>';
+    }).join(''));
+  } catch (e) { console.error('handoff queue load failed', e); }
+}
+
+async function resolveHandoff(handoffId) {
+  if (!confirm('Mark ' + handoffId + ' as resolved?')) return;
+  try {
+    const r = await fetch('/api/admin/handoff/' + encodeURIComponent(handoffId) + '/resolve?resolved_by=admin&note=resolved+via+dashboard', { method:'POST' });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    loadHandoffQueue();
+  } catch (e) { alert('Resolve failed: ' + e.message); }
+}
+
 async function runSynthesis() {
   if (!confirm('Run methodology synthesis now? This clusters resolved cases and asks Gemini to distill patterns.')) return;
   try {

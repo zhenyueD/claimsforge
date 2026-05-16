@@ -186,6 +186,10 @@ class ClaimContext(BaseModel):
     # Typed as Any to avoid circular import; the actual model is SupervisorDecision.
     supervisor_decision: Optional[dict] = None
 
+    # HandoffSummary populated when escalated_to_human=True (dict not Pydantic to
+    # avoid circular import; the actual model is handoff.HandoffSummary).
+    handoff_summary: Optional[dict] = None
+
     # 最终结果（orchestrator 决定）
     final_offer: Optional[CompensationOffer] = None  # 经过 verifier 后的最终方案
     escalated_to_human: bool = False
