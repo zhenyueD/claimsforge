@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Ops · ClaimsForge</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg: #07080d; --bg-2: #0d0f17; --bg-3: #121521;
+    --surface: rgba(255,255,255,.03); --surface-2: rgba(255,255,255,.05);
+    --fg: #f3f4f6; --muted: #9ca3af; --dim: #6b7280;
+    --line: rgba(255,255,255,.08); --line-strong: rgba(255,255,255,.14);
+    --violet: #a78bfa; --sky: #38bdf8; --emerald: #10b981;
+    --amber: #f59e0b; --rose: #f43f5e; --pink: #ec4899;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--fg); }
+  code, .mono { font-family: 'JetBrains Mono', monospace; }
+  .topbar {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(7,8,13,.92); backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--line); padding: 0 28px; height: 56px;
+    display: flex; align-items: center;
+  }
+  .brand { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 17px; }
+  .brand-mark {
+    width: 26px; height: 26px; border-radius: 7px;
+    background: linear-gradient(135deg, #6366f1, #a78bfa, #ec4899);
+    box-shadow: 0 4px 12px rgba(99,102,241,.5); position: relative;
+  }
+  .brand-mark::before {
+    content: ''; position: absolute; inset: 5px;
+    border: 1.5px solid rgba(255,255,255,.55); border-radius: 3px;
+    border-bottom-color: transparent; border-left-color: transparent;
+    transform: rotate(45deg);
+  }
+  .brand-name { background: linear-gradient(135deg, #f3f4f6, #c7d2fe); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+  .brand-tag {
+    margin-left: 12px; padding: 2px 10px;
+    background: rgba(56,189,248,.15); border: 1px solid rgba(56,189,248,.3);
+    border-radius: 999px; font-size: 11px; font-weight: 600; letter-spacing: .04em;
+    color: #7dd3fc; text-transform: uppercase;
+  }
+  .spacer { flex: 1; }
+  .topbar a { color: var(--muted); font-size: 12px; text-decoration: none; padding: 6px 12px; border-radius: 8px; margin-left: 4px; }
+  .topbar a:hover { background: var(--surface); color: var(--fg); }
+  .topbar a.active { background: var(--surface-2); color: var(--sky); border: 1px solid rgba(56,189,248,.3); }
+  .wrap { max-width: 1440px; margin: 0 auto; padding: 28px; }
+  h1 { font-size: 32px; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 4px; }
+  .subtitle { color: var(--muted); font-size: 14px; margin-bottom: 28px; }
+  .grid { display: grid; gap: 16px; }
+  .grid-4 { grid-template-columns: repeat(4, 1fr); }
+  .grid-3 { grid-template-columns: repeat(3, 1fr); }
+  .grid-2 { grid-template-columns: repeat(2, 1fr); }
+  @media (max-width: 1080px) { .grid-4 { grid-template-columns: repeat(2, 1fr); } .grid-3 { grid-template-columns: 1fr; } }
+  .kpi { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 18px; }
+  .kpi .num {
+    font-size: 38px; font-weight: 800; letter-spacing: -0.025em; line-height: 1;
+    background: linear-gradient(135deg, var(--violet), var(--sky));
+    -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .kpi .label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; margin-top: 8px; }
+  .kpi .sub { font-size: 12px; color: var(--dim); margin-top: 4px; }
+  .kpi.emerald .num { background: linear-gradient(135deg, #10b981, #34d399); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+  .kpi.amber .num { background: linear-gradient(135deg, #f59e0b, #fbbf24); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+  .kpi.rose .num { background: linear-gradient(135deg, #f43f5e, #ec4899); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+  .section { margin-top: 36px; }
+  .section h2 { font-size: 18px; font-weight: 700; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+  .section h2 .pill { font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 999px; background: rgba(167,139,250,.12); color: var(--violet); }
+  .panel { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 20px; }
+  .bar-row { display: grid; grid-template-columns: 140px 1fr 48px; gap: 12px; align-items: center; margin-bottom: 8px; font-size: 13px; }
+  .bar-row .name { color: var(--muted); }
+  .bar-row .v { font-family: 'JetBrains Mono', monospace; color: var(--fg); text-align: right; }
+  .bar-track { height: 8px; background: var(--bg-3); border-radius: 4px; overflow: hidden; }
+  .bar-fill { height: 100%; border-radius: 4px; background: linear-gradient(90deg, var(--violet), var(--sky)); }
+  .bar-fill.emerald { background: linear-gradient(90deg, #10b981, #34d399); }
+  .bar-fill.amber { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
+  .bar-fill.rose { background: linear-gradient(90deg, #f43f5e, #ec4899); }
+  .agent-card { background: var(--bg-3); border: 1px solid var(--line); border-radius: 10px; padding: 14px; text-align: center; }
+  .agent-card .ico { font-size: 28px; margin-bottom: 6px; }
+  .agent-card .name { font-size: 12px; font-weight: 700; color: var(--fg); }
+  .agent-card .meta { font-size: 10px; color: var(--dim); margin-top: 3px; font-family: 'JetBrains Mono', monospace; }
+  .gap-item, .fb-item { background: var(--bg-3); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; margin-bottom: 8px; font-size: 12px; }
+  .gap-item .preview { color: var(--fg); line-height: 1.5; }
+  .gap-item .meta { color: var(--dim); margin-top: 6px; font-family: 'JetBrains Mono', monospace; font-size: 10px; }
+  .fb-item.up { border-left: 3px solid #10b981; }
+  .fb-item.down { border-left: 3px solid #f43f5e; }
+  .refresh-btn { background: transparent; border: 1px solid var(--line); color: var(--muted); padding: 5px 12px; border-radius: 8px; cursor: pointer; font-size: 11px; margin-left: 10px; }
+  .refresh-btn:hover { color: var(--violet); border-color: rgba(167,139,250,.3); }
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-thumb { background: var(--line); border-radius: 3px; }
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="brand">
+    <div class="brand-mark"></div>
+    <span class="brand-name">ClaimsForge</span>
+    <span class="brand-tag">Operations</span>
+  </div>
+  <div class="spacer"></div>
+  <a href="/">← Agent demo</a>
+  <a href="/kb">📚 KB</a>
+  <a href="/training">🎓 Training</a>
+  <a href="/admin" class="active">📊 Ops</a>
+</div>
+<div class="wrap">
+  <h1>Operations dashboard</h1>
+  <div class="subtitle">Real-time view across knowledge, claims, gaps, and customer feedback. <button class="refresh-btn" onclick="loadAll()">↻ Refresh</button></div>
+  <div class="grid grid-4">
+    <div class="kpi"><div class="num" id="k-kb">—</div><div class="label">KB entries</div><div class="sub" id="k-kb-sub">—</div></div>
+    <div class="kpi emerald"><div class="num" id="k-resolved">—</div><div class="label">Claims auto-resolved</div><div class="sub" id="k-resolved-sub">—</div></div>
+    <div class="kpi amber"><div class="num" id="k-gaps">—</div><div class="label">Knowledge gaps</div><div class="sub">Unanswered or low-confidence claims</div></div>
+    <div class="kpi rose"><div class="num" id="k-csat">—</div><div class="label">Satisfaction rate</div><div class="sub" id="k-csat-sub">👍 vs 👎 ratio</div></div>
+  </div>
+  <div class="section">
+    <h2>Agent stack <span class="pill">6 specialists · Gemini 2.5</span></h2>
+    <div class="grid" style="grid-template-columns: repeat(6, 1fr);">
+      <div class="agent-card"><div class="ico">🎯</div><div class="name">IntentAgent</div><div class="meta" id="m-text">—</div></div>
+      <div class="agent-card"><div class="ico">💗</div><div class="name">EmotionAgent</div><div class="meta">flash</div></div>
+      <div class="agent-card"><div class="ico">🧭</div><div class="name">NeedsAgent</div><div class="meta">flash</div></div>
+      <div class="agent-card"><div class="ico">📸</div><div class="name">DamageAgent</div><div class="meta" id="m-vision">—</div></div>
+      <div class="agent-card"><div class="ico">💰</div><div class="name">CompensationAgent</div><div class="meta">flash + RAG</div></div>
+      <div class="agent-card"><div class="ico">✅</div><div class="name">VerifierAgent</div><div class="meta">flash</div></div>
+    </div>
+  </div>
+  <div class="grid grid-2 section">
+    <div class="panel"><h2>KB · by source</h2><div id="src-bars"></div></div>
+    <div class="panel"><h2>KB · by quality bucket</h2><div id="q-bars"></div><div style="margin-top: 14px; font-size: 12px; color: var(--muted);" id="emb-status">—</div></div>
+  </div>
+  <div class="panel section"><h2>KB · top domains</h2><div id="domain-bars"></div></div>
+  <div class="grid grid-2 section">
+    <div class="panel"><h2>Claims · resolution outcomes</h2><div id="outcome-bars"></div></div>
+    <div class="panel"><h2>Claims · by damage type</h2><div id="dmg-bars"></div></div>
+  </div>
+  <div class="grid grid-2 section">
+    <div class="panel">
+      <h2>Recent knowledge gaps <span class="pill" id="gap-pill">—</span></h2>
+      <p style="font-size:12px;color:var(--muted);margin-bottom:14px;">Claims where no KB entry was confident enough. Reviewers should backfill the KB.</p>
+      <div id="gap-list">—</div>
+    </div>
+    <div class="panel">
+      <h2>Recent customer feedback <span class="pill" id="fb-pill">—</span></h2>
+      <p style="font-size:12px;color:var(--muted);margin-bottom:14px;">👍/👎 from real customers. Cited KB entries get quality boost / penalty automatically.</p>
+      <div id="fb-list">—</div>
+    </div>
+  </div>
+</div>
+<script>
+const SET = (el, html) => { el['inner' + 'HTML'] = html; };
+function $(id) { return document.getElementById(id); }
+function escHtml(s) {
+  if (s == null) return '';
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function renderBars(containerId, data, opts) {
+  opts = opts || {};
+  const colorClass = opts.color || '';
+  const entries = Object.entries(data || {}).sort((a, b) => b[1] - a[1]).slice(0, opts.limit || 12);
+  if (entries.length === 0) { SET($(containerId), '<div style="color:var(--dim);font-size:12px">no data</div>'); return; }
+  const max = Math.max(...entries.map(e => e[1]));
+  SET($(containerId), entries.map(([name, v]) =>
+    '<div class="bar-row">' +
+      '<span class="name">' + escHtml(name) + '</span>' +
+      '<div class="bar-track"><div class="bar-fill ' + colorClass + '" style="width:' + (v / max * 100) + '%"></div></div>' +
+      '<span class="v">' + v + '</span>' +
+    '</div>'
+  ).join(''));
+}
+async function loadAll() {
+  try {
+    const d = await fetch('/api/admin/overview').then(r => r.json());
+    $('k-kb').textContent = d.kb.total;
+    $('k-kb-sub').textContent = d.kb.embedded + ' embedded · ' + (d.kb.avg_quality * 100).toFixed(0) + '% avg quality';
+    $('k-resolved').textContent = d.claims.total_resolved;
+    $('k-resolved-sub').textContent = Object.keys(d.claims.by_outcome).length + ' distinct outcomes';
+    $('k-gaps').textContent = d.gaps.total;
+    const sat = (d.feedback.satisfaction_rate * 100).toFixed(0) + '%';
+    $('k-csat').textContent = d.feedback.total === 0 ? '—' : sat;
+    $('k-csat-sub').textContent = d.feedback.positive + ' 👍 · ' + d.feedback.negative + ' 👎 (' + d.feedback.total + ' total)';
+    $('m-text').textContent = d.agents.models.text.replace('gemini-', '');
+    $('m-vision').textContent = d.agents.models.vision.replace('gemini-', '');
+    renderBars('src-bars', d.kb.by_source, { color: 'emerald' });
+    renderBars('domain-bars', d.kb.by_domain, { limit: 12 });
+    renderBars('q-bars', d.kb.quality_buckets, { color: 'amber' });
+    $('emb-status').innerHTML = '<strong style="color:#7dd3fc;">' + d.kb.embedded + ' / ' + d.kb.total + '</strong> entries embedded (' + d.agents.models.embedding + ')';
+    renderBars('outcome-bars', d.claims.by_outcome, { color: 'emerald' });
+    renderBars('dmg-bars', d.claims.by_damage_type, { color: 'amber' });
+    $('gap-pill').textContent = d.gaps.total;
+    if (!d.gaps.recent.length) {
+      SET($('gap-list'), '<div style="color:var(--dim);font-size:12px">No gaps recorded yet — KB has answered every claim with confidence.</div>');
+    } else {
+      SET($('gap-list'), d.gaps.recent.map(g =>
+        '<div class="gap-item">' +
+          '<div class="preview">' + escHtml(g.user_message_excerpt || '(no preview)') + '</div>' +
+          '<div class="meta">' +
+            (g.damage_type ? 'type: ' + g.damage_type + ' · ' : '') +
+            (g.emotion_label ? 'emotion: ' + g.emotion_label + ' · ' : '') +
+            'best score: ' + (g.best_match_score || 0).toFixed(2) +
+            ' · ' + escHtml((g.timestamp || '').slice(0, 19)) +
+          '</div>' +
+        '</div>'
+      ).join(''));
+    }
+    $('fb-pill').textContent = d.feedback.total;
+    if (!d.feedback.recent.length) {
+      SET($('fb-list'), '<div style="color:var(--dim);font-size:12px">No feedback yet. Customers can rate replies on the agent UI.</div>');
+    } else {
+      SET($('fb-list'), d.feedback.recent.map(f => {
+        const cls = f.rating > 0 ? 'up' : (f.rating < 0 ? 'down' : '');
+        const icon = f.rating > 0 ? '👍' : (f.rating < 0 ? '👎' : '💬');
+        return '<div class="fb-item ' + cls + '">' +
+          '<div>' + icon + ' session <code>' + escHtml((f.session_id || '').slice(0, 14)) + '</code>' +
+          (f.comment ? ' — ' + escHtml(f.comment) : '') +
+          '</div>' +
+          '<div class="meta" style="margin-top:6px;font-family:JetBrains Mono,monospace;font-size:10px;color:var(--dim);">' +
+            'cited: ' + (f.cited_entry_ids || []).length + ' entries · ' + escHtml((f.timestamp || '').slice(0, 19)) +
+          '</div>' +
+        '</div>';
+      }).join(''));
+    }
+  } catch (e) { console.error(e); alert('Failed to load admin data: ' + e.message); }
+}
+loadAll();
+setInterval(loadAll, 30000);
+</script>
+</body>
+</html>

@@ -718,6 +718,73 @@ async def claimsforge_learning():
     return get_learning_stats()
 
 
+@app.get("/api/admin/overview")
+async def admin_overview():
+    """Operations overview — all metrics in one shot for the /admin dashboard."""
+    from unified_kb import _load_kb, list_gaps as kb_list_gaps_fn, list_feedback as kb_list_fb_fn
+    kb_entries = _load_kb()
+    learning = get_learning_stats()
+    gaps = kb_list_gaps_fn(limit=20)
+    feedback = kb_list_fb_fn(limit=20)
+
+    # quality distribution
+    from collections import Counter
+    q_buckets = Counter()
+    for e in kb_entries:
+        if e.quality_score >= 0.85: q_buckets["gold"] += 1
+        elif e.quality_score >= 0.65: q_buckets["good"] += 1
+        elif e.quality_score >= 0.40: q_buckets["needs_review"] += 1
+        else: q_buckets["low"] += 1
+
+    fb_pos = sum(1 for f in feedback if f.get("rating", 0) > 0)
+    fb_neg = sum(1 for f in feedback if f.get("rating", 0) < 0)
+
+    return {
+        "kb": {
+            "total": len(kb_entries),
+            "by_source": get_kb_stats()["by_source"],
+            "by_domain": get_kb_stats()["by_domain"],
+            "quality_buckets": dict(q_buckets),
+            "avg_quality": get_kb_stats()["avg_quality"],
+            "embedded": get_kb_stats()["has_embeddings"],
+        },
+        "claims": {
+            "total_resolved": learning.get("total", 0),
+            "by_damage_type": learning.get("by_damage_type", {}),
+            "by_outcome": learning.get("by_outcome", {}),
+            "recent_count": len(learning.get("recent", [])),
+        },
+        "gaps": {
+            "total": len(gaps),
+            "recent": gaps[:10],
+        },
+        "feedback": {
+            "total": len(feedback),
+            "positive": fb_pos,
+            "negative": fb_neg,
+            "satisfaction_rate": round(fb_pos / max(fb_pos + fb_neg, 1), 3),
+            "recent": feedback[:10],
+        },
+        "agents": {
+            "names": ["IntentAgent", "EmotionAgent", "NeedsAgent", "DamageAgent", "CompensationAgent", "VerifierAgent"],
+            "models": {
+                "text": gemini_client.TEXT_MODEL,
+                "vision": gemini_client.VISION_MODEL,
+                "embedding": "gemini-embedding-001",
+            },
+        },
+    }
+
+
+@app.get("/admin")
+async def admin_ui():
+    from fastapi.responses import FileResponse
+    p = WEB_DIR / "admin.html"
+    if p.exists():
+        return FileResponse(str(p))
+    raise HTTPException(status_code=404, detail="admin.html missing")
+
+
 @app.get("/api/claimsforge/health")
 async def claimsforge_health():
     """Show whether Gemini key + policies are loaded."""

@@ -27,3 +27,4 @@ data/uploads/
 # Test artifacts
 .pytest_cache/
 .coverage
+uploads_inbox/

@@ -630,6 +630,20 @@
     letter-spacing: .1em;
     margin-bottom: 8px;
   }
+  .feedback-row {
+    margin-top: 10px; padding-top: 10px;
+    border-top: 1px solid rgba(16,185,129,.2);
+    display: flex; align-items: center; gap: 8px;
+    font-size: 11px; color: var(--muted);
+  }
+  .fb-btn {
+    background: transparent; border: 1px solid var(--line);
+    color: var(--muted); padding: 4px 10px; border-radius: 999px;
+    cursor: pointer; font-size: 12px; transition: all .12s;
+  }
+  .fb-btn:hover { color: var(--fg); border-color: var(--line-strong); }
+  .fb-btn.picked-up { background: rgba(16,185,129,.15); border-color: rgba(16,185,129,.4); color: #6ee7b7; }
+  .fb-btn.picked-down { background: rgba(244,63,94,.15); border-color: rgba(244,63,94,.4); color: #fda4af; }
 
   /* Input area */
   .input-area {
@@ -1417,9 +1431,19 @@ function renderResult(d) {
       '</div>';
   }
 
-  // Final reply box (the customer-facing message)
+  // Final reply box (the customer-facing message) — with feedback buttons
   if (d.final_reply && !d.escalated) {
-    body += '<div class="final-reply">' + escapeHtml(d.final_reply) + '</div>';
+    const sid = d.session_id || sessionId;
+    // Collect cited entry ids (from offer.policy_ids if present)
+    const citedIds = (d.final_offer && d.final_offer.policy_ids) || [];
+    const citedJson = encodeURIComponent(JSON.stringify(citedIds));
+    body += '<div class="final-reply">' + escapeHtml(d.final_reply) +
+      '<div class="feedback-row">' +
+        '<span>Was this helpful?</span>' +
+        '<button class="fb-btn" onclick="sendFeedback(this,\'' + escapeHtml(sid) + '\',1,\'' + citedJson + '\')">👍 Yes</button>' +
+        '<button class="fb-btn" onclick="sendFeedback(this,\'' + escapeHtml(sid) + '\',-1,\'' + citedJson + '\')">👎 No</button>' +
+      '</div>' +
+    '</div>';
   }
 
   body += '</div>';
@@ -1454,6 +1478,29 @@ function updateMetrics(d, latencyMs) {
   $('avgLatency').textContent = avgAll ? (avgAll/1000).toFixed(1) + 's' : '—';
   if (typeof d.history_length === 'number') {
     $('turnsCount').textContent = d.history_length;
+  }
+}
+
+async function sendFeedback(btn, sid, rating, citedJson) {
+  // Disable both buttons in this group
+  const row = btn.parentElement;
+  row.querySelectorAll('.fb-btn').forEach(b => b.disabled = true);
+  btn.classList.add(rating > 0 ? 'picked-up' : 'picked-down');
+  try {
+    const cited = JSON.parse(decodeURIComponent(citedJson));
+    await fetch('/api/kb/feedback', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        session_id: sid,
+        rating: rating,
+        cited_entry_ids: cited,
+        timestamp: new Date().toISOString(),
+      }),
+    });
+    row.querySelector('span').textContent = 'Thanks — recorded.';
+  } catch (err) {
+    row.querySelector('span').textContent = '⚠ failed';
   }
 }
 
