@@ -73,6 +73,7 @@ def evaluate_case(case: dict) -> dict:
             role=prelude["role"],
             content=prelude["content"],
             timestamp="prelude",
+            decision_summary=prelude.get("decision_summary"),
         ))
 
     ctx = ClaimContext(

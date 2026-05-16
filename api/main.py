@@ -14,7 +14,7 @@ from typing import Optional
 import io
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
 
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect, BackgroundTasks, HTTPException
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, BackgroundTasks, HTTPException, Request
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -56,6 +56,30 @@ claim_sessions: dict[str, list[TurnRecord]] = {}
 SESSION_MAX_TURNS = 20
 
 app = FastAPI(title="AI客服团队 3.0", version="3.0.0")
+
+# ── Rate limiting (slowapi) ──────────────────────────────────
+# Per-IP token bucket. Defends the public demo URL against accidental
+# bursts (someone scripts the endpoint and burns through our Gemini quota)
+# without adding a friction wall for legitimate evaluators. Caps:
+#   /api/claim*    — 30/min  (each call is 6+ Gemini requests; 30/min ≈ 180 LLM calls/min)
+#   /api/upload-image — 20/min
+# Other GETs uncapped — they're cheap reads.
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
+
+def _client_ip(request) -> str:
+    """Prefer X-Forwarded-For (nginx prepends real client IP) — otherwise
+    every request looks like 127.0.0.1 and all users share one bucket.
+    Trust only the leftmost hop since we control the single nginx in front."""
+    xff = request.headers.get("x-forwarded-for")
+    if xff:
+        return xff.split(",")[0].strip()
+    return get_remote_address(request)
+
+limiter = Limiter(key_func=_client_ip)
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 # 修复：安全响应头
 from starlette.middleware.base import BaseHTTPMiddleware
@@ -279,10 +303,9 @@ async def rate_satisfaction(req: SatisfactionRequest, background_tasks: Backgrou
 
 
 # ── 知识库管理 ───────────────────────────────────────────────
-
-@app.get("/api/kb/stats")
-async def kb_stats():
-    return get_kb_stats()
+# Note: /api/kb/stats is defined below in the unified-KB section. The earlier
+# duplicate was a leftover from the v3→v4 migration; FastAPI silently let the
+# second registration win, so removing the first is a no-op functionally.
 
 @app.get("/api/kb/gaps")
 async def kb_gaps():
@@ -421,7 +444,8 @@ class ClaimRequest(BaseModel):
 
 
 @app.post("/api/upload-image")
-async def upload_image(file: UploadFile = File(...)):
+@limiter.limit("20/minute")
+async def upload_image(request: Request, file: UploadFile = File(...)):
     if file.content_type not in ALLOWED_IMAGE_MIME:
         raise HTTPException(status_code=400, detail=f"unsupported image type: {file.content_type}")
     raw = await file.read()
@@ -572,7 +596,8 @@ def _result_to_dict(result, session_id: str, image_id: Optional[str], history_le
 
 
 @app.post("/api/claim/stream")
-async def submit_claim_stream(req: ClaimRequest):
+@limiter.limit("30/minute")
+async def submit_claim_stream(request: Request, req: ClaimRequest):
     """Server-Sent Events version of /api/claim — each agent emits a 'trace'
     event the instant it completes (instead of the old behavior that
     broadcast all traces only after the whole pipeline finished).
@@ -683,7 +708,8 @@ async def submit_claim_stream(req: ClaimRequest):
 
 
 @app.post("/api/claim")
-async def submit_claim(req: ClaimRequest, background_tasks: BackgroundTasks):
+@limiter.limit("30/minute")
+async def submit_claim(request: Request, req: ClaimRequest, background_tasks: BackgroundTasks):
     """ClaimsForge multi-agent pipeline. Streams agent traces over WebSocket as they complete."""
     session_id = req.session_id or uuid.uuid4().hex[:8]
 
@@ -1091,7 +1117,8 @@ class ResolveRequest(BaseModel):
 
 
 @app.post("/api/claim/resolve")
-async def claim_resolve(req: ResolveRequest):
+@limiter.limit("60/minute")
+async def claim_resolve(request: Request, req: ResolveRequest):
     """Record the customer's explicit decision on the most recent offer.
 
     Why we do this even when accept is just 'thumbs up': the explicit

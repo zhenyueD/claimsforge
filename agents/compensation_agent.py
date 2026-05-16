@@ -32,7 +32,7 @@ from schemas import (
 )
 from knowledge import retrieve_merchant_wisdom, retrieve_recent_learned
 from embedding_index import hybrid_search
-from unified_kb import KBSource, record_use, log_gap, Gap, make_id
+from unified_kb import KBSource, record_uses, log_gap, Gap, make_id
 
 logger = logging.getLogger(__name__)
 
@@ -287,12 +287,12 @@ def propose(
     hybrid_results = hybrid_search(kb_query, top_k=6, threshold=0.55)
 
     # Track usage so quality scores can improve over time.
+    # Batched: one disk-append for the whole top_k set, no cache invalidation.
     cited_entry_ids = [e.id for e, _, _ in hybrid_results]
-    for eid in cited_entry_ids:
-        try:
-            record_use(eid)
-        except Exception:
-            pass
+    try:
+        record_uses(cited_entry_ids)
+    except Exception:
+        pass
 
     wisdom_block = (
         "\n".join(

@@ -31,9 +31,7 @@ from schemas import (
     ClaimContext,
     DamageAssessment,
     DamageType,
-    Emotion,
     IntentLabel,
-    Needs,
     VerifierVerdict,
 )
 
@@ -358,27 +356,6 @@ def run(
         logger.warning("synthesis trigger failed (non-fatal): %s", e)
 
     return ctx
-
-
-# ─────────────────────────────────────────────────────────
-#  从 conversation_engine 的输出适配 ClaimContext
-# ─────────────────────────────────────────────────────────
-def adapt_legacy_emotion(emotion_dict: dict) -> Emotion:
-    return Emotion(
-        score=emotion_dict.get("score", 5.0),
-        risk=emotion_dict.get("risk", "MEDIUM"),
-        label=emotion_dict.get("label", "中性"),
-    )
-
-
-def adapt_legacy_needs(needs_dict: dict) -> Needs:
-    return Needs(
-        surface_need=needs_dict.get("surface_need", ""),
-        latent_need=needs_dict.get("latent_need", ""),
-        emotional_need=needs_dict.get("emotional_need", ""),
-        retention_score=needs_dict.get("retention_score", 0.0),
-        suggested_tone=needs_dict.get("suggested_tone", ""),
-    )
 
 
 # ═══════════════════════════════════════════════════════════════════

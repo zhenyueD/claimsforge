@@ -154,13 +154,60 @@ def upsert(entry: KBEntry) -> KBEntry:
 
 
 def record_use(entry_id: str) -> None:
-    """Track when an entry is retrieved + used. Used for quality scoring."""
+    """Track when an entry is retrieved + used. Used for quality scoring.
+
+    Performance note: the prior implementation called upsert(e), which busts
+    _kb_cache. With KB at ~1500 entries and ~6 record_use calls per claim,
+    every claim invalidated the cache 6× and the next read re-parsed the
+    whole JSONL. This compounds as use_count append rows accumulate.
+
+    Fix: mutate the cached entry in-place (entries returned by _load_kb are
+    the same objects living in _kb_cache, so the bump is immediately visible)
+    and append a single row to disk WITHOUT busting the cache. Read path
+    stays O(1); write is a tiny append.
+    """
     entries = _load_kb()
     for e in entries:
         if e.id == entry_id:
             e.use_count += 1
-            upsert(e)
+            e.updated_at = datetime.now().isoformat()
+            try:
+                with _write_lock:
+                    UNIFIED_KB_PATH.parent.mkdir(parents=True, exist_ok=True)
+                    with UNIFIED_KB_PATH.open("a", encoding="utf-8") as f:
+                        f.write(e.model_dump_json() + "\n")
+            except Exception as ex:
+                logger.warning("record_use disk append failed: %s", ex)
             break
+
+
+def record_uses(entry_ids: list[str]) -> None:
+    """Batched record_use. Takes a single _write_lock for N entries — cuts
+    the per-claim disk syscall count from N to 1. Cache stays valid throughout.
+    """
+    if not entry_ids:
+        return
+    entries = _load_kb()
+    by_id = {e.id: e for e in entries}
+    now = datetime.now().isoformat()
+    dirty: list[KBEntry] = []
+    for eid in entry_ids:
+        e = by_id.get(eid)
+        if e is None:
+            continue
+        e.use_count += 1
+        e.updated_at = now
+        dirty.append(e)
+    if not dirty:
+        return
+    try:
+        with _write_lock:
+            UNIFIED_KB_PATH.parent.mkdir(parents=True, exist_ok=True)
+            with UNIFIED_KB_PATH.open("a", encoding="utf-8") as f:
+                for e in dirty:
+                    f.write(e.model_dump_json() + "\n")
+    except Exception as ex:
+        logger.warning("record_uses disk append failed: %s", ex)
 
 
 def write_embedding(entry_id: str, vec: list[float]) -> None:
