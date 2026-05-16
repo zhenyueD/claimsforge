@@ -163,6 +163,13 @@ def parse_document(filename: str, blob: bytes) -> str:
     lower = filename.lower()
     try:
         if lower.endswith(".pdf"):
+            # For larger / multi-page PDFs, pypdf often produces fragmented
+            # slideshow-like text that synthesizer can't chunk well. Route
+            # PDFs > 500KB through Gemini File API for multimodal understanding
+            # (sees layout, tables, images alongside text).
+            if len(blob) > 500_000:
+                logger.info("large PDF (%dKB) → Gemini File API for richer extraction", len(blob)//1024)
+                return parse_via_gemini_file_api(blob, filename)
             return parse_pdf(blob)
         if lower.endswith(".docx"):
             return parse_docx(blob)
@@ -307,18 +314,34 @@ Output language: keep the language of the source (Chinese in, Chinese out).
 """
 
 
-def synthesize_chunk(chunk_text: str) -> Optional[SynthesizedChunk]:
-    try:
-        return structured(
-            prompt=f"## Source chunk\n\n{chunk_text}",
-            schema=SynthesizedChunk,
-            system=_SYNTH_SYSTEM,
-            temperature=0.2,
-            max_tokens=800,
-        )
-    except GeminiError as e:
-        logger.warning("synthesize failed on chunk: %s", e)
-        return None
+def synthesize_chunk(chunk_text: str, max_retries: int = 3) -> Optional[SynthesizedChunk]:
+    import re as _re
+    for attempt in range(max_retries + 1):
+        try:
+            return structured(
+                prompt=f"## Source chunk\n\n{chunk_text}",
+                schema=SynthesizedChunk,
+                system=_SYNTH_SYSTEM,
+                temperature=0.2,
+                max_tokens=800,
+            )
+        except GeminiError as e:
+            msg = str(e)
+            # 429 rate-limited — honor retry_delay if present
+            if "429" in msg or "RESOURCE_EXHAUSTED" in msg or "rate" in msg.lower():
+                if attempt >= max_retries:
+                    logger.warning("synthesize gave up after %d retries: %s", max_retries, e)
+                    return None
+                # parse retry delay if Gemini gave us one
+                m = _re.search(r"retry in ([0-9.]+)s", msg)
+                wait = float(m.group(1)) + 2 if m else (5 * (2 ** attempt))
+                wait = min(wait, 90)  # cap
+                logger.info("rate-limited, waiting %.1fs (attempt %d/%d)", wait, attempt + 1, max_retries)
+                time.sleep(wait)
+                continue
+            logger.warning("synthesize failed on chunk: %s", e)
+            return None
+    return None
 
 
 # ─────────────────────────────────────────────────────────
@@ -359,6 +382,29 @@ def ingest_document(
     )
 
     for idx, chunk in enumerate(chunks):
+        # If chunk is huge (>3k chars), recursively split — avoids per-request
+        # token limit on very long policy PDFs.
+        if len(chunk) > 3000:
+            sub_chunks = chunk_text(chunk, max_chars=1800, prefer_headers=False)
+            for sub_idx, sub in enumerate(sub_chunks):
+                synth = synthesize_chunk(sub)
+                if not synth or synth.quality_score < 0.25:
+                    report.skipped += 1
+                    continue
+                entry_id = make_id(f"{filename}-c{idx}-{sub_idx}-{sub[:60]}")
+                entry = KBEntry(
+                    id=entry_id, source=KBSource.HUMAN_SOP, type=synth.type,
+                    domain=domain_hint or synth.domain or "general",
+                    title=synth.title, customer_facing_name=synth.customer_facing_name,
+                    scenario=synth.scenario, decision=synth.decision, rationale=synth.rationale,
+                    tags=synth.tags, contributor=contributor,
+                    quality_score=synth.quality_score, source_doc=filename, source_chunk=idx,
+                )
+                upsert(entry)
+                report.entry_ids.append(entry_id)
+                report.entries_written += 1
+            continue
+
         synth = synthesize_chunk(chunk)
         if not synth or synth.quality_score < 0.25:
             report.skipped += 1

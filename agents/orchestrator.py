@@ -195,6 +195,22 @@ def run(
     except Exception as e:
         logger.warning("learning loop write failed (non-fatal): %s", e)
 
+    # Methodology synthesis trigger — every 5 resolved cases, try to distill patterns.
+    # Runs in a thread so the pipeline returns immediately to the caller.
+    try:
+        from knowledge import get_learning_stats as _stats
+        from case_synthesizer import run_synthesis as _synthesize
+        total = _stats().get("total", 0)
+        if total > 0 and total % 5 == 0:
+            import threading
+            threading.Thread(
+                target=lambda: _synthesize(min_cluster_size=3, rebuild_existing=False),
+                daemon=True,
+            ).start()
+            logger.info("triggered background methodology synthesis at total=%d", total)
+    except Exception as e:
+        logger.warning("synthesis trigger failed (non-fatal): %s", e)
+
     return ctx
 
 

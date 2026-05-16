@@ -55,6 +55,7 @@ class KBType(str, Enum):
     CASE = "case"              # specific past example
     PRINCIPLE = "principle"    # general guidance
     DECISION_LOG = "decision_log"  # what we did + outcome
+    METHODOLOGY = "methodology"    # synthesized pattern across multiple cases
 
 
 class KBEntry(BaseModel):

@@ -116,6 +116,26 @@
     <div class="kpi amber"><div class="num" id="k-gaps">—</div><div class="label">Knowledge gaps</div><div class="sub">Unanswered or low-confidence claims</div></div>
     <div class="kpi rose"><div class="num" id="k-csat">—</div><div class="label">Satisfaction rate</div><div class="sub" id="k-csat-sub">👍 vs 👎 ratio</div></div>
   </div>
+
+  <!-- Methodologies row -->
+  <div class="grid grid-2 section">
+    <div class="kpi" style="border-color:rgba(167,139,250,.35);">
+      <div class="num" id="k-meth">—</div>
+      <div class="label">Methodologies synthesized</div>
+      <div class="sub" id="k-meth-sub">Patterns auto-distilled from accumulated cases</div>
+    </div>
+    <div class="kpi amber">
+      <div class="num" id="k-ripe">—</div>
+      <div class="label">Ripe case clusters</div>
+      <div class="sub">Clusters with ≥ 3 cases ready for synthesis</div>
+    </div>
+  </div>
+
+  <div class="panel section">
+    <h2>📐 Methodologies <span class="pill" id="meth-pill">—</span><button class="refresh-btn" onclick="runSynthesis()">↻ Run synthesis now</button></h2>
+    <p style="font-size:12px;color:var(--muted);margin-bottom:14px;">Every 5 resolved cases, the system clusters past resolutions and asks Gemini to distill the recurring PATTERN into a reusable methodology. Methodologies become first-class KB entries every agent retrieves.</p>
+    <div id="meth-list">—</div>
+  </div>
   <div class="section">
     <h2>Agent stack <span class="pill">6 specialists · Gemini 2.5</span></h2>
     <div class="grid" style="grid-template-columns: repeat(6, 1fr);">
@@ -183,6 +203,26 @@ async function loadAll() {
     $('k-csat-sub').textContent = d.feedback.positive + ' 👍 · ' + d.feedback.negative + ' 👎 (' + d.feedback.total + ' total)';
     $('m-text').textContent = d.agents.models.text.replace('gemini-', '');
     $('m-vision').textContent = d.agents.models.vision.replace('gemini-', '');
+    if (d.methodologies) {
+      $('k-meth').textContent = d.methodologies.total;
+      $('k-meth-sub').textContent = d.methodologies.recent.length + ' shown · click "Run synthesis" to grow';
+      $('k-ripe').textContent = d.methodologies.ripe_clusters;
+      $('meth-pill').textContent = d.methodologies.total;
+      if (!d.methodologies.recent.length) {
+        SET($('meth-list'), '<div style="color:var(--dim);font-size:12px">No methodologies synthesized yet. Resolve more claims, or click "Run synthesis now" with min_cluster_size=2.</div>');
+      } else {
+        SET($('meth-list'), d.methodologies.recent.map(function(m) {
+          return '<div style="background:var(--bg-3);border:1px solid var(--line);border-left:3px solid #a78bfa;border-radius:10px;padding:14px 16px;margin-bottom:10px;">' +
+            '<div style="font-size:14px;font-weight:700;color:#c4b5fd;margin-bottom:6px;">' + escHtml(m.title) + ' <span style="color:var(--dim);font-size:10px;font-family:JetBrains Mono,monospace;font-weight:400;">· quality ' + (m.quality_score*100).toFixed(0) + '%</span></div>' +
+            '<div style="font-size:12px;color:var(--muted);margin-bottom:8px;">PATTERN: ' + escHtml(m.scenario) + '</div>' +
+            '<div style="font-size:12px;color:#e5e7eb;margin-bottom:8px;"><strong style="color:#34d399;">RUBRIC:</strong> ' + escHtml(m.decision) + '</div>' +
+            '<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:8px;">' +
+              (m.tags || []).slice(0,6).map(function(t){ return '<span style="font-size:10px;padding:2px 8px;background:rgba(167,139,250,.1);border:1px solid rgba(167,139,250,.2);border-radius:6px;color:#c4b5fd;font-family:JetBrains Mono,monospace;">' + escHtml(t) + '</span>'; }).join('') +
+            '</div>' +
+          '</div>';
+        }).join(''));
+      }
+    }
     renderBars('src-bars', d.kb.by_source, { color: 'emerald' });
     renderBars('domain-bars', d.kb.by_domain, { limit: 12 });
     renderBars('q-bars', d.kb.quality_buckets, { color: 'amber' });
@@ -224,6 +264,16 @@ async function loadAll() {
     }
   } catch (e) { console.error(e); alert('Failed to load admin data: ' + e.message); }
 }
+async function runSynthesis() {
+  if (!confirm('Run methodology synthesis now? This clusters resolved cases and asks Gemini to distill patterns.')) return;
+  try {
+    const r = await fetch('/api/kb/synthesize', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({min_cluster_size: 2}) });
+    const d = await r.json();
+    alert('Synthesized ' + d.synthesized + ' new methodologies from ' + d.total_clusters + ' clusters.');
+    loadAll();
+  } catch (e) { alert('Failed: ' + e.message); }
+}
+
 loadAll();
 setInterval(loadAll, 30000);
 </script>

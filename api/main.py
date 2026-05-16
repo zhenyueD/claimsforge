@@ -45,6 +45,7 @@ from training import (
     close_session as training_close_session,
     PersonaDifficulty,
 )
+from case_synthesizer import run_synthesis, list_methodologies, cluster_cases
 
 # Per-session multi-turn store (in-memory; would be redis in prod-multi-instance)
 claim_sessions: dict[str, list[TurnRecord]] = {}
@@ -692,6 +693,39 @@ async def kb_gaps(limit: int = 50):
     return {"items": list_gaps(limit=limit)}
 
 
+@app.post("/api/kb/synthesize")
+async def kb_synthesize(req: dict = None):
+    """Trigger case synthesis: cluster LEARNED_CASE entries, distill recurring
+    patterns into METHODOLOGY entries via Gemini. Idempotent — won't re-synthesize
+    clusters that already have a methodology unless rebuild=true."""
+    req = req or {}
+    min_size = int(req.get("min_cluster_size", 3))
+    rebuild = bool(req.get("rebuild", False))
+    dry_run = bool(req.get("dry_run", False))
+    summary = await run_in_threadpool(run_synthesis, min_size, rebuild, dry_run)
+    return summary
+
+
+@app.get("/api/kb/methodologies")
+async def kb_methodologies(limit: int = 100):
+    """List the methodologies the system has synthesized from accumulated cases."""
+    items = list_methodologies(limit=limit)
+    return {"total": len(items), "items": [e.model_dump() for e in items]}
+
+
+@app.get("/api/kb/clusters")
+async def kb_clusters(min_size: int = 3):
+    """Preview which case clusters are ripe for synthesis (without running it)."""
+    clusters = cluster_cases(min_size=min_size)
+    return {
+        "min_size": min_size,
+        "ready_clusters": [
+            {"bucket": k, "case_count": len(v), "sample_titles": [c.title for c in v[:3]]}
+            for k, v in sorted(clusters.items(), key=lambda kv: -len(kv[1]))
+        ]
+    }
+
+
 @app.post("/api/kb/feedback")
 async def kb_feedback(req: dict):
     """Customer or operator rates a claim resolution (-1 / 0 / +1).
@@ -722,7 +756,10 @@ async def claimsforge_learning():
 async def admin_overview():
     """Operations overview — all metrics in one shot for the /admin dashboard."""
     from unified_kb import _load_kb, list_gaps as kb_list_gaps_fn, list_feedback as kb_list_fb_fn
+    from case_synthesizer import list_methodologies as _list_meth, cluster_cases as _clusters
     kb_entries = _load_kb()
+    methodologies = _list_meth(limit=10)
+    ripe_clusters = _clusters(min_size=3)
     learning = get_learning_stats()
     gaps = kb_list_gaps_fn(limit=20)
     feedback = kb_list_fb_fn(limit=20)
@@ -772,6 +809,19 @@ async def admin_overview():
                 "vision": gemini_client.VISION_MODEL,
                 "embedding": "gemini-embedding-001",
             },
+        },
+        "methodologies": {
+            "total": len(methodologies),
+            "ripe_clusters": len(ripe_clusters),
+            "recent": [
+                {
+                    "id": m.id, "title": m.title,
+                    "domain": m.domain, "quality_score": m.quality_score,
+                    "scenario": m.scenario[:200], "decision": m.decision[:200],
+                    "tags": m.tags[:8],
+                }
+                for m in methodologies[:5]
+            ],
         },
     }
 
