@@ -36,6 +36,8 @@ import orchestrator
 from schemas import ClaimContext, Emotion, AgentTrace, TurnRecord
 import gemini_client
 from knowledge import get_learning_stats
+from unified_kb import get_kb_stats, list_gaps, list_feedback, Feedback, log_feedback, make_id
+from ingestion import ingest_document, IngestionReport
 
 # Per-session multi-turn store (in-memory; would be redis in prod-multi-instance)
 claim_sessions: dict[str, list[TurnRecord]] = {}
@@ -583,6 +585,65 @@ async def get_claim_history(session_id: str):
     """Inspect what the system remembers about a session — useful for debugging multi-turn."""
     turns = claim_sessions.get(session_id, [])
     return {"session_id": session_id, "turns": [t.model_dump() for t in turns]}
+
+
+@app.post("/api/kb/import")
+async def kb_import(
+    file: UploadFile = File(...),
+    contributor: str = Form(default="human_upload"),
+    domain_hint: Optional[str] = Form(default=None),
+    max_chunks: Optional[int] = Form(default=None),
+):
+    """Upload a PDF / DOCX / Markdown SOP. Gemini parses + chunks + synthesizes
+    KB entries + embeds them. After return, every agent can retrieve."""
+    if not file.filename:
+        raise HTTPException(status_code=400, detail="filename required")
+    blob = await file.read()
+    if len(blob) > 20 * 1024 * 1024:
+        raise HTTPException(status_code=400, detail="file too large: 20MB max")
+    try:
+        report = await run_in_threadpool(
+            ingest_document,
+            file.filename, blob,
+            contributor=contributor,
+            domain_hint=domain_hint,
+            max_chunks=max_chunks,
+        )
+        return report.model_dump()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"ingestion failed: {e}")
+
+
+@app.get("/api/kb/stats")
+async def kb_stats_unified():
+    """Stats over the unified KB shared by all agents."""
+    return get_kb_stats()
+
+
+@app.get("/api/kb/gaps")
+async def kb_gaps(limit: int = 50):
+    """Show questions where no KB entry could answer with confidence."""
+    return {"items": list_gaps(limit=limit)}
+
+
+@app.post("/api/kb/feedback")
+async def kb_feedback(req: dict):
+    """Customer or operator rates a claim resolution (-1 / 0 / +1).
+    KB entries cited in the offer get quality score updates."""
+    fb = Feedback(
+        id=make_id(f"fb-{req.get('session_id','')}-{req.get('timestamp','')}"),
+        session_id=req.get("session_id", ""),
+        rating=int(req.get("rating", 0)),
+        comment=req.get("comment"),
+        cited_entry_ids=req.get("cited_entry_ids", []),
+    )
+    log_feedback(fb)
+    return {"ok": True, "id": fb.id}
+
+
+@app.get("/api/kb/feedback")
+async def kb_list_feedback(limit: int = 50):
+    return {"items": list_feedback(limit=limit)}
 
 
 @app.get("/api/claimsforge/learning")

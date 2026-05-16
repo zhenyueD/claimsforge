@@ -31,6 +31,8 @@ from schemas import (
     TurnRecord,
 )
 from knowledge import retrieve_merchant_wisdom, retrieve_recent_learned
+from embedding_index import hybrid_search
+from unified_kb import KBSource, record_use, log_gap, Gap, make_id
 
 logger = logging.getLogger(__name__)
 
@@ -265,19 +267,49 @@ def propose(
         for p in matched
     ]
 
-    # Pull in merchant wisdom + recent learned cases to ground the decision.
-    wisdom = retrieve_merchant_wisdom(
-        damage_type=damage.damage_type.value,
-        emotion_label=emotion.label if emotion else None,
-        user_message="",  # the orchestrator passes via system context already
-        top_k=4,
-    )
-    learned = retrieve_recent_learned(damage_type=damage.damage_type.value, top_k=3)
+    # Unified KB hybrid search — embedding first, keyword fallback.
+    # ALL agents share this same KB; entries from human SOPs, curated wisdom,
+    # past resolved cases, and policies are all retrieved together.
+    kb_query = f"{damage.damage_type.value} severity {damage.severity} {user_message[:200]}"
+    if emotion:
+        kb_query += f" emotion {emotion.label} risk {emotion.risk.value}"
+    if product_hint:
+        kb_query += f" product {product_hint}"
+
+    hybrid_results = hybrid_search(kb_query, top_k=6, threshold=0.55)
+
+    # Track usage so quality scores can improve over time.
+    cited_entry_ids = [e.id for e, _, _ in hybrid_results]
+    for eid in cited_entry_ids:
+        try:
+            record_use(eid)
+        except Exception:
+            pass
 
     wisdom_block = (
-        "\n".join(f"  • [{w['source']}] {w['scenario']} → {w['decision']}" for w in wisdom)
-        if wisdom else "  (no specific merchant wisdom matched)"
+        "\n".join(
+            f"  • [{method}={score:.2f}] [{e.source.value}] {e.title} → {e.decision[:120]}"
+            for e, score, method in hybrid_results
+        )
+        if hybrid_results else "  (no entries above threshold — flagged as gap)"
     )
+
+    # GAP MINING: if no entry retrieved with confidence, log it for human review.
+    if not hybrid_results:
+        try:
+            log_gap(Gap(
+                id=make_id(f"gap-{damage.damage_type.value}-{int(time.time())}"),
+                user_message_excerpt=user_message[:300],
+                damage_type=damage.damage_type.value,
+                emotion_label=emotion.label if emotion else None,
+                best_match_score=0.0,
+                reason="No KB entry above similarity threshold 0.55",
+            ))
+        except Exception as e:
+            logger.warning("gap log failed: %s", e)
+
+    # Recent learned cases (still using the live precedent layer separately)
+    learned = retrieve_recent_learned(damage_type=damage.damage_type.value, top_k=3)
     learned_block = (
         "\n".join(
             f"  • last {i+1}: {(c.get('damage') or {}).get('damage_type')} sev={(c.get('damage') or {}).get('severity')} "
