@@ -35,6 +35,7 @@ from schemas import (
 
 import intent_agent
 import emotion_agent
+import needs_agent
 import damage_agent
 import compensation_agent
 import verifier_agent
@@ -101,19 +102,37 @@ def run(
     intent_agent.run(ctx)
     emit(ctx.traces[-1])
 
-    if ctx.intent is None or ctx.intent.label == IntentLabel.GENERAL_INQUIRY:
+    if ctx.intent is None:
+        ctx.final_reply = (
+            "Sorry — we had trouble understanding that. Could you describe what went wrong with the order?"
+        )
+        return ctx
+
+    if ctx.intent.label == IntentLabel.GENERAL_INQUIRY:
         ctx.final_reply = (
             "Hi — happy to help. Are you reporting a damaged or defective item, "
             "or do you have a general question about our return policy?"
         )
         return ctx
 
+    if ctx.intent.label == IntentLabel.NEEDS_CLARIFICATION and ctx.intent.clarification_question:
+        # Short-circuit: send the follow-up question and wait for the next turn.
+        ctx.awaiting_clarification = True
+        ctx.clarification_question = ctx.intent.clarification_question
+        ctx.final_reply = ctx.intent.clarification_question
+        elapsed = int((time.monotonic() - pipeline_start) * 1000)
+        logger.info("pipeline short-circuit (clarification) in %dms", elapsed)
+        return ctx
+
     # Stage 2: Emotion — grade the customer's affect on this turn.
-    # Done early so DamageAgent + CompensationAgent can adapt.
     emotion_agent.run(ctx)
     emit(ctx.traces[-1])
 
-    # Stage 3: Damage（即使无图也跑，只是 confidence 会低）
+    # Stage 3: Needs — surface latent needs + retention risk + offer bias
+    needs_agent.run(ctx)
+    emit(ctx.traces[-1])
+
+    # Stage 4: Damage（即使无图也跑，只是 confidence 会低）
     damage_agent.run(ctx)
     emit(ctx.traces[-1])
 
@@ -125,7 +144,7 @@ def run(
         logger.info("pipeline done (escalated, low confidence) in %dms", elapsed)
         return ctx
 
-    # Stage 3: Compensation
+    # Stage 5: Compensation (sees damage + emotion + needs + history)
     compensation_agent.run(ctx, estimated_value_cents=estimated_value_cents)
     emit(ctx.traces[-1])
 
@@ -135,7 +154,7 @@ def run(
         ctx.final_reply = _format_final_reply(ctx)
         return ctx
 
-    # Stage 4: Verifier（含最多 1 次修订回路）
+    # Stage 6: Verifier（含最多 1 次修订回路）
     verifier_agent.run(ctx)
     emit(ctx.traces[-1])
 

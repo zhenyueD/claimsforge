@@ -22,19 +22,22 @@ E-commerce returns cost retailers an estimated **$743B/year** globally. The bulk
 
 ![architecture](docs/architecture.png)
 
-Five specialist agents run in a sequential pipeline coordinated by a lightweight orchestrator (no LangChain — just one Python file, ~200 LOC):
+Six specialist agents run in a sequential pipeline coordinated by a lightweight orchestrator (no LangChain — just one Python file, ~220 LOC):
 
 | Agent | Model | Job |
 |---|---|---|
-| 🎯 **IntentAgent** | gemini-2.5-flash + function calling | Classify intent (`claim_with_image` / `claim_text_only` / `general_inquiry`), extract `order_id`. Recognizes legal-threat-only messages as claims. |
+| 🎯 **IntentAgent** | gemini-2.5-flash + function calling | Classify intent (`claim_with_image` / `claim_text_only` / `general_inquiry` / `needs_clarification` / `followup_on_prior_claim`), extract `order_id`. Recognizes legal-threat-only messages as claims. Asks a follow-up question when info is missing — **multi-turn aware**. |
 | 💗 **EmotionAgent** | gemini-2.5-flash · structured output | Grade customer affect on calibrated 0–10 scale. Returns `{score, risk, label, triggers, escalation_signals, suggested_tone}`. Bilingual (EN + ZH). CRITICAL risk auto-promoted on legal/regulator/media signals. |
+| 🧭 **NeedsAgent** | gemini-2.5-flash · structured output | Surface surface/latent/emotional needs, retention risk, upsell signals, and suggested offer bias. The layer that elevates the system from "policy executor" to "advisor". Reads conversation history so it can catch context like "the mug was a gift for my sister's birthday Friday". |
 | 📸 **DamageAgent** | gemini-2.5-flash **Vision** + structured output | Assess damage from photo: `{damage_type, severity 0-10, affected_parts, confidence, reasoning}`. **96.7% accuracy** on labeled eval set (see `eval/results/`). |
-| 💰 **CompensationAgent** | gemini-2.5-flash + RAG over policy DSL + merchant wisdom KB + live precedent | Pick matching policy from `data/policies.json` (26 rules across damage, apparel, electronics, perishables, luxury, cross-border, seasonal, emotion). Retrieve relevant merchant wisdom from `data/merchant_kb.json` (93 entries · Amazon/eBay/Shopify/Reddit). Retrieve recent precedent from learning loop. Propose typed offer with empathetic justification. |
+| 💰 **CompensationAgent** | gemini-2.5-flash + RAG over policy DSL + merchant wisdom KB + live precedent + conversation history | Pick matching policy from `data/policies.json` (26 rules across damage, apparel, electronics, perishables, luxury, cross-border, seasonal, emotion). Retrieve relevant merchant wisdom from `data/merchant_kb.json` (93 entries · Amazon/eBay/Shopify/Reddit). Retrieve recent precedent from learning loop. On follow-up turns, see the prior offer and escalate appropriately if customer rejected. Propose typed offer with empathetic justification. |
 | ✅ **VerifierAgent** | hard-cap checks + LLM tone review | Cap amount to policy max, escalate on low evidence, request tone revision if justification is too cold. Max 1 revision loop. |
 
 The orchestrator streams each agent's progress as a WebSocket `agent_trace` event, so the UI shows the pipeline thinking live.
 
-After every resolved claim, the orchestrator appends to `data/learned_cases.jsonl` — the next CompensationAgent call retrieves recent precedent as part of its prompt. **The system learns from every claim it sees.**
+**Multi-turn conversation**: every claim is part of a session. The API stores per-session `TurnRecord` history (user message + assistant decision summary). On follow-up turns, every agent sees the prior context — the customer can renegotiate, ask for replacement instead of refund, provide missing order numbers, or escalate organically.
+
+**Continuous learning**: after every resolved claim, the orchestrator appends to `data/learned_cases.jsonl` — the next CompensationAgent call retrieves recent precedent as part of its prompt. **The system learns from every claim it sees.**
 
 ---
 

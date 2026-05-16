@@ -33,9 +33,13 @@ from utils import safe_save_json, safe_load_json, sanitize_user_input, has_injec
 
 # ClaimsForge multi-agent pipeline
 import orchestrator
-from schemas import ClaimContext, Emotion, AgentTrace
+from schemas import ClaimContext, Emotion, AgentTrace, TurnRecord
 import gemini_client
 from knowledge import get_learning_stats
+
+# Per-session multi-turn store (in-memory; would be redis in prod-multi-instance)
+claim_sessions: dict[str, list[TurnRecord]] = {}
+SESSION_MAX_TURNS = 20
 
 app = FastAPI(title="AI客服团队 3.0", version="3.0.0")
 
@@ -485,11 +489,15 @@ async def submit_claim(req: ClaimRequest, background_tasks: BackgroundTasks):
 
     image_bytes = await run_in_threadpool(_load_image_bytes, req.image_id)
 
+    # Pull prior turns for this session — enables multi-turn reasoning.
+    prior_history = claim_sessions.get(session_id, [])
+
     ctx = ClaimContext(
         session_id=session_id,
         user_message=cleaned,
         image_id=req.image_id,
         image_bytes=image_bytes,
+        history=list(prior_history),
     )
 
     # collect traces synchronously, then broadcast post-hoc to keep API contract simple.
@@ -513,19 +521,68 @@ async def submit_claim(req: ClaimRequest, background_tasks: BackgroundTasks):
             "elapsed_ms": tr.elapsed_ms,
         })
 
+    # Persist this turn to the session store for next round.
+    now = datetime.now().isoformat()
+    decision = None
+    if result.final_offer:
+        decision = f"{result.final_offer.offer_type.value} ${result.final_offer.amount_cents/100:.2f}"
+    elif result.escalated_to_human:
+        decision = "escalated to human"
+    elif result.awaiting_clarification:
+        decision = f"asked clarification: {result.clarification_question}"
+
+    turns = claim_sessions.setdefault(session_id, [])
+    turns.append(TurnRecord(
+        role="user",
+        content=cleaned,
+        timestamp=now,
+        emotion_score=result.emotion.score if result.emotion else None,
+    ))
+    turns.append(TurnRecord(
+        role="assistant",
+        content=result.final_reply or "",
+        timestamp=now,
+        decision_summary=decision,
+        offer_amount_cents=result.final_offer.amount_cents if result.final_offer else None,
+        offer_type=result.final_offer.offer_type.value if result.final_offer else None,
+    ))
+    # bound the buffer
+    if len(turns) > SESSION_MAX_TURNS * 2:
+        del turns[: len(turns) - SESSION_MAX_TURNS * 2]
+
     return {
         "session_id": session_id,
         "intent": result.intent.model_dump() if result.intent else None,
         "emotion": result.emotion.model_dump() if result.emotion else None,
+        "needs": result.needs.model_dump() if result.needs else None,
         "damage": result.damage.model_dump() if result.damage else None,
         "offer": result.offer.model_dump() if result.offer else None,
         "verification": result.verification.model_dump() if result.verification else None,
         "final_offer": result.final_offer.model_dump() if result.final_offer else None,
         "final_reply": result.final_reply,
         "escalated": result.escalated_to_human,
+        "awaiting_clarification": result.awaiting_clarification,
+        "clarification_question": result.clarification_question,
         "traces": [t.model_dump() for t in result.traces],
         "image_id": req.image_id,
+        "history_length": len(turns),
     }
+
+
+@app.post("/api/claim/reset")
+async def reset_claim_session(req: dict):
+    """Clear multi-turn conversation history for a session_id."""
+    sid = req.get("session_id", "")
+    if sid in claim_sessions:
+        del claim_sessions[sid]
+    return {"reset": True, "session_id": sid}
+
+
+@app.get("/api/claim/history/{session_id}")
+async def get_claim_history(session_id: str):
+    """Inspect what the system remembers about a session — useful for debugging multi-turn."""
+    turns = claim_sessions.get(session_id, [])
+    return {"session_id": session_id, "turns": [t.model_dump() for t in turns]}
 
 
 @app.get("/api/claimsforge/learning")

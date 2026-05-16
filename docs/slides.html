@@ -283,7 +283,7 @@
 
   <div class="footer">
     <span class="brand">CLAIMSFORGE</span>
-    <span>01 / 14</span>
+    <span>01 / 15</span>
   </div>
 </section>
 
@@ -323,7 +323,7 @@
 
   <div class="footer">
     <span class="brand">CLAIMSFORGE</span>
-    <span>02 / 14</span>
+    <span>02 / 15</span>
   </div>
 </section>
 
@@ -369,7 +369,7 @@
 
   <div class="footer">
     <span class="brand">CLAIMSFORGE</span>
-    <span>03 / 14</span>
+    <span>03 / 15</span>
   </div>
 </section>
 
@@ -428,7 +428,7 @@
 
   <div class="footer">
     <span class="brand">CLAIMSFORGE</span>
-    <span>04 / 14</span>
+    <span>04 / 15</span>
   </div>
 </section>
 
@@ -486,7 +486,68 @@
 
   <div class="footer">
     <span class="brand">CLAIMSFORGE</span>
-    <span>05 / 14</span>
+    <span>05 / 15</span>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════
+     SLIDE 5.5 — NeedsAgent + Multi-turn (the second differentiator)
+     ═══════════════════════════════════════════════════════════ -->
+<section class="slide">
+  <span class="eyebrow">Differentiator · Multi-turn + NeedsAgent</span>
+  <h2>Customer support is <span class="gradient">a conversation,</span><br/>not a form submission.</h2>
+
+  <div class="grid-2" style="margin-top: 48px; gap: 56px; align-items: start;">
+    <div>
+      <h4>Per-session memory — the API remembers</h4>
+<pre><span class="c"># api/main.py</span>
+claim_sessions: <span class="t">dict</span>[<span class="t">str</span>, <span class="t">list</span>[<span class="t">TurnRecord</span>]] = {}
+
+<span class="c"># On every /api/claim:</span>
+prior = claim_sessions.<span class="f">get</span>(session_id, [])
+ctx = <span class="t">ClaimContext</span>(
+    session_id=session_id,
+    user_message=cleaned,
+    image_bytes=image_bytes,
+    history=<span class="f">list</span>(prior),   <span class="c"># ← every agent sees it</span>
+)
+<span class="c"># … pipeline runs …</span>
+prior.<span class="f">append</span>(<span class="t">TurnRecord</span>(role=<span class="s">"user"</span>, content=msg, ...))
+prior.<span class="f">append</span>(<span class="t">TurnRecord</span>(role=<span class="s">"assistant"</span>,
+    decision_summary=<span class="s">f"{offer.offer_type} ${offer.amount/100}"</span>))</pre>
+      <p style="margin-top: 24px; font-size: 20px; color: var(--muted);">
+        Three new IntentLabel exits: <code style="color:var(--sky);">needs_clarification</code> (asks a
+        follow-up question + short-circuits), <code style="color:var(--sky);">followup_on_prior_claim</code>
+        (continuity-aware), and <code style="color:var(--sky);">general_inquiry</code> (skip pipeline).
+      </p>
+    </div>
+    <div>
+      <h4>NeedsAgent — the latent-need surface</h4>
+      <div class="card" style="padding: 20px; margin-bottom: 14px; border-left: 3px solid #ec4899;">
+        <div style="font-size: 13px; color: #f9a8d4; font-weight: 700; margin-bottom: 8px;">CUSTOMER WROTE</div>
+        <div style="font-size: 17px; color: var(--muted); font-style: italic;">"My mug arrived cracked. The mug was a gift for my sister's birthday this Friday."</div>
+      </div>
+      <div class="card" style="padding: 20px; border-left: 3px solid #ec4899;">
+        <div style="font-size: 13px; color: #f9a8d4; font-weight: 700; margin-bottom: 8px;">NEEDSAGENT INFERS</div>
+        <div style="font-size: 16px; line-height: 1.6;">
+          <div style="margin-bottom: 6px;"><span style="color: var(--muted);">surface:</span> replacement</div>
+          <div style="margin-bottom: 6px;"><span style="color: var(--muted);">latent:</span> <strong style="color: #f9a8d4;">"needs a working mug by Friday for the gift"</strong></div>
+          <div style="margin-bottom: 6px;"><span style="color: var(--muted);">retention_risk:</span> 0.20</div>
+          <div><span style="color: var(--muted);">suggested_offer_bias:</span> <code style="color: var(--sky);">lean_replacement</code></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <p style="margin-top: 56px; font-size: 22px; color: var(--muted);">
+    CompensationAgent sees the full session history + needs + emotion when proposing.
+    A customer rejecting a partial refund triggers a graceful upgrade — not a restart.
+  </p>
+
+  <div class="footer">
+    <span class="brand">CLAIMSFORGE</span>
+    <span>06 / 15</span>
   </div>
 </section>
 
@@ -550,7 +611,7 @@
 
   <div class="footer">
     <span class="brand">CLAIMSFORGE</span>
-    <span>06 / 14</span>
+    <span>07 / 15</span>
   </div>
 </section>
 
@@ -604,7 +665,7 @@
 
   <div class="footer">
     <span class="brand">CLAIMSFORGE</span>
-    <span>07 / 14</span>
+    <span>08 / 15</span>
   </div>
 </section>
 
@@ -675,7 +736,7 @@
 
   <div class="footer">
     <span class="brand">CLAIMSFORGE</span>
-    <span>08 / 14</span>
+    <span>09 / 15</span>
   </div>
 </section>
 
@@ -737,7 +798,7 @@ reason : <span class="s">"Amount within policy.</span>
 
   <div class="footer">
     <span class="brand">CLAIMSFORGE</span>
-    <span>09 / 14</span>
+    <span>10 / 15</span>
   </div>
 </section>
 
@@ -793,7 +854,7 @@ phone    · crack/scratch/water_damage/dent   → 14/15 ✓
 
   <div class="footer">
     <span class="brand">CLAIMSFORGE</span>
-    <span>10 / 14</span>
+    <span>11 / 15</span>
   </div>
 </section>
 
@@ -847,7 +908,7 @@ recent = <span class="f">retrieve_recent_learned</span>(
 
   <div class="footer">
     <span class="brand">CLAIMSFORGE</span>
-    <span>11 / 14</span>
+    <span>12 / 15</span>
   </div>
 </section>
 
@@ -889,7 +950,7 @@ recent = <span class="f">retrieve_recent_learned</span>(
 
   <div class="footer">
     <span class="brand">CLAIMSFORGE</span>
-    <span>12 / 14</span>
+    <span>13 / 15</span>
   </div>
 </section>
 
@@ -941,7 +1002,7 @@ recent = <span class="f">retrieve_recent_learned</span>(
 
   <div class="footer">
     <span class="brand">CLAIMSFORGE</span>
-    <span>13 / 14</span>
+    <span>14 / 15</span>
   </div>
 </section>
 
@@ -1025,7 +1086,7 @@ recent = <span class="f">retrieve_recent_learned</span>(
 
   <div class="footer">
     <span class="brand">CLAIMSFORGE</span>
-    <span>14 / 14</span>
+    <span>15 / 15</span>
   </div>
 </section>
 
@@ -1064,7 +1125,7 @@ recent = <span class="f">retrieve_recent_learned</span>(
 
   <div class="footer">
     <span class="brand">CLAIMSFORGE</span>
-    <span>14 / 14</span>
+    <span>15 / 15</span>
   </div>
 </section>
 

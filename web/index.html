@@ -125,11 +125,55 @@
     position: fixed;
     top: 56px; bottom: 0; left: 0; right: 0;
     display: grid;
-    grid-template-columns: 280px 1fr 340px;
+    grid-template-columns: 280px minmax(0, 1fr) 340px;
     gap: 0;
+    min-height: 0;
   }
-  .col-left, .col-right { overflow-y: auto; }
-  .col-mid { display: flex; flex-direction: column; min-width: 0; }
+  .col-left, .col-right {
+    overflow-y: auto;
+    overflow-x: hidden;
+    min-height: 0;
+  }
+  .col-mid {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    min-height: 0;     /* CRITICAL: lets child chat-area scroll */
+    overflow: hidden;
+  }
+
+  /* Consistent thin scrollbars */
+  .col-left::-webkit-scrollbar,
+  .col-right::-webkit-scrollbar,
+  .chat-area::-webkit-scrollbar,
+  .demo-modal::-webkit-scrollbar { width: 6px; }
+  .col-left::-webkit-scrollbar-thumb,
+  .col-right::-webkit-scrollbar-thumb,
+  .chat-area::-webkit-scrollbar-thumb,
+  .demo-modal::-webkit-scrollbar-thumb {
+    background: var(--line);
+    border-radius: 3px;
+  }
+  .col-left::-webkit-scrollbar-thumb:hover,
+  .col-right::-webkit-scrollbar-thumb:hover,
+  .chat-area::-webkit-scrollbar-thumb:hover {
+    background: var(--line-strong);
+  }
+
+  /* Responsive layout */
+  @media (max-width: 1280px) {
+    .app { grid-template-columns: 240px minmax(0, 1fr) 300px; }
+  }
+  @media (max-width: 1080px) {
+    .app { grid-template-columns: 220px minmax(0, 1fr); }
+    .col-right { display: none; }
+  }
+  @media (max-width: 760px) {
+    .app { grid-template-columns: minmax(0, 1fr); }
+    .col-left { display: none; }
+    .topbar-stat { display: none; }
+    .topbar-stat:first-of-type { display: flex; }
+  }
 
   /* Left column — agent pipeline */
   .col-left {
@@ -187,6 +231,7 @@
   }
   .ico-intent  { background: rgba(99,102,241,.16); }
   .ico-emotion { background: rgba(244,63,94,.16); }
+  .ico-needs   { background: rgba(236,72,153,.16); }
   .ico-damage  { background: rgba(245,158,11,.16); }
   .ico-comp    { background: rgba(16,185,129,.16); }
   .ico-verify  { background: rgba(56,189,248,.16); }
@@ -257,13 +302,14 @@
   .sc-clear:hover { color: var(--rose); }
 
   .chat-area {
-    flex: 1;
+    flex: 1 1 0;
+    min-height: 0;
     overflow-y: auto;
+    overflow-x: hidden;
     padding: 28px;
     scroll-behavior: smooth;
   }
-  .chat-area::-webkit-scrollbar { width: 6px; }
-  .chat-area::-webkit-scrollbar-thumb { background: var(--line); border-radius: 3px; }
+  .input-area { flex-shrink: 0; }
 
   .empty-chat {
     height: 100%;
@@ -379,6 +425,7 @@
   }
   .trace-agent.intent { color: #818cf8; }
   .trace-agent.emotion { color: #fda4af; }
+  .trace-agent.needs { color: #f9a8d4; }
   .trace-agent.damage { color: #fbbf24; }
   .trace-agent.comp { color: #34d399; }
   .trace-agent.verify { color: #7dd3fc; }
@@ -406,6 +453,10 @@
   }
   .result-card.emotion { border-left: 3px solid #f43f5e; }
   .result-card.emotion .rc-header { color: #fda4af; }
+  .result-card.needs { border-left: 3px solid #ec4899; }
+  .result-card.needs .rc-header { color: #f9a8d4; }
+  .result-card.clarification { border-left: 3px solid #a78bfa; }
+  .result-card.clarification .rc-header { color: #c4b5fd; }
   .result-card.damage { border-left: 3px solid #f59e0b; }
   .result-card.damage .rc-header { color: #fbbf24; }
   .result-card.offer { border-left: 3px solid #10b981; }
@@ -802,6 +853,7 @@
   </div>
   <div class="topbar-spacer"></div>
   <div class="topbar-stat"><span class="ws-dot" id="wsDot"></span><span id="wsLabel">Connected</span></div>
+  <div class="topbar-stat">Session turns <span class="v" id="turnsCount">0</span></div>
   <div class="topbar-stat">Avg latency <span class="v" id="avgLatency">—</span></div>
   <div class="topbar-stat">Claims today <span class="v" id="claimsCount">0</span></div>
 </div>
@@ -810,7 +862,7 @@
 
   <!-- LEFT: Pipeline -->
   <aside class="col-left">
-    <div class="section-title">Pipeline · 5 specialists</div>
+    <div class="section-title">Pipeline · 6 specialists</div>
 
     <div class="agent-card" id="agent-intent">
       <div class="row1">
@@ -834,6 +886,18 @@
       </div>
       <div class="meta">gemini-2.5-flash · LOW/MED/HIGH/CRITICAL</div>
       <div class="last-output" id="lo-emotion" style="display:none"></div>
+    </div>
+
+    <div class="agent-card" id="agent-needs">
+      <div class="row1">
+        <div class="agent-icon ico-needs">🧭</div>
+        <div>
+          <div class="agent-name">NeedsAgent</div>
+          <div class="agent-role">Surface / latent / emotional needs</div>
+        </div>
+      </div>
+      <div class="meta">gemini-2.5-flash · retention scoring · offer bias</div>
+      <div class="last-output" id="lo-needs" style="display:none"></div>
     </div>
 
     <div class="agent-card" id="agent-damage">
@@ -1203,21 +1267,11 @@ function appendTraceLine(card, t) {
   $('chatArea').scrollTop = $('chatArea').scrollHeight;
 }
 
-function agentTagClass(name) {
-  if (!name) return '';
-  const n = name.toLowerCase();
-  if (n.includes('intent')) return 'intent';
-  if (n.includes('emotion')) return 'emotion';
-  if (n.includes('damage')) return 'damage';
-  if (n.includes('comp')) return 'comp';
-  if (n.includes('verify') || n.includes('verifier')) return 'verify';
-  return '';
-}
-
 function markAgentActive(t) {
   const map = {
     'IntentAgent': 'agent-intent',
     'EmotionAgent': 'agent-emotion',
+    'NeedsAgent': 'agent-needs',
     'DamageAgent': 'agent-damage',
     'CompensationAgent': 'agent-comp',
     'VerifierAgent': 'agent-verify',
@@ -1235,8 +1289,20 @@ function markAgentActive(t) {
   }
 }
 
+function agentTagClass(name) {
+  if (!name) return '';
+  const n = name.toLowerCase();
+  if (n.includes('intent')) return 'intent';
+  if (n.includes('emotion')) return 'emotion';
+  if (n.includes('needs')) return 'needs';
+  if (n.includes('damage')) return 'damage';
+  if (n.includes('comp')) return 'comp';
+  if (n.includes('verify') || n.includes('verifier')) return 'verify';
+  return '';
+}
+
 function resetAgentCards() {
-  ['intent','emotion','damage','comp','verify'].forEach(k => {
+  ['intent','emotion','needs','damage','comp','verify'].forEach(k => {
     $('agent-' + k)?.classList.remove('active');
     $('agent-' + k)?.classList.remove('done');
     const lo = $('lo-' + k);
@@ -1253,6 +1319,14 @@ function renderResult(d) {
   wrap.className = 'msg bot';
   let body = '<div class="msg-av">🤖</div><div class="msg-body" style="flex:1; min-width:0;">';
 
+  // Clarification (short-circuit, before everything else)
+  if (d.awaiting_clarification && d.clarification_question) {
+    body += '<div class="result-card clarification"><div class="rc-header">❓ Needs more info</div>' +
+      '<div style="font-size:14px;line-height:1.55;color:#e5e7eb;">' + escapeHtml(d.clarification_question) + '</div>' +
+      '<div style="font-size:11px;color:var(--muted);margin-top:8px;">Reply in the input below — the conversation continues.</div>' +
+      '</div>';
+  }
+
   // Emotion card
   if (d.emotion) {
     const e = d.emotion;
@@ -1267,6 +1341,26 @@ function renderResult(d) {
           (e.suggested_tone ? '<div style="margin-top:10px;padding:8px 10px;background:var(--bg-3);border-radius:6px;font-size:11px;color:#c7d2fe;line-height:1.5;"><strong style="color:var(--violet);">Suggested tone:</strong> ' + escapeHtml(e.suggested_tone) + '</div>' : '') +
         '</div>' +
       '</div></div>';
+  }
+
+  // Needs card
+  if (d.needs && (d.needs.surface_need || d.needs.latent_need)) {
+    const n = d.needs;
+    const riskColor = n.retention_risk > 0.7 ? '#fca5a5' : n.retention_risk > 0.4 ? '#fcd34d' : '#6ee7b7';
+    const biasBadge = n.suggested_offer_bias
+      ? '<span style="display:inline-block;padding:3px 9px;background:rgba(236,72,153,.12);border:1px solid rgba(236,72,153,.3);color:#f9a8d4;border-radius:999px;font-size:10px;font-weight:700;margin-left:6px;text-transform:uppercase;letter-spacing:.06em;">bias: ' + escapeHtml(n.suggested_offer_bias.replace('lean_','')) + '</span>'
+      : '';
+    body += '<div class="result-card needs"><div class="rc-header">🧭 NeedsAgent</div>' +
+      (n.surface_need ? '<div style="font-size:13px;margin-bottom:6px;"><span style="color:var(--muted);">Surface:</span> ' + escapeHtml(n.surface_need) + '</div>' : '') +
+      (n.latent_need ? '<div style="font-size:13px;margin-bottom:6px;"><span style="color:var(--muted);">Latent:</span> <span style="color:#f9a8d4;">' + escapeHtml(n.latent_need) + '</span></div>' : '') +
+      (n.emotional_need ? '<div style="font-size:13px;margin-bottom:6px;"><span style="color:var(--muted);">Emotional:</span> ' + escapeHtml(n.emotional_need) + '</div>' : '') +
+      '<div style="display:flex;align-items:center;gap:8px;margin-top:10px;font-size:12px;">' +
+        '<span style="color:var(--muted);">Retention risk:</span>' +
+        '<span style="color:' + riskColor + ';font-weight:700;">' + Math.round((n.retention_risk || 0) * 100) + '%</span>' +
+        biasBadge +
+      '</div>' +
+      (n.upsell_signal ? '<div style="margin-top:8px;font-size:11px;color:#6ee7b7;"><strong>Upsell signal:</strong> ' + escapeHtml(n.upsell_signal) + '</div>' : '') +
+      '</div>';
   }
 
   // Damage card
@@ -1337,10 +1431,14 @@ function renderResult(d) {
 // ═══════════════════════════════════════════════════════════
 function updateMetrics(d, latencyMs) {
   metrics.latencies.push(latencyMs);
-  if (d.escalated) metrics.escalated++;
-  else {
+  // Don't double-count when it's a clarification or follow-up; only count resolved/escalated outcomes
+  if (d.awaiting_clarification) {
+    // clarification doesn't conclude a claim — just update session turn count
+  } else if (d.escalated) {
+    metrics.escalated++;
+  } else if (d.final_offer) {
     metrics.resolved++;
-    if (d.final_offer) metrics.totalAmt += d.final_offer.amount_cents || 0;
+    metrics.totalAmt += d.final_offer.amount_cents || 0;
   }
   $('m-resolved').textContent = metrics.resolved;
   $('m-escalated').textContent = metrics.escalated;
@@ -1352,6 +1450,9 @@ function updateMetrics(d, latencyMs) {
   $('claimsCount').textContent = metrics.resolved + metrics.escalated;
   const avgAll = sorted.reduce((a,b)=>a+b,0) / (sorted.length || 1);
   $('avgLatency').textContent = avgAll ? (avgAll/1000).toFixed(1) + 's' : '—';
+  if (typeof d.history_length === 'number') {
+    $('turnsCount').textContent = d.history_length;
+  }
 }
 
 async function refreshLearning() {
@@ -1414,12 +1515,22 @@ function scheduleReconnect() {
   setTimeout(connectWS, delay);
 }
 
-function clearChat() {
+async function clearChat() {
+  const prior = sessionId;
   sessionId = newSessionId();
   $('sessionIdShow').textContent = sessionId;
-  setHTML($('chatArea'), '<div class="empty-chat" id="emptyState"><div class="big">Resolve a damage claim in 8 seconds.</div><div class="small">Upload a photo of the damaged item and describe the problem.<br/>Five specialist agents run in sequence, propose compensation, verify against policy, and reply in the customer\'s own language.</div></div>');
+  $('turnsCount').textContent = '0';
+  setHTML($('chatArea'), '<div class="empty-chat" id="emptyState"><div class="big">Resolve a damage claim in 8 seconds.</div><div class="small">Upload a photo of the damaged item and describe the problem.<br/>Six specialist agents run in sequence, propose compensation, verify against policy, and reply in the customer\'s own language.</div></div>');
   resetAgentCards();
   clearAttachedImage();
+  // tell the server to forget the prior conversation
+  try {
+    await fetch('/api/claim/reset', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ session_id: prior })
+    });
+  } catch (_) { /* best effort */ }
 }
 </script>
 </body>

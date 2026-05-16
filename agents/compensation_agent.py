@@ -26,7 +26,9 @@ from schemas import (
     CompensationOffer,
     DamageAssessment,
     Emotion,
+    Needs,
     OfferType,
+    TurnRecord,
 )
 from knowledge import retrieve_merchant_wisdom, retrieve_recent_learned
 
@@ -231,6 +233,8 @@ def propose(
     estimated_value_cents: int = 5000,
     user_message: str = "",
     product_hint: Optional[str] = None,
+    needs: Optional[Needs] = None,
+    history: Optional[list[TurnRecord]] = None,
 ) -> tuple[Optional[CompensationOffer], list[str]]:
     """
     Returns (offer, escalate_reasons).
@@ -283,14 +287,41 @@ def propose(
         if learned else "  (no recent learned cases for this damage type yet)"
     )
 
+    # Prior turns (compressed) — critical for follow-up scenarios where the
+    # customer rejected the prior offer or wants to renegotiate.
+    history_block = ""
+    if history:
+        recent = history[-4:]
+        history_block = "\n\n## Prior conversation (this is a follow-up)\n" + "\n".join(
+            f"  - {t.role}: {t.content[:200]}"
+            + (f"  [we said: {t.decision_summary}]" if t.decision_summary else "")
+            for t in recent
+        )
+
+    needs_block = ""
+    if needs:
+        needs_block = (
+            f"\n\n## Customer needs (from NeedsAgent)\n"
+            f"  surface: {needs.surface_need}\n"
+            f"  latent:  {needs.latent_need}\n"
+            f"  emotional: {needs.emotional_need}\n"
+            f"  retention_risk: {needs.retention_risk:.2f}\n"
+            f"  suggested_offer_bias: {needs.suggested_offer_bias or '(none)'}"
+        )
+
     prompt = (
+        f"## Latest customer message\n\"\"\"\n{user_message.strip()[:500]}\n\"\"\"\n\n"
         f"## Damage assessment\n{damage.model_dump_json(indent=2)}\n\n"
         f"## Estimated order value\n{estimated_value_cents} cents\n\n"
-        f"## Customer emotion\n{emotion.model_dump_json() if emotion else 'null'}\n\n"
+        f"## Customer emotion\n{emotion.model_dump_json() if emotion else 'null'}"
+        f"{needs_block}\n\n"
         f"## Applicable policies (already filtered)\n{json.dumps(policy_summaries, ensure_ascii=False, indent=2)}\n\n"
         f"## Merchant wisdom (curated from Amazon/eBay/Shopify/Reddit)\n{wisdom_block}\n\n"
-        f"## Recent precedent (live learned cases)\n{learned_block}\n\n"
-        f"## Task\nWrite the offer."
+        f"## Recent precedent (live learned cases)\n{learned_block}"
+        f"{history_block}\n\n"
+        f"## Task\nWrite the offer. If this is a follow-up turn and the customer rejected the prior "
+        f"offer, escalate the offer type (e.g. partial → full, store_credit → replacement). Reference "
+        f"prior turns in the justification when natural."
     )
 
     try:
@@ -320,6 +351,8 @@ def run(ctx: ClaimContext, estimated_value_cents: int = 5000) -> ClaimContext:
         estimated_value_cents=estimated_value_cents,
         user_message=ctx.user_message,
         product_hint=ctx.intent.product_hint if ctx.intent else None,
+        needs=ctx.needs,
+        history=ctx.history,
     )
     ctx.offer = offer
     elapsed = int((time.monotonic() - t0) * 1000)

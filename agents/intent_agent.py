@@ -13,20 +13,29 @@ import re
 import time
 
 from gemini_client import GeminiError, structured
-from schemas import AgentName, ClaimContext, IntentLabel, IntentResult
+from schemas import AgentName, ClaimContext, IntentLabel, IntentResult, TurnRecord
 
 logger = logging.getLogger(__name__)
 
 
 _SYSTEM = """You classify the customer's intent on an e-commerce support channel.
+This is a multi-turn conversation — read the prior history if present.
 
 Output ONE label:
 
-  claim_with_image   — customer is reporting a damaged/defective/wrong product
-                       AND has attached an image
-  claim_text_only    — same as above but no image
-  general_inquiry    — anything else (policy questions, shipping ETA, thanks,
-                       greetings, "can I order Y?", subscription changes)
+  claim_with_image          — customer reports damaged/defective/wrong product + image attached
+  claim_text_only           — same but no image
+  general_inquiry           — policy questions, shipping ETA, thanks, greetings, etc.
+  needs_clarification       — customer raised a claim but is missing critical info
+                              (no order number AND no clear damage description, OR vague
+                              "something's wrong" with no specifics). When you choose this,
+                              ALSO fill clarification_question with ONE specific question
+                              in the customer's own language.
+  followup_on_prior_claim   — there IS prior conversation history and the customer is
+                              responding to / building on it (e.g. "I'd actually prefer a
+                              replacement", "still no refund?", "the order number was
+                              ORD-9999", "please cancel that and refund me instead"). Use
+                              this when continuity matters more than starting fresh.
 
 CRITICAL RULES (don't get this wrong)
   - A customer who mentions a lawyer, regulator (12315 / FTC / BBB / consumer
@@ -64,12 +73,25 @@ def _heuristic_order_id(text: str) -> str | None:
     return m.group(1).upper() if m else None
 
 
-def classify(user_message: str, has_image: bool) -> IntentResult:
+def classify(
+    user_message: str,
+    has_image: bool,
+    history: list[TurnRecord] | None = None,
+) -> IntentResult:
     msg = user_message.strip()
+    hist_block = ""
+    if history:
+        recent = history[-6:]
+        hist_block = "\n\n## Prior conversation history\n" + "\n".join(
+            f"{t.role}: {t.content[:240]}"
+            + (f"  [decision: {t.decision_summary}]" if t.decision_summary else "")
+            for t in recent
+        )
     prompt = (
-        f"客户消息：{msg}\n"
-        f"是否有图片：{'有' if has_image else '无'}\n\n"
-        f"请输出意图分类。"
+        f"## Latest customer message\n\"\"\"\n{msg}\n\"\"\"\n"
+        f"## Has image attached: {'yes' if has_image else 'no'}"
+        f"{hist_block}\n\n"
+        f"Classify the intent."
     )
     try:
         result = structured(
@@ -98,11 +120,19 @@ def classify(user_message: str, has_image: bool) -> IntentResult:
 
 def run(ctx: ClaimContext) -> ClaimContext:
     t0 = time.monotonic()
-    ctx.intent = classify(ctx.user_message, has_image=ctx.image_bytes is not None)
+    ctx.intent = classify(
+        ctx.user_message,
+        has_image=ctx.image_bytes is not None,
+        history=ctx.history,
+    )
     elapsed = int((time.monotonic() - t0) * 1000)
     summary = (
         f"{ctx.intent.label.value} conf={ctx.intent.confidence:.2f}"
         + (f" order={ctx.intent.order_id}" if ctx.intent.order_id else "")
     )
+    if ctx.intent.label == IntentLabel.NEEDS_CLARIFICATION and ctx.intent.clarification_question:
+        # short-circuit pipeline: orchestrator will ask the customer the question
+        ctx.awaiting_clarification = True
+        ctx.clarification_question = ctx.intent.clarification_question
     ctx.add_trace(AgentName.INTENT, status="ok", summary=summary, elapsed_ms=elapsed)
     return ctx

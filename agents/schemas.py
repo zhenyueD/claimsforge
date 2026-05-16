@@ -22,6 +22,8 @@ class IntentLabel(str, Enum):
     CLAIM_WITH_IMAGE = "claim_with_image"
     CLAIM_TEXT_ONLY = "claim_text_only"
     GENERAL_INQUIRY = "general_inquiry"
+    NEEDS_CLARIFICATION = "needs_clarification"  # not enough info — ask a follow-up
+    FOLLOWUP_ON_PRIOR_CLAIM = "followup_on_prior_claim"  # multi-turn continuation
 
 
 class DamageType(str, Enum):
@@ -52,6 +54,7 @@ class VerifierVerdict(str, Enum):
 class AgentName(str, Enum):
     INTENT = "IntentAgent"
     EMOTION = "EmotionAgent"
+    NEEDS = "NeedsAgent"
     DAMAGE = "DamageAgent"
     COMPENSATION = "CompensationAgent"
     VERIFIER = "VerifierAgent"
@@ -72,6 +75,11 @@ class IntentResult(BaseModel):
     order_id: Optional[str] = Field(default=None, description="提取出的订单号，可能无")
     product_hint: Optional[str] = Field(default=None, description="用户提到的商品类别")
     confidence: float = Field(ge=0, le=1)
+    clarification_question: Optional[str] = Field(
+        default=None,
+        description="If label == needs_clarification, the ONE specific question to ask the customer "
+                    "in their own language (e.g. 'Could you share your order number?'). null otherwise."
+    )
 
 
 class DamageAssessment(BaseModel):
@@ -115,11 +123,14 @@ class Emotion(BaseModel):
 
 
 class Needs(BaseModel):
-    surface_need: str = ""
-    latent_need: str = ""
-    emotional_need: str = ""
-    retention_score: float = 0.0
-    suggested_tone: str = ""
+    """Output of NeedsAgent — surfaces what the customer is REALLY asking for,
+    beyond the literal request. Used by CompensationAgent to choose offer type."""
+    surface_need: str = Field(default="", description="What they literally asked for ('refund', 'replacement')")
+    latent_need: str = Field(default="", description="The underlying business / personal need (e.g. 'fast resolution because she needs the mug for a gift on Friday')")
+    emotional_need: str = Field(default="", description="Acknowledgement / fairness / urgency / control")
+    retention_risk: float = Field(default=0.5, ge=0, le=1, description="Probability the customer churns if poorly handled")
+    upsell_signal: Optional[str] = Field(default=None, description="If we detect cross-sell potential (e.g. 'open to replacement of similar item')")
+    suggested_offer_bias: Optional[str] = Field(default=None, description="One of: 'lean_full_refund' / 'lean_replacement' / 'lean_partial' / 'lean_credit_with_bonus' / null")
 
 
 # ─────────────────────────────────────────────────────────────
@@ -136,6 +147,18 @@ class AgentTrace(BaseModel):
 # ─────────────────────────────────────────────────────────────
 #  ClaimContext —— 流水线上的核心工件
 # ─────────────────────────────────────────────────────────────
+class TurnRecord(BaseModel):
+    """One historical turn in the conversation, kept lightweight for prompt injection."""
+    role: str  # "user" | "assistant"
+    content: str
+    timestamp: str
+    # for assistant turns we keep a compact decision summary so future agents can reason about what was offered
+    decision_summary: Optional[str] = Field(default=None, description="e.g. 'offered full_refund $24, customer accepted'")
+    emotion_score: Optional[float] = None
+    offer_amount_cents: Optional[int] = None
+    offer_type: Optional[str] = None
+
+
 class ClaimContext(BaseModel):
     """Orchestrator 把这个对象按顺序传给每个 agent。每个 agent 写入自己的字段。"""
     # 输入
@@ -143,16 +166,20 @@ class ClaimContext(BaseModel):
     user_message: str
     image_id: Optional[str] = Field(default=None, description="如果有上传，存的 image_id")
     image_bytes: Optional[bytes] = Field(default=None, exclude=True, description="不进 JSON，只内部传递")
+    # Multi-turn history — populated by API layer from session store
+    history: list[TurnRecord] = Field(default_factory=list, description="Prior turns (oldest first), excluding the current user_message")
 
     # 中间产物
     intent: Optional[IntentResult] = None
+    emotion: Optional[Emotion] = None
+    needs: Optional[Needs] = None
     damage: Optional[DamageAssessment] = None
     offer: Optional[CompensationOffer] = None
     verification: Optional[VerificationResult] = None
 
-    # 复用现有
-    emotion: Optional[Emotion] = None
-    needs: Optional[Needs] = None
+    # Indicates this turn is just a clarification — short-circuit pipeline
+    awaiting_clarification: bool = False
+    clarification_question: Optional[str] = None
 
     # 最终结果（orchestrator 决定）
     final_offer: Optional[CompensationOffer] = None  # 经过 verifier 后的最终方案
