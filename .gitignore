@@ -30,3 +30,4 @@ data/uploads/
 uploads_inbox/
 data/handoff_queue.jsonl
 data/session_claim_counts.json
+data/image_fingerprints.jsonl

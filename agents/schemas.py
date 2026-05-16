@@ -167,6 +167,7 @@ class ClaimContext(BaseModel):
     user_message: str
     image_id: Optional[str] = Field(default=None, description="如果有上传，存的 image_id")
     image_bytes: Optional[bytes] = Field(default=None, exclude=True, description="不进 JSON，只内部传递")
+    image_phash: Optional[str] = Field(default=None, description="64-bit perceptual hash for fraud-replay detection")
     # Multi-turn history — populated by API layer from session store
     history: list[TurnRecord] = Field(default_factory=list, description="Prior turns (oldest first), excluding the current user_message")
 

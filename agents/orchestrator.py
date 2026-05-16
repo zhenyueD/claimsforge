@@ -342,6 +342,7 @@ def run(
             "damage": ctx.damage.model_dump() if ctx.damage else None,
             "final_offer": ctx.final_offer.model_dump() if ctx.final_offer else None,
             "verification": ctx.verification.model_dump() if ctx.verification else None,
+            "supervisor": ctx.supervisor_decision,
             "escalated": ctx.escalated_to_human,
             "pipeline_ms": elapsed,
         })
@@ -533,6 +534,7 @@ async def run_async(
             "damage": ctx.damage.model_dump() if ctx.damage else None,
             "final_offer": ctx.final_offer.model_dump() if ctx.final_offer else None,
             "verification": ctx.verification.model_dump() if ctx.verification else None,
+            "supervisor": ctx.supervisor_decision,
             "escalated": ctx.escalated_to_human,
             "pipeline_ms": elapsed,
         })

@@ -165,7 +165,31 @@ def evaluate(ctx: ClaimContext, estimated_value_cents: int = 5000) -> Supervisor
     blocked: list[str] = []
     verdict = SupervisorVerdict.APPROVE
 
-    # ── Rule 1: NEVER_AUTO_PAY patterns (highest priority)
+    # ── Rule 0: visual fraud replay (pHash collision against approved set)
+    # This is the highest-confidence escalation signal — pure deterministic
+    # bitwise check, no LLM. Runs FIRST so a hit short-circuits everything.
+    if ctx.image_phash:
+        try:
+            import fraud as _fraud
+            hit = _fraud.find_collision(ctx.image_phash, current_session_id=ctx.session_id)
+            if hit:
+                dist = hit.get("_hamming_distance", "?")
+                cross = "cross-session" if hit.get("_cross_session") else "same-session"
+                prior_id = (hit.get("image_id") or "")[:16]
+                msg = (
+                    f"Image pHash collision ({cross}, Hamming={dist} bits) with "
+                    f"previously-approved claim image {prior_id}…"
+                )
+                blocked.append(msg)
+                reasons.append(f"FRAUD_REPLAY: {msg}")
+                verdict = SupervisorVerdict.FORCE_ESCALATE
+                ctx.escalated_to_human = True
+                ctx.final_offer = None
+                return SupervisorDecision(verdict=verdict, reasons=reasons, blocked_rules=blocked)
+        except Exception as e:
+            logger.warning("fraud gate scan failed (non-fatal): %s", e)
+
+    # ── Rule 1: NEVER_AUTO_PAY patterns
     for predicate, msg in NEVER_AUTO_PAY_RULES:
         try:
             if predicate(ctx):
@@ -281,6 +305,14 @@ def run(ctx: ClaimContext, estimated_value_cents: int = 5000) -> ClaimContext:
     # Track session-level claim count (only count auto-paid ones)
     if not ctx.escalated_to_human and ctx.offer:
         _record_session_claim(ctx.session_id)
+        # Promote this image's pHash to the approved collision-anchor set so
+        # any future submission with the same image gets caught by Rule 0.
+        if ctx.image_phash and ctx.image_id:
+            try:
+                import fraud as _fraud
+                _fraud.record_approved(ctx.image_id, ctx.image_phash, ctx.session_id)
+            except Exception as e:
+                logger.warning("fraud anchor write failed (non-fatal): %s", e)
 
     # Build a one-line summary for the trace
     summary = decision.verdict.value

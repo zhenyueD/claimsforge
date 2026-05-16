@@ -3,6 +3,7 @@ uvicorn[standard]>=0.32
 pydantic>=2.9
 python-multipart>=0.0.20
 Pillow>=11
+imagehash>=4.3
 google-genai>=0.3
 # legacy fallback (旧客服模板路径仍引用 openai SDK 但 LLM_API_KEY 不设时不会真调用)
 openai>=2.0

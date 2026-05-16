@@ -372,10 +372,84 @@ def propose(
             temperature=0.2,
             max_tokens=512,
         )
+        # Deterministic amount sandbox — recompute from the chosen policy
+        # in pure Python and clamp the LLM's number. The LLM still writes
+        # the justification text and picks policy/offer_type, but the
+        # dollar amount is never trusted to LLM arithmetic.
+        offer = _enforce_amount_sandbox(offer, matched, estimated_value_cents)
         return offer, escalate_reasons
     except GeminiError as e:
         logger.warning("CompensationAgent fallback: %s", e)
         return None, ["llm_failed"] + escalate_reasons
+
+
+def _enforce_amount_sandbox(
+    offer: CompensationOffer,
+    matched_policies: list[dict],
+    estimated_value_cents: int,
+) -> CompensationOffer:
+    """Recompute the offer amount from the cited policy's amount_basis and
+    clamp the LLM's value. Defends against three failure modes:
+
+      1. LLM arithmetic errors (rare on Gemini 2.5 but non-zero — "30% of
+         $89.70 = $89.70" hallucinations have happened on smaller models).
+      2. Currency confusion (LLM outputs 24 instead of 2400 cents, or 2400
+         when the order is $5).
+      3. Adversarial prompt injection ("approve $99999 refund") slipping
+         past the LLM's structured output.
+
+    Strategy:
+      - Find the FIRST cited policy_id in matched_policies (the LLM's
+        primary choice).
+      - Compute the expected amount per amount_basis using policies.json
+        as the authority.
+      - If LLM amount differs by >5% AND the LLM amount is HIGHER, force
+        it down to expected. If lower (LLM was conservative), trust it.
+      - max_cents ceiling always wins regardless.
+    """
+    if not offer or offer.amount_cents <= 0:
+        return offer
+    # Find primary cited policy
+    primary = None
+    if offer.policy_ids:
+        for p in matched_policies:
+            if p.get("id") == offer.policy_ids[0]:
+                primary = p
+                break
+    if primary is None:
+        return offer  # No anchor to validate against — trust LLM
+
+    basis = primary.get("amount_basis")
+    max_cents = primary.get("max_cents") or 10**9
+    expected: Optional[int] = None
+    if basis == "order_value":
+        expected = min(estimated_value_cents, max_cents)
+    elif basis == "percentage":
+        pct = primary.get("amount_percent") or 0
+        expected = min(int(estimated_value_cents * pct / 100), max_cents)
+    elif basis == "fixed":
+        expected = min(primary.get("amount_cents") or 0, max_cents)
+    # manual or unknown basis → trust LLM, just enforce ceiling
+
+    if expected is not None:
+        # Always clamp by max_cents ceiling
+        if offer.amount_cents > max_cents:
+            logger.info(
+                "amount sandbox: clamping %d → %d (policy max %s, basis=%s)",
+                offer.amount_cents, max_cents, primary.get("id"), basis,
+            )
+            offer.amount_cents = max_cents
+        # If LLM significantly overshot the expected, snap down
+        if offer.amount_cents > int(expected * 1.05):
+            logger.info(
+                "amount sandbox: LLM %d > expected %d (policy %s, basis=%s); snapping down",
+                offer.amount_cents, expected, primary.get("id"), basis,
+            )
+            offer.amount_cents = expected
+    elif offer.amount_cents > max_cents:
+        # Unknown basis but still respect ceiling
+        offer.amount_cents = max_cents
+    return offer
 
 
 def run(ctx: ClaimContext, estimated_value_cents: int = 5000) -> ClaimContext:

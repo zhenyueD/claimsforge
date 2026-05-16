@@ -132,10 +132,35 @@ def retrieve_recent_learned(
 # ─────────────────────────────────────────────────────────
 #  Learning loop — append-only write
 # ─────────────────────────────────────────────────────────
+def _classify_quality(record: dict[str, Any]) -> str:
+    """Tag a learned case so the export endpoint can filter for fine-tuning.
+
+    gold:      auto-resolved end-to-end with no safety net firing — these
+               are the cases we want gemini-2.5-flash to imitate.
+    red_flag:  supervisor force-escalated, fraud gate fired, or 2nd-revise
+               escalation. These are anti-examples (don't imitate).
+    normal:    everything else — escalations on weak evidence, clarifications,
+               legacy cases. Useful for stats but not fine-tune material.
+    """
+    if record.get("escalated"):
+        return "red_flag"
+    sup = record.get("supervisor") or {}
+    if sup.get("verdict") in {"force_escalate", "cap_amount"}:
+        return "red_flag"
+    if sup.get("blocked_rules"):
+        return "red_flag"
+    final = record.get("final_offer")
+    verif = record.get("verification") or {}
+    if final and verif.get("verdict") == "approve":
+        return "gold"
+    return "normal"
+
+
 def append_learned_case(record: dict[str, Any]) -> None:
     """Append a completed claim to the learning log. Idempotent on session_id."""
     record = dict(record)
     record.setdefault("learned_at", datetime.now().isoformat())
+    record.setdefault("quality_label", _classify_quality(record))
 
     with _write_lock:
         LEARNED_PATH.parent.mkdir(parents=True, exist_ok=True)

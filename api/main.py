@@ -442,8 +442,17 @@ async def upload_image(file: UploadFile = File(...)):
 
     image_id = uuid.uuid4().hex
     ext = "jpg" if file.content_type == "image/jpeg" else file.content_type.split("/")[-1]
-    (UPLOADS_DIR / f"{image_id}.{ext}").write_bytes(raw)
-    return {"image_id": f"{image_id}.{ext}", "width": width, "height": height, "bytes": len(raw)}
+    full_id = f"{image_id}.{ext}"
+    (UPLOADS_DIR / full_id).write_bytes(raw)
+    # Compute pHash + log as 'uploaded' (promoted to 'approved' by supervisor)
+    try:
+        import fraud as _fraud
+        phash = _fraud.compute_phash(raw)
+        if phash:
+            _fraud.record_upload(full_id, phash, session_id="upload-endpoint")
+    except Exception as e:
+        logger.warning("upload phash compute failed: %s", e)
+    return {"image_id": full_id, "width": width, "height": height, "bytes": len(raw)}
 
 
 @app.get("/api/demo-scenarios")
@@ -473,6 +482,20 @@ async def serve_uploaded(image_id: str):
     if not path.exists():
         raise HTTPException(status_code=404, detail="image not found")
     return FileResponse(str(path))
+
+
+def _compute_phash_for_request(image_bytes: Optional[bytes]) -> Optional[str]:
+    """Compute the perceptual hash for a request's image, if any. None on
+    no-image or pHash failure (degrades gracefully — fraud gate becomes
+    a no-op rather than crashing the pipeline)."""
+    if not image_bytes:
+        return None
+    try:
+        import fraud as _fraud
+        return _fraud.compute_phash(image_bytes)
+    except Exception as e:
+        logger.warning("phash compute failed for request: %s", e)
+        return None
 
 
 def _load_image_bytes(image_id: Optional[str]) -> Optional[bytes]:
@@ -578,6 +601,7 @@ async def submit_claim_stream(req: ClaimRequest):
         user_message=cleaned,
         image_id=req.image_id,
         image_bytes=image_bytes,
+        image_phash=_compute_phash_for_request(image_bytes),
         history=list(prior_history),
     )
 
@@ -678,6 +702,7 @@ async def submit_claim(req: ClaimRequest, background_tasks: BackgroundTasks):
         user_message=cleaned,
         image_id=req.image_id,
         image_bytes=image_bytes,
+        image_phash=_compute_phash_for_request(image_bytes),
         history=list(prior_history),
     )
 
@@ -1163,6 +1188,75 @@ async def claim_resolve(req: ResolveRequest):
 
     return {"ok": True, "action": req.action, "session_id": req.session_id,
             "handoff_id": handoff_id, "idempotent": False}
+
+
+@app.get("/api/admin/fraud-stats")
+async def admin_fraud_stats():
+    """Counts for the visual fraud-replay gate (pHash collision set)."""
+    try:
+        import fraud as _fraud
+        return _fraud.stats()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e)[:200])
+
+
+@app.get("/api/admin/finetune-dataset")
+async def admin_finetune_dataset(quality: str = "gold", limit: int = 10000):
+    """Export gold-standard cases as a fine-tuning dataset (JSONL).
+
+    Format follows Vertex AI Gemini supervised tuning convention:
+      {"contents": [{"role":"user","parts":[{"text":"..."}]},
+                    {"role":"model","parts":[{"text":"..."}]}]}
+
+    Why this exists (data flywheel):
+      Every auto-resolved claim that passes Supervisor + Verifier without
+      a safety net firing becomes a training example. Once we have ~2000
+      gold examples we can fine-tune gemini-2.5-flash on them to cut both
+      prompt length (no need for 26-policy system prompt) and latency
+      (smaller prompts → faster). This endpoint is the export end of
+      that loop.
+
+    Filter:
+      ?quality=gold (default) | normal | red_flag | all
+    """
+    from knowledge import _load_learned  # internal helper
+    cases = _load_learned()
+    if quality != "all":
+        cases = [c for c in cases if c.get("quality_label") == quality]
+    cases = cases[-limit:]
+
+    def _to_finetune_row(c: dict) -> Optional[dict]:
+        user_text = c.get("user_message_preview", "")
+        offer = c.get("final_offer") or {}
+        if not user_text or not offer:
+            return None
+        # Compact assistant turn — the offer + justification the LLM produced
+        assistant_text = (
+            f"OFFER: {offer.get('offer_type')} {offer.get('currency','')}"
+            f"{(offer.get('amount_cents') or 0)/100:.2f}\n"
+            f"POLICIES: {','.join(offer.get('policy_ids') or [])}\n"
+            f"REPLY: {offer.get('justification', '')}"
+        )
+        return {
+            "contents": [
+                {"role": "user", "parts": [{"text": user_text}]},
+                {"role": "model", "parts": [{"text": assistant_text}]},
+            ],
+            "_meta": {
+                "session_id": c.get("session_id"),
+                "quality": c.get("quality_label"),
+                "damage_type": (c.get("damage") or {}).get("damage_type"),
+            },
+        }
+
+    rows = [r for r in (_to_finetune_row(c) for c in cases) if r]
+    body = "\n".join(json.dumps(r, ensure_ascii=False) for r in rows)
+    from fastapi.responses import PlainTextResponse
+    return PlainTextResponse(
+        body,
+        media_type="application/x-ndjson",
+        headers={"Content-Disposition": f'attachment; filename="finetune-{quality}.jsonl"'},
+    )
 
 
 @app.get("/api/admin/handoff-queue")
