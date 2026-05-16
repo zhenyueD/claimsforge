@@ -917,7 +917,7 @@
 
   <!-- LEFT: Pipeline -->
   <aside class="col-left">
-    <div class="section-title">Pipeline · 6 specialists</div>
+    <div class="section-title">Pipeline · 7 specialists</div>
 
     <div class="agent-card" id="agent-intent">
       <div class="row1">
@@ -972,11 +972,23 @@
         <div class="agent-icon ico-comp">💰</div>
         <div>
           <div class="agent-name">CompensationAgent</div>
-          <div class="agent-role">Policy DSL · 26 rules · 93 KB</div>
+          <div class="agent-role">Policy DSL · 26 rules · 1458 KB</div>
         </div>
       </div>
-      <div class="meta">gemini-2.5-flash · RAG merchant wisdom</div>
+      <div class="meta">gemini-2.5-flash · hybrid-RAG (embedding + keyword)</div>
       <div class="last-output" id="lo-comp" style="display:none"></div>
+    </div>
+
+    <div class="agent-card" id="agent-supervisor">
+      <div class="row1">
+        <div class="agent-icon ico-supervisor" style="background:linear-gradient(135deg,#f97316,#ef4444);color:#fff;">🛡️</div>
+        <div>
+          <div class="agent-name">SupervisorAgent</div>
+          <div class="agent-role">Hard rules · force/un-escalate · caps</div>
+        </div>
+      </div>
+      <div class="meta">pure-Python gate · Sierra-style · 5 NEVER_AUTO_PAY rules</div>
+      <div class="last-output" id="lo-supervisor" style="display:none"></div>
     </div>
 
     <div class="agent-card" id="agent-verify">
@@ -984,10 +996,10 @@
         <div class="agent-icon ico-verify">✅</div>
         <div>
           <div class="agent-name">VerifierAgent</div>
-          <div class="agent-role">Hard caps · tone review</div>
+          <div class="agent-role">Soft tone review · 1 revise loop</div>
         </div>
       </div>
-      <div class="meta">gemini-2.5-flash · 1-revise loop</div>
+      <div class="meta">gemini-2.5-flash · escalates 2nd revise</div>
       <div class="last-output" id="lo-verify" style="display:none"></div>
     </div>
 
@@ -1065,10 +1077,12 @@
       <div class="section-title">Differentiators</div>
       <div style="font-size:11px;color:var(--muted);line-height:1.55;">
         <div style="margin-bottom:6px;"><span style="color:var(--violet);">▸</span> Multimodal Gemini Vision (not OCR)</div>
-        <div style="margin-bottom:6px;"><span style="color:var(--violet);">▸</span> Explicit emotion-aware uplift</div>
-        <div style="margin-bottom:6px;"><span style="color:var(--violet);">▸</span> 26 policies + 93 merchant wisdom entries</div>
-        <div style="margin-bottom:6px;"><span style="color:var(--violet);">▸</span> Live learning loop (RAG over past cases)</div>
-        <div style="margin-bottom:6px;"><span style="color:var(--violet);">▸</span> Verifier safety net + 1 revise loop</div>
+        <div style="margin-bottom:6px;"><span style="color:var(--violet);">▸</span> Explicit emotion-aware uplift + escalation signals</div>
+        <div style="margin-bottom:6px;"><span style="color:var(--violet);">▸</span> 26 policies + 1458-entry hybrid-RAG KB (embedding + keyword)</div>
+        <div style="margin-bottom:6px;"><span style="color:var(--violet);">▸</span> 47 auto-synthesized methodologies (Gemini distills patterns from resolved cases)</div>
+        <div style="margin-bottom:6px;"><span style="color:var(--violet);">▸</span> Sierra-style hard-rule Supervisor (pure-Python · force/un-escalate / caps)</div>
+        <div style="margin-bottom:6px;"><span style="color:var(--violet);">▸</span> Trace Summary handoff (P0-P3 priority queue to human agents)</div>
+        <div style="margin-bottom:6px;"><span style="color:var(--violet);">▸</span> Live learning loop (every resolution feeds future RAG)</div>
         <div><span style="color:var(--violet);">▸</span> Reply in customer's own language</div>
       </div>
     </div>
@@ -1373,6 +1387,7 @@ function markAgentActive(t) {
     'NeedsAgent': 'agent-needs',
     'DamageAgent': 'agent-damage',
     'CompensationAgent': 'agent-comp',
+    'SupervisorAgent': 'agent-supervisor',
     'VerifierAgent': 'agent-verify',
   };
   const id = map[t.agent];

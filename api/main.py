@@ -630,8 +630,19 @@ async def submit_claim_stream(req: ClaimRequest):
     _asyncio.create_task(runner())
 
     async def event_stream():
+        # SSE keep-alive: nginx/Cloudflare close idle proxy connections after
+        # ~30-60s. The pipeline is normally <11s, but Gemini long-tail latency
+        # can push individual agents past 30s. Emit a comment line every 15s
+        # so the proxy keeps the socket open without polluting the event stream.
+        KEEPALIVE_INTERVAL = 15.0
         while True:
-            event_type, payload = await queue.get()
+            try:
+                event_type, payload = await _asyncio.wait_for(
+                    queue.get(), timeout=KEEPALIVE_INTERVAL
+                )
+            except _asyncio.TimeoutError:
+                yield ": keep-alive\n\n"
+                continue
             data = _json.dumps(payload, ensure_ascii=False) if payload is not None else "{}"
             yield f"event: {event_type}\ndata: {data}\n\n"
             if event_type == "done":
@@ -1065,10 +1076,36 @@ async def claim_resolve(req: ResolveRequest):
 
     On escalate: build a handoff summary from whatever is in the session
     store (we don't re-run the pipeline; we wrap the last decision).
+
+    Idempotency: keyed by (session_id, last_assistant_turn_index, action).
+    Repeat clicks on Accept within the same offer (network jitter, double-
+    tap) collapse to a single record + handoff. The key advances only
+    when a NEW assistant turn arrives (i.e. a new offer was made), so a
+    later Reject on the same offer also dedupes.
     """
     turns = claim_sessions.get(req.session_id, [])
     last_assistant = next((t for t in reversed(turns) if t.role == "assistant"), None)
     decision_summary = last_assistant.decision_summary if last_assistant else None
+    # Locate the last assistant turn's index — anchor for idempotency
+    last_idx = next(
+        (i for i in range(len(turns) - 1, -1, -1) if turns[i].role == "assistant"),
+        -1,
+    )
+
+    # If the most recent turn AFTER the last assistant is already a resolve
+    # with the same action, this is a duplicate click — return prior result.
+    if last_idx >= 0:
+        tail = turns[last_idx + 1:]
+        prior_resolve = next(
+            (t for t in tail if t.role == "user"
+             and (t.decision_summary or "").startswith("resolve:")),
+            None,
+        )
+        if prior_resolve and prior_resolve.decision_summary == f"resolve:{req.action}":
+            return {
+                "ok": True, "action": req.action, "session_id": req.session_id,
+                "handoff_id": None, "idempotent": True,
+            }
 
     # Append a synthetic turn so future history shows the customer's choice
     now = datetime.now().isoformat()
@@ -1125,7 +1162,7 @@ async def claim_resolve(req: ResolveRequest):
             logger.warning("resolve enqueue failed: %s", e)
 
     return {"ok": True, "action": req.action, "session_id": req.session_id,
-            "handoff_id": handoff_id}
+            "handoff_id": handoff_id, "idempotent": False}
 
 
 @app.get("/api/admin/handoff-queue")

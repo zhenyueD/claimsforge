@@ -29,3 +29,4 @@ data/uploads/
 .coverage
 uploads_inbox/
 data/handoff_queue.jsonl
+data/session_claim_counts.json

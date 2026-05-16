@@ -26,9 +26,12 @@ audit log can see "why didn't this go through".
 """
 from __future__ import annotations
 
+import json
 import logging
+import threading
 import time
 from enum import Enum
+from pathlib import Path
 from typing import Optional
 
 from pydantic import BaseModel, Field
@@ -101,8 +104,39 @@ class SupervisorDecision(BaseModel):
     capped_amount_cents: Optional[int] = Field(default=None, description="If verdict=cap_amount, what we capped it to")
 
 
-# Session-level claim counter (in-memory; would be DB in prod)
-_session_claim_counts: dict[str, int] = {}
+# Session-level claim counter. Persisted to JSON so the frequency cap (the
+# safety net against the same customer flooding claims) survives restarts.
+# Plain dict + threading.Lock is fine here: claims-per-second is low, and a
+# rare race that double-increments only over-counts (more conservative, fine).
+_COUNTER_PATH = Path(__file__).resolve().parent.parent / "data" / "session_claim_counts.json"
+_counter_lock = threading.Lock()
+
+
+def _load_counts() -> dict[str, int]:
+    """Read the persisted counter. Returns {} on any error."""
+    try:
+        if _COUNTER_PATH.exists():
+            data = json.loads(_COUNTER_PATH.read_text(encoding="utf-8"))
+            if isinstance(data, dict):
+                return {k: int(v) for k, v in data.items() if isinstance(v, (int, float))}
+    except Exception as e:
+        logger.warning("session_claim_counts load failed: %s", e)
+    return {}
+
+
+_session_claim_counts: dict[str, int] = _load_counts()
+
+
+def _save_counts() -> None:
+    """Atomic-ish write: temp file + rename so a crash mid-write doesn't
+    corrupt the JSON. Holds _counter_lock during serialize+swap."""
+    try:
+        _COUNTER_PATH.parent.mkdir(parents=True, exist_ok=True)
+        tmp = _COUNTER_PATH.with_suffix(".json.tmp")
+        tmp.write_text(json.dumps(_session_claim_counts), encoding="utf-8")
+        tmp.replace(_COUNTER_PATH)
+    except Exception as e:
+        logger.warning("session_claim_counts save failed: %s", e)
 
 
 def _check_session_frequency(session_id: str) -> tuple[bool, Optional[str]]:
@@ -114,7 +148,9 @@ def _check_session_frequency(session_id: str) -> tuple[bool, Optional[str]]:
 
 
 def _record_session_claim(session_id: str) -> None:
-    _session_claim_counts[session_id] = _session_claim_counts.get(session_id, 0) + 1
+    with _counter_lock:
+        _session_claim_counts[session_id] = _session_claim_counts.get(session_id, 0) + 1
+        _save_counts()
 
 
 def evaluate(ctx: ClaimContext, estimated_value_cents: int = 5000) -> SupervisorDecision:
@@ -253,22 +289,7 @@ def run(ctx: ClaimContext, estimated_value_cents: int = 5000) -> ClaimContext:
     elif decision.blocked_rules:
         summary += f" · {decision.blocked_rules[0][:60]}"
 
-    # Add the supervisor as a typed trace (we need to register the enum first
-    # so call ctx.add_trace via a string fallback if AgentName.SUPERVISOR isn't defined)
-    try:
-        ctx.add_trace(AgentName.SUPERVISOR, status="ok", summary=summary, elapsed_ms=elapsed)
-    except (AttributeError, ValueError):
-        # Backwards compat — if AgentName.SUPERVISOR isn't in the enum yet,
-        # synthesize a manual trace entry.
-        from schemas import AgentTrace
-        from datetime import datetime
-        ctx.traces.append(AgentTrace(
-            agent=AgentName.VERIFIER,  # closest existing slot for fallback
-            status="ok",
-            summary=f"[supervisor] {summary}",
-            elapsed_ms=elapsed,
-            timestamp=datetime.now().isoformat(),
-        ))
+    ctx.add_trace(AgentName.SUPERVISOR, status="ok", summary=summary, elapsed_ms=elapsed)
 
     logger.info(
         "supervisor decision: %s for session=%s (reasons=%s)",

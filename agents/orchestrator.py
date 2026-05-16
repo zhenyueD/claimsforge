@@ -51,6 +51,48 @@ from knowledge import append_learned_case
 logger = logging.getLogger(__name__)
 
 
+# Methodology synthesis: serialize trigger attempts to prevent N concurrent
+# pipeline threads from each spawning their own synthesis on the same total.
+# A 15-minute cooldown also prevents re-synthesizing the same case clusters
+# back-to-back (synthesis is expensive — embeds + Gemini calls per cluster).
+_SYNTHESIS_LOCK = threading.Lock()
+_SYNTHESIS_COOLDOWN_SEC = 15 * 60
+_last_synthesis_ts: float = 0.0
+
+
+def _try_trigger_synthesis(total: int) -> None:
+    """Fire a background synthesis if (a) total hit a 5-multiple, (b) no
+    other synthesis is in-flight, and (c) the last one finished >15min ago.
+
+    Returns immediately; the actual synthesis runs in a daemon thread so
+    the pipeline reply isn't blocked. All failure paths are non-fatal.
+    """
+    global _last_synthesis_ts
+    if total <= 0 or total % 5 != 0:
+        return
+    # Cheap non-blocking acquire — if another thread is already triggering or
+    # running synthesis, just bail.
+    if not _SYNTHESIS_LOCK.acquire(blocking=False):
+        return
+    try:
+        now = time.monotonic()
+        if now - _last_synthesis_ts < _SYNTHESIS_COOLDOWN_SEC:
+            return
+        _last_synthesis_ts = now
+        from case_synthesizer import run_synthesis as _synthesize
+
+        def _runner() -> None:
+            try:
+                _synthesize(min_cluster_size=3, rebuild_existing=False)
+            except Exception as e:
+                logger.warning("background synthesis failed: %s", e)
+
+        threading.Thread(target=_runner, daemon=True).start()
+        logger.info("triggered background methodology synthesis at total=%d", total)
+    finally:
+        _SYNTHESIS_LOCK.release()
+
+
 def _placeholder_damage_for_followup(ctx: ClaimContext) -> DamageAssessment:
     """Followup turns rarely re-attach the image. Skip vision and synthesize a
     high-confidence carry-over damage so compensation_agent can renegotiate
@@ -306,19 +348,11 @@ def run(
     except Exception as e:
         logger.warning("learning loop write failed (non-fatal): %s", e)
 
-    # Methodology synthesis trigger — every 5 resolved cases, try to distill patterns.
-    # Runs in a thread so the pipeline returns immediately to the caller.
+    # Methodology synthesis trigger — debounced by _try_trigger_synthesis
+    # (lock + 15-min cooldown so concurrent pipeline threads don't double-fire).
     try:
         from knowledge import get_learning_stats as _stats
-        from case_synthesizer import run_synthesis as _synthesize
-        total = _stats().get("total", 0)
-        if total > 0 and total % 5 == 0:
-            import threading
-            threading.Thread(
-                target=lambda: _synthesize(min_cluster_size=3, rebuild_existing=False),
-                daemon=True,
-            ).start()
-            logger.info("triggered background methodology synthesis at total=%d", total)
+        _try_trigger_synthesis(_stats().get("total", 0))
     except Exception as e:
         logger.warning("synthesis trigger failed (non-fatal): %s", e)
 
@@ -505,17 +539,10 @@ async def run_async(
     except Exception as e:
         logger.warning("learning loop write failed (non-fatal): %s", e)
 
-    # Methodology synthesis trigger (same as run())
+    # Methodology synthesis trigger — debounced (same as sync run())
     try:
         from knowledge import get_learning_stats as _stats
-        from case_synthesizer import run_synthesis as _synthesize
-        total = _stats().get("total", 0)
-        if total > 0 and total % 5 == 0:
-            threading.Thread(
-                target=lambda: _synthesize(min_cluster_size=3, rebuild_existing=False),
-                daemon=True,
-            ).start()
-            logger.info("triggered background methodology synthesis at total=%d", total)
+        _try_trigger_synthesis(_stats().get("total", 0))
     except Exception as e:
         logger.warning("synthesis trigger failed (non-fatal): %s", e)
 
