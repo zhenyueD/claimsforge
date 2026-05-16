@@ -757,8 +757,10 @@ async def admin_overview():
     """Operations overview — all metrics in one shot for the /admin dashboard."""
     from unified_kb import _load_kb, list_gaps as kb_list_gaps_fn, list_feedback as kb_list_fb_fn
     from case_synthesizer import list_methodologies as _list_meth, cluster_cases as _clusters
+    from unified_kb import KBType as _KBType
     kb_entries = _load_kb()
     methodologies = _list_meth(limit=10)
+    total_methodologies = sum(1 for e in kb_entries if e.type == _KBType.METHODOLOGY)
     ripe_clusters = _clusters(min_size=3)
     learning = get_learning_stats()
     gaps = kb_list_gaps_fn(limit=20)
@@ -811,7 +813,7 @@ async def admin_overview():
             },
         },
         "methodologies": {
-            "total": len(methodologies),
+            "total": total_methodologies,
             "ripe_clusters": len(ripe_clusters),
             "recent": [
                 {
