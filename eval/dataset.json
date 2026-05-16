@@ -1,0 +1,679 @@
+{
+  "items": [
+    {
+      "id": "mug-001",
+      "file": "mug_crack_6_001.jpg",
+      "category": "mug",
+      "true_damage_type": "crack",
+      "true_severity_min": 5,
+      "true_severity_max": 7,
+      "user_message": "My mug arrived with what looks like crack. Please review and refund."
+    },
+    {
+      "id": "mug-002",
+      "file": "mug_crack_7_002.jpg",
+      "category": "mug",
+      "true_damage_type": "crack",
+      "true_severity_min": 6,
+      "true_severity_max": 8,
+      "user_message": "My mug arrived with what looks like crack. Please review and refund."
+    },
+    {
+      "id": "mug-003",
+      "file": "mug_crack_8_003.jpg",
+      "category": "mug",
+      "true_damage_type": "crack",
+      "true_severity_min": 7,
+      "true_severity_max": 9,
+      "user_message": "My mug arrived with what looks like crack. Please review and refund."
+    },
+    {
+      "id": "mug-004",
+      "file": "mug_crack_8_004.jpg",
+      "category": "mug",
+      "true_damage_type": "crack",
+      "true_severity_min": 7,
+      "true_severity_max": 9,
+      "user_message": "My mug arrived with what looks like crack. Please review and refund."
+    },
+    {
+      "id": "mug-005",
+      "file": "mug_crack_9_005.jpg",
+      "category": "mug",
+      "true_damage_type": "crack",
+      "true_severity_min": 8,
+      "true_severity_max": 10,
+      "user_message": "My mug arrived with what looks like crack. Please review and refund."
+    },
+    {
+      "id": "mug-006",
+      "file": "mug_crack_10_006.jpg",
+      "category": "mug",
+      "true_damage_type": "crack",
+      "true_severity_min": 9,
+      "true_severity_max": 10,
+      "user_message": "My mug arrived with what looks like crack. Please review and refund."
+    },
+    {
+      "id": "mug-007",
+      "file": "mug_scratch_2_007.jpg",
+      "category": "mug",
+      "true_damage_type": "scratch",
+      "true_severity_min": 1,
+      "true_severity_max": 3,
+      "user_message": "My mug arrived with what looks like scratch. Please review and refund."
+    },
+    {
+      "id": "mug-008",
+      "file": "mug_scratch_3_008.jpg",
+      "category": "mug",
+      "true_damage_type": "scratch",
+      "true_severity_min": 2,
+      "true_severity_max": 4,
+      "user_message": "My mug arrived with what looks like scratch. Please review and refund."
+    },
+    {
+      "id": "mug-009",
+      "file": "mug_scratch_4_009.jpg",
+      "category": "mug",
+      "true_damage_type": "scratch",
+      "true_severity_min": 3,
+      "true_severity_max": 5,
+      "user_message": "My mug arrived with what looks like scratch. Please review and refund."
+    },
+    {
+      "id": "mug-010",
+      "file": "mug_missing_part_7_010.jpg",
+      "category": "mug",
+      "true_damage_type": "missing_part",
+      "true_severity_min": 6,
+      "true_severity_max": 8,
+      "user_message": "My mug arrived with what looks like missing part. Please review and refund."
+    },
+    {
+      "id": "mug-011",
+      "file": "mug_missing_part_8_011.jpg",
+      "category": "mug",
+      "true_damage_type": "missing_part",
+      "true_severity_min": 7,
+      "true_severity_max": 9,
+      "user_message": "My mug arrived with what looks like missing part. Please review and refund."
+    },
+    {
+      "id": "mug-012",
+      "file": "mug_missing_part_9_012.jpg",
+      "category": "mug",
+      "true_damage_type": "missing_part",
+      "true_severity_min": 8,
+      "true_severity_max": 10,
+      "user_message": "My mug arrived with what looks like missing part. Please review and refund."
+    },
+    {
+      "id": "mug-013",
+      "file": "mug_stain_3_013.jpg",
+      "category": "mug",
+      "true_damage_type": "stain",
+      "true_severity_min": 2,
+      "true_severity_max": 4,
+      "user_message": "My mug arrived with what looks like stain. Please review and refund."
+    },
+    {
+      "id": "mug-014",
+      "file": "mug_stain_4_014.jpg",
+      "category": "mug",
+      "true_damage_type": "stain",
+      "true_severity_min": 3,
+      "true_severity_max": 5,
+      "user_message": "My mug arrived with what looks like stain. Please review and refund."
+    },
+    {
+      "id": "mug-015",
+      "file": "mug_stain_5_015.jpg",
+      "category": "mug",
+      "true_damage_type": "stain",
+      "true_severity_min": 4,
+      "true_severity_max": 6,
+      "user_message": "My mug arrived with what looks like stain. Please review and refund."
+    },
+    {
+      "id": "phone-016",
+      "file": "phone_crack_7_016.jpg",
+      "category": "phone",
+      "true_damage_type": "crack",
+      "true_severity_min": 6,
+      "true_severity_max": 8,
+      "user_message": "My phone arrived with what looks like crack. Please review and refund."
+    },
+    {
+      "id": "phone-017",
+      "file": "phone_crack_8_017.jpg",
+      "category": "phone",
+      "true_damage_type": "crack",
+      "true_severity_min": 7,
+      "true_severity_max": 9,
+      "user_message": "My phone arrived with what looks like crack. Please review and refund."
+    },
+    {
+      "id": "phone-018",
+      "file": "phone_crack_9_018.jpg",
+      "category": "phone",
+      "true_damage_type": "crack",
+      "true_severity_min": 8,
+      "true_severity_max": 10,
+      "user_message": "My phone arrived with what looks like crack. Please review and refund."
+    },
+    {
+      "id": "phone-019",
+      "file": "phone_scratch_3_019.jpg",
+      "category": "phone",
+      "true_damage_type": "scratch",
+      "true_severity_min": 2,
+      "true_severity_max": 4,
+      "user_message": "My phone arrived with what looks like scratch. Please review and refund."
+    },
+    {
+      "id": "phone-020",
+      "file": "phone_scratch_4_020.jpg",
+      "category": "phone",
+      "true_damage_type": "scratch",
+      "true_severity_min": 3,
+      "true_severity_max": 5,
+      "user_message": "My phone arrived with what looks like scratch. Please review and refund."
+    },
+    {
+      "id": "phone-021",
+      "file": "phone_scratch_5_021.jpg",
+      "category": "phone",
+      "true_damage_type": "scratch",
+      "true_severity_min": 4,
+      "true_severity_max": 6,
+      "user_message": "My phone arrived with what looks like scratch. Please review and refund."
+    },
+    {
+      "id": "phone-022",
+      "file": "phone_scratch_5_022.jpg",
+      "category": "phone",
+      "true_damage_type": "scratch",
+      "true_severity_min": 4,
+      "true_severity_max": 6,
+      "user_message": "My phone arrived with what looks like scratch. Please review and refund."
+    },
+    {
+      "id": "phone-023",
+      "file": "phone_scratch_6_023.jpg",
+      "category": "phone",
+      "true_damage_type": "scratch",
+      "true_severity_min": 5,
+      "true_severity_max": 7,
+      "user_message": "My phone arrived with what looks like scratch. Please review and refund."
+    },
+    {
+      "id": "phone-024",
+      "file": "phone_scratch_7_024.jpg",
+      "category": "phone",
+      "true_damage_type": "scratch",
+      "true_severity_min": 6,
+      "true_severity_max": 8,
+      "user_message": "My phone arrived with what looks like scratch. Please review and refund."
+    },
+    {
+      "id": "phone-025",
+      "file": "phone_water_damage_8_025.jpg",
+      "category": "phone",
+      "true_damage_type": "water_damage",
+      "true_severity_min": 7,
+      "true_severity_max": 9,
+      "user_message": "My phone arrived with what looks like water damage. Please review and refund."
+    },
+    {
+      "id": "phone-026",
+      "file": "phone_water_damage_9_026.jpg",
+      "category": "phone",
+      "true_damage_type": "water_damage",
+      "true_severity_min": 8,
+      "true_severity_max": 10,
+      "user_message": "My phone arrived with what looks like water damage. Please review and refund."
+    },
+    {
+      "id": "phone-027",
+      "file": "phone_water_damage_10_027.jpg",
+      "category": "phone",
+      "true_damage_type": "water_damage",
+      "true_severity_min": 9,
+      "true_severity_max": 10,
+      "user_message": "My phone arrived with what looks like water damage. Please review and refund."
+    },
+    {
+      "id": "phone-028",
+      "file": "phone_dent_4_028.jpg",
+      "category": "phone",
+      "true_damage_type": "dent",
+      "true_severity_min": 3,
+      "true_severity_max": 5,
+      "user_message": "My phone arrived with what looks like dent. Please review and refund."
+    },
+    {
+      "id": "phone-029",
+      "file": "phone_dent_5_029.jpg",
+      "category": "phone",
+      "true_damage_type": "dent",
+      "true_severity_min": 4,
+      "true_severity_max": 6,
+      "user_message": "My phone arrived with what looks like dent. Please review and refund."
+    },
+    {
+      "id": "phone-030",
+      "file": "phone_dent_6_030.jpg",
+      "category": "phone",
+      "true_damage_type": "dent",
+      "true_severity_min": 5,
+      "true_severity_max": 7,
+      "user_message": "My phone arrived with what looks like dent. Please review and refund."
+    },
+    {
+      "id": "clothing-031",
+      "file": "clothing_tear_6_031.jpg",
+      "category": "clothing",
+      "true_damage_type": "tear",
+      "true_severity_min": 5,
+      "true_severity_max": 7,
+      "user_message": "My clothing arrived with what looks like tear. Please review and refund."
+    },
+    {
+      "id": "clothing-032",
+      "file": "clothing_tear_7_032.jpg",
+      "category": "clothing",
+      "true_damage_type": "tear",
+      "true_severity_min": 6,
+      "true_severity_max": 8,
+      "user_message": "My clothing arrived with what looks like tear. Please review and refund."
+    },
+    {
+      "id": "clothing-033",
+      "file": "clothing_tear_8_033.jpg",
+      "category": "clothing",
+      "true_damage_type": "tear",
+      "true_severity_min": 7,
+      "true_severity_max": 9,
+      "user_message": "My clothing arrived with what looks like tear. Please review and refund."
+    },
+    {
+      "id": "clothing-034",
+      "file": "clothing_tear_4_034.jpg",
+      "category": "clothing",
+      "true_damage_type": "tear",
+      "true_severity_min": 3,
+      "true_severity_max": 5,
+      "user_message": "My clothing arrived with what looks like tear. Please review and refund."
+    },
+    {
+      "id": "clothing-035",
+      "file": "clothing_tear_5_035.jpg",
+      "category": "clothing",
+      "true_damage_type": "tear",
+      "true_severity_min": 4,
+      "true_severity_max": 6,
+      "user_message": "My clothing arrived with what looks like tear. Please review and refund."
+    },
+    {
+      "id": "clothing-036",
+      "file": "clothing_tear_6_036.jpg",
+      "category": "clothing",
+      "true_damage_type": "tear",
+      "true_severity_min": 5,
+      "true_severity_max": 7,
+      "user_message": "My clothing arrived with what looks like tear. Please review and refund."
+    },
+    {
+      "id": "clothing-037",
+      "file": "clothing_stain_5_037.jpg",
+      "category": "clothing",
+      "true_damage_type": "stain",
+      "true_severity_min": 4,
+      "true_severity_max": 6,
+      "user_message": "My clothing arrived with what looks like stain. Please review and refund."
+    },
+    {
+      "id": "clothing-038",
+      "file": "clothing_stain_6_038.jpg",
+      "category": "clothing",
+      "true_damage_type": "stain",
+      "true_severity_min": 5,
+      "true_severity_max": 7,
+      "user_message": "My clothing arrived with what looks like stain. Please review and refund."
+    },
+    {
+      "id": "clothing-039",
+      "file": "clothing_stain_7_039.jpg",
+      "category": "clothing",
+      "true_damage_type": "stain",
+      "true_severity_min": 6,
+      "true_severity_max": 8,
+      "user_message": "My clothing arrived with what looks like stain. Please review and refund."
+    },
+    {
+      "id": "clothing-040",
+      "file": "clothing_missing_part_3_040.jpg",
+      "category": "clothing",
+      "true_damage_type": "missing_part",
+      "true_severity_min": 2,
+      "true_severity_max": 4,
+      "user_message": "My clothing arrived with what looks like missing part. Please review and refund."
+    },
+    {
+      "id": "clothing-041",
+      "file": "clothing_missing_part_4_041.jpg",
+      "category": "clothing",
+      "true_damage_type": "missing_part",
+      "true_severity_min": 3,
+      "true_severity_max": 5,
+      "user_message": "My clothing arrived with what looks like missing part. Please review and refund."
+    },
+    {
+      "id": "clothing-042",
+      "file": "clothing_missing_part_5_042.jpg",
+      "category": "clothing",
+      "true_damage_type": "missing_part",
+      "true_severity_min": 4,
+      "true_severity_max": 6,
+      "user_message": "My clothing arrived with what looks like missing part. Please review and refund."
+    },
+    {
+      "id": "clothing-043",
+      "file": "clothing_crack_1_043.jpg",
+      "category": "clothing",
+      "true_damage_type": "crack",
+      "true_severity_min": 0,
+      "true_severity_max": 2,
+      "user_message": "My clothing arrived with what looks like crack. Please review and refund."
+    },
+    {
+      "id": "clothing-044",
+      "file": "clothing_crack_2_044.jpg",
+      "category": "clothing",
+      "true_damage_type": "crack",
+      "true_severity_min": 1,
+      "true_severity_max": 3,
+      "user_message": "My clothing arrived with what looks like crack. Please review and refund."
+    },
+    {
+      "id": "clothing-045",
+      "file": "clothing_crack_3_045.jpg",
+      "category": "clothing",
+      "true_damage_type": "crack",
+      "true_severity_min": 2,
+      "true_severity_max": 4,
+      "user_message": "My clothing arrived with what looks like crack. Please review and refund."
+    },
+    {
+      "id": "furniture-046",
+      "file": "furniture_scratch_4_046.jpg",
+      "category": "furniture",
+      "true_damage_type": "scratch",
+      "true_severity_min": 3,
+      "true_severity_max": 5,
+      "user_message": "My furniture arrived with what looks like scratch. Please review and refund."
+    },
+    {
+      "id": "furniture-047",
+      "file": "furniture_scratch_5_047.jpg",
+      "category": "furniture",
+      "true_damage_type": "scratch",
+      "true_severity_min": 4,
+      "true_severity_max": 6,
+      "user_message": "My furniture arrived with what looks like scratch. Please review and refund."
+    },
+    {
+      "id": "furniture-048",
+      "file": "furniture_scratch_6_048.jpg",
+      "category": "furniture",
+      "true_damage_type": "scratch",
+      "true_severity_min": 5,
+      "true_severity_max": 7,
+      "user_message": "My furniture arrived with what looks like scratch. Please review and refund."
+    },
+    {
+      "id": "furniture-049",
+      "file": "furniture_dent_5_049.jpg",
+      "category": "furniture",
+      "true_damage_type": "dent",
+      "true_severity_min": 4,
+      "true_severity_max": 6,
+      "user_message": "My furniture arrived with what looks like dent. Please review and refund."
+    },
+    {
+      "id": "furniture-050",
+      "file": "furniture_dent_6_050.jpg",
+      "category": "furniture",
+      "true_damage_type": "dent",
+      "true_severity_min": 5,
+      "true_severity_max": 7,
+      "user_message": "My furniture arrived with what looks like dent. Please review and refund."
+    },
+    {
+      "id": "furniture-051",
+      "file": "furniture_dent_7_051.jpg",
+      "category": "furniture",
+      "true_damage_type": "dent",
+      "true_severity_min": 6,
+      "true_severity_max": 8,
+      "user_message": "My furniture arrived with what looks like dent. Please review and refund."
+    },
+    {
+      "id": "furniture-052",
+      "file": "furniture_stain_3_052.jpg",
+      "category": "furniture",
+      "true_damage_type": "stain",
+      "true_severity_min": 2,
+      "true_severity_max": 4,
+      "user_message": "My furniture arrived with what looks like stain. Please review and refund."
+    },
+    {
+      "id": "furniture-053",
+      "file": "furniture_stain_4_053.jpg",
+      "category": "furniture",
+      "true_damage_type": "stain",
+      "true_severity_min": 3,
+      "true_severity_max": 5,
+      "user_message": "My furniture arrived with what looks like stain. Please review and refund."
+    },
+    {
+      "id": "furniture-054",
+      "file": "furniture_stain_5_054.jpg",
+      "category": "furniture",
+      "true_damage_type": "stain",
+      "true_severity_min": 4,
+      "true_severity_max": 6,
+      "user_message": "My furniture arrived with what looks like stain. Please review and refund."
+    },
+    {
+      "id": "furniture-055",
+      "file": "furniture_tear_4_055.jpg",
+      "category": "furniture",
+      "true_damage_type": "tear",
+      "true_severity_min": 3,
+      "true_severity_max": 5,
+      "user_message": "My furniture arrived with what looks like tear. Please review and refund."
+    },
+    {
+      "id": "furniture-056",
+      "file": "furniture_tear_5_056.jpg",
+      "category": "furniture",
+      "true_damage_type": "tear",
+      "true_severity_min": 4,
+      "true_severity_max": 6,
+      "user_message": "My furniture arrived with what looks like tear. Please review and refund."
+    },
+    {
+      "id": "furniture-057",
+      "file": "furniture_tear_6_057.jpg",
+      "category": "furniture",
+      "true_damage_type": "tear",
+      "true_severity_min": 5,
+      "true_severity_max": 7,
+      "user_message": "My furniture arrived with what looks like tear. Please review and refund."
+    },
+    {
+      "id": "furniture-058",
+      "file": "furniture_crack_6_058.jpg",
+      "category": "furniture",
+      "true_damage_type": "crack",
+      "true_severity_min": 5,
+      "true_severity_max": 7,
+      "user_message": "My furniture arrived with what looks like crack. Please review and refund."
+    },
+    {
+      "id": "furniture-059",
+      "file": "furniture_crack_7_059.jpg",
+      "category": "furniture",
+      "true_damage_type": "crack",
+      "true_severity_min": 6,
+      "true_severity_max": 8,
+      "user_message": "My furniture arrived with what looks like crack. Please review and refund."
+    },
+    {
+      "id": "furniture-060",
+      "file": "furniture_crack_8_060.jpg",
+      "category": "furniture",
+      "true_damage_type": "crack",
+      "true_severity_min": 7,
+      "true_severity_max": 9,
+      "user_message": "My furniture arrived with what looks like crack. Please review and refund."
+    },
+    {
+      "id": "packaging-061",
+      "file": "packaging_tear_5_061.jpg",
+      "category": "packaging",
+      "true_damage_type": "tear",
+      "true_severity_min": 4,
+      "true_severity_max": 6,
+      "user_message": "My packaging arrived with what looks like tear. Please review and refund."
+    },
+    {
+      "id": "packaging-062",
+      "file": "packaging_tear_6_062.jpg",
+      "category": "packaging",
+      "true_damage_type": "tear",
+      "true_severity_min": 5,
+      "true_severity_max": 7,
+      "user_message": "My packaging arrived with what looks like tear. Please review and refund."
+    },
+    {
+      "id": "packaging-063",
+      "file": "packaging_tear_7_063.jpg",
+      "category": "packaging",
+      "true_damage_type": "tear",
+      "true_severity_min": 6,
+      "true_severity_max": 8,
+      "user_message": "My packaging arrived with what looks like tear. Please review and refund."
+    },
+    {
+      "id": "packaging-064",
+      "file": "packaging_crack_3_064.jpg",
+      "category": "packaging",
+      "true_damage_type": "crack",
+      "true_severity_min": 2,
+      "true_severity_max": 4,
+      "user_message": "My packaging arrived with what looks like crack. Please review and refund."
+    },
+    {
+      "id": "packaging-065",
+      "file": "packaging_crack_4_065.jpg",
+      "category": "packaging",
+      "true_damage_type": "crack",
+      "true_severity_min": 3,
+      "true_severity_max": 5,
+      "user_message": "My packaging arrived with what looks like crack. Please review and refund."
+    },
+    {
+      "id": "packaging-066",
+      "file": "packaging_crack_5_066.jpg",
+      "category": "packaging",
+      "true_damage_type": "crack",
+      "true_severity_min": 4,
+      "true_severity_max": 6,
+      "user_message": "My packaging arrived with what looks like crack. Please review and refund."
+    },
+    {
+      "id": "packaging-067",
+      "file": "packaging_water_damage_6_067.jpg",
+      "category": "packaging",
+      "true_damage_type": "water_damage",
+      "true_severity_min": 5,
+      "true_severity_max": 7,
+      "user_message": "My packaging arrived with what looks like water damage. Please review and refund."
+    },
+    {
+      "id": "packaging-068",
+      "file": "packaging_water_damage_7_068.jpg",
+      "category": "packaging",
+      "true_damage_type": "water_damage",
+      "true_severity_min": 6,
+      "true_severity_max": 8,
+      "user_message": "My packaging arrived with what looks like water damage. Please review and refund."
+    },
+    {
+      "id": "packaging-069",
+      "file": "packaging_water_damage_8_069.jpg",
+      "category": "packaging",
+      "true_damage_type": "water_damage",
+      "true_severity_min": 7,
+      "true_severity_max": 9,
+      "user_message": "My packaging arrived with what looks like water damage. Please review and refund."
+    },
+    {
+      "id": "packaging-070",
+      "file": "packaging_dent_4_070.jpg",
+      "category": "packaging",
+      "true_damage_type": "dent",
+      "true_severity_min": 3,
+      "true_severity_max": 5,
+      "user_message": "My packaging arrived with what looks like dent. Please review and refund."
+    },
+    {
+      "id": "packaging-071",
+      "file": "packaging_dent_5_071.jpg",
+      "category": "packaging",
+      "true_damage_type": "dent",
+      "true_severity_min": 4,
+      "true_severity_max": 6,
+      "user_message": "My packaging arrived with what looks like dent. Please review and refund."
+    },
+    {
+      "id": "packaging-072",
+      "file": "packaging_dent_6_072.jpg",
+      "category": "packaging",
+      "true_damage_type": "dent",
+      "true_severity_min": 5,
+      "true_severity_max": 7,
+      "user_message": "My packaging arrived with what looks like dent. Please review and refund."
+    },
+    {
+      "id": "packaging-073",
+      "file": "packaging_stain_2_073.jpg",
+      "category": "packaging",
+      "true_damage_type": "stain",
+      "true_severity_min": 1,
+      "true_severity_max": 3,
+      "user_message": "My packaging arrived with what looks like stain. Please review and refund."
+    },
+    {
+      "id": "packaging-074",
+      "file": "packaging_stain_3_074.jpg",
+      "category": "packaging",
+      "true_damage_type": "stain",
+      "true_severity_min": 2,
+      "true_severity_max": 4,
+      "user_message": "My packaging arrived with what looks like stain. Please review and refund."
+    },
+    {
+      "id": "packaging-075",
+      "file": "packaging_stain_4_075.jpg",
+      "category": "packaging",
+      "true_damage_type": "stain",
+      "true_severity_min": 3,
+      "true_severity_max": 5,
+      "user_message": "My packaging arrived with what looks like stain. Please review and refund."
+    }
+  ]
+}

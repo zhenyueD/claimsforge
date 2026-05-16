@@ -276,8 +276,8 @@ def propose(
     )
     learned_block = (
         "\n".join(
-            f"  • last {i+1}: {c.get('damage',{}).get('damage_type')} sev={c.get('damage',{}).get('severity')} "
-            f"→ {c.get('final_offer',{}).get('offer_type','escalated')} ¥{(c.get('final_offer',{}).get('amount_cents',0)/100):.2f}"
+            f"  • last {i+1}: {(c.get('damage') or {}).get('damage_type')} sev={(c.get('damage') or {}).get('severity')} "
+            f"→ {(c.get('final_offer') or {}).get('offer_type','escalated')} ¥{((c.get('final_offer') or {}).get('amount_cents',0)/100):.2f}"
             for i, c in enumerate(learned)
         )
         if learned else "  (no recent learned cases for this damage type yet)"

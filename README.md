@@ -22,16 +22,19 @@ E-commerce returns cost retailers an estimated **$743B/year** globally. The bulk
 
 ![architecture](docs/architecture.png)
 
-Four specialist agents run in a sequential pipeline coordinated by a lightweight orchestrator (no LangChain — just one Python file, ~150 LOC):
+Five specialist agents run in a sequential pipeline coordinated by a lightweight orchestrator (no LangChain — just one Python file, ~200 LOC):
 
 | Agent | Model | Job |
 |---|---|---|
-| 🎯 **IntentAgent** | gemini-2.5-flash + function calling | Classify intent (`claim_with_image` / `claim_text_only` / `general_inquiry`), extract `order_id`. |
-| 📸 **DamageAgent** | gemini-2.5-flash **Vision** + structured output | Assess damage from photo: `{damage_type, severity 0-10, affected_parts, confidence, reasoning}`. |
-| 💰 **CompensationAgent** | gemini-2.5-flash + RAG policy lookup | Pick the matching policy from `data/policies.json` (10 rules) and propose an offer. Applies emotion-aware uplift (e.g. P-EMO-01 = +20% when customer emotion ≥ 8). |
+| 🎯 **IntentAgent** | gemini-2.5-flash + function calling | Classify intent (`claim_with_image` / `claim_text_only` / `general_inquiry`), extract `order_id`. Recognizes legal-threat-only messages as claims. |
+| 💗 **EmotionAgent** | gemini-2.5-flash · structured output | Grade customer affect on calibrated 0–10 scale. Returns `{score, risk, label, triggers, escalation_signals, suggested_tone}`. Bilingual (EN + ZH). CRITICAL risk auto-promoted on legal/regulator/media signals. |
+| 📸 **DamageAgent** | gemini-2.5-flash **Vision** + structured output | Assess damage from photo: `{damage_type, severity 0-10, affected_parts, confidence, reasoning}`. **96.7% accuracy** on labeled eval set (see `eval/results/`). |
+| 💰 **CompensationAgent** | gemini-2.5-flash + RAG over policy DSL + merchant wisdom KB + live precedent | Pick matching policy from `data/policies.json` (26 rules across damage, apparel, electronics, perishables, luxury, cross-border, seasonal, emotion). Retrieve relevant merchant wisdom from `data/merchant_kb.json` (93 entries · Amazon/eBay/Shopify/Reddit). Retrieve recent precedent from learning loop. Propose typed offer with empathetic justification. |
 | ✅ **VerifierAgent** | hard-cap checks + LLM tone review | Cap amount to policy max, escalate on low evidence, request tone revision if justification is too cold. Max 1 revision loop. |
 
 The orchestrator streams each agent's progress as a WebSocket `agent_trace` event, so the UI shows the pipeline thinking live.
+
+After every resolved claim, the orchestrator appends to `data/learned_cases.jsonl` — the next CompensationAgent call retrieves recent precedent as part of its prompt. **The system learns from every claim it sees.**
 
 ---
 
@@ -85,20 +88,28 @@ Total setup time: ~10 minutes. See [`docs/deploy-vultr.md`](docs/deploy-vultr.md
 
 ---
 
-## 🧪 Testing
+## 🧪 Testing & Evaluation
 
+### End-to-end smoke
 ```bash
-# Smoke-test individual agents
-source .venv/bin/activate
-python -m agents.damage_agent     # vision assess sample images
-python -m agents.intent_agent     # 5 canned intent classification cases
-python -m agents.orchestrator     # end-to-end pipeline
-
-# E2E HTTP test
 curl -X POST http://localhost:8000/api/claim \
   -H "Content-Type: application/json" \
-  -d '{"message":"我的杯子破了","session_id":"smoke","image_id":"demo:mug_crack.jpg","estimated_value_cents":2400}'
+  -d '{"message":"My mug arrived with a crack","session_id":"smoke","image_id":"demo:mug_crack.jpg","estimated_value_cents":2400}'
 ```
+
+### DamageAgent batch eval (96.7% accuracy on 30-image sample)
+
+```bash
+# Generate a labeled dataset (75 images, 5 categories × 5 damage types × 3 severities)
+python eval/fetch_dataset.py
+
+# Run batch eval — produces confusion matrix + failure cases
+python eval/run_damage_eval.py --limit 30 --concurrency 3
+cat eval/results/last_run.md
+```
+
+The eval harness ships with the repo and re-runs in 30 seconds. **Drift gets caught.**
+See `eval/results/CHANGELOG.md` for the history of accuracy runs across prompt changes.
 
 ---
 

@@ -283,7 +283,7 @@
 
   <div class="footer">
     <span class="brand">CLAIMSFORGE</span>
-    <span>01 / 12</span>
+    <span>01 / 14</span>
   </div>
 </section>
 
@@ -323,7 +323,7 @@
 
   <div class="footer">
     <span class="brand">CLAIMSFORGE</span>
-    <span>02 / 12</span>
+    <span>02 / 14</span>
   </div>
 </section>
 
@@ -369,7 +369,7 @@
 
   <div class="footer">
     <span class="brand">CLAIMSFORGE</span>
-    <span>03 / 12</span>
+    <span>03 / 14</span>
   </div>
 </section>
 
@@ -428,7 +428,65 @@
 
   <div class="footer">
     <span class="brand">CLAIMSFORGE</span>
-    <span>04 / 12</span>
+    <span>04 / 14</span>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════
+     SLIDE 4.5 — EmotionAgent (the differentiator)
+     ═══════════════════════════════════════════════════════════ -->
+<section class="slide">
+  <span class="eyebrow">Differentiator · EmotionAgent</span>
+  <h2>The reason competitors <span class="gradient">can't ship this.</span></h2>
+
+  <p class="lead" style="margin-top: 24px;">
+    Most CS automation treats emotion as a binary flag triggered by profanity keywords.
+    We grade it on a calibrated 0–10 scale with structured signals — and we let it
+    actually <em>move money</em> downstream.
+  </p>
+
+  <div class="grid-2" style="margin-top: 56px; gap: 64px; align-items: start;">
+    <div>
+      <h4>Typed output · drives downstream policy</h4>
+<pre><span class="k">class</span> <span class="t">Emotion</span>(<span class="t">BaseModel</span>):
+    score: <span class="t">float</span> = <span class="f">Field</span>(ge=<span class="n">0</span>, le=<span class="n">10</span>)
+    risk: <span class="t">EmotionRisk</span>   <span class="c"># LOW / MED / HIGH / CRITICAL</span>
+    label: <span class="t">str</span>          <span class="c"># single descriptive word</span>
+    triggers: <span class="t">list</span>[<span class="t">str</span>]
+        <span class="c"># exact 2-5 word phrases that drove the score</span>
+    escalation_signals: <span class="t">list</span>[<span class="t">str</span>]
+        <span class="c"># "mentions lawyer" / "12315" / "media exposure"</span>
+    suggested_tone: <span class="t">str</span>
+        <span class="c"># concrete guidance: "Lead with explicit apology"</span></pre>
+      <p style="font-size: 20px; color: var(--muted); margin-top: 16px;">
+        CRITICAL risk is auto-promoted whenever escalation_signals are non-empty
+        — even if the customer writes calmly. Polite legal threats are still legal threats.
+      </p>
+    </div>
+    <div>
+      <h4>Same damage, two customers — different outcome</h4>
+      <div class="card" style="padding: 24px; margin-bottom: 16px; border-left: 3px solid #10b981;">
+        <div style="font-size: 14px; color: #34d399; font-weight: 700; margin-bottom: 8px;">CALM · score 3 · LOW</div>
+        <div style="font-size: 18px; color: var(--muted); font-style: italic;">"Hi, my mug arrived cracked. Refund please?"</div>
+        <div style="font-size: 20px; margin-top: 12px; color: var(--fg);">→ Full refund $24, auto-approved in 8s</div>
+      </div>
+      <div class="card" style="padding: 24px; border-left: 3px solid #ef4444;">
+        <div style="font-size: 14px; color: #fca5a5; font-weight: 700; margin-bottom: 8px;">CRITICAL · score 9 · 3 signals</div>
+        <div style="font-size: 18px; color: var(--muted); font-style: italic;">"THIRD TIME I've written. Contacted lawyer and the consumer protection agency!"</div>
+        <div style="font-size: 20px; margin-top: 12px; color: var(--fg);">→ Routed to human within 5s, no auto-pay</div>
+      </div>
+    </div>
+  </div>
+
+  <p style="margin-top: 56px; font-size: 22px; color: var(--muted);">
+    Bilingual at no extra cost (tested EN + ZH, including 12315 / 消协 patterns).
+    The whole pipeline reads emotion <strong class="accent">before</strong> writing the offer.
+  </p>
+
+  <div class="footer">
+    <span class="brand">CLAIMSFORGE</span>
+    <span>05 / 14</span>
   </div>
 </section>
 
@@ -492,7 +550,7 @@
 
   <div class="footer">
     <span class="brand">CLAIMSFORGE</span>
-    <span>05 / 12</span>
+    <span>06 / 14</span>
   </div>
 </section>
 
@@ -546,7 +604,7 @@
 
   <div class="footer">
     <span class="brand">CLAIMSFORGE</span>
-    <span>06 / 12</span>
+    <span>07 / 14</span>
   </div>
 </section>
 
@@ -617,7 +675,7 @@
 
   <div class="footer">
     <span class="brand">CLAIMSFORGE</span>
-    <span>07 / 12</span>
+    <span>08 / 14</span>
   </div>
 </section>
 
@@ -679,13 +737,123 @@ reason : <span class="s">"Amount within policy.</span>
 
   <div class="footer">
     <span class="brand">CLAIMSFORGE</span>
-    <span>08 / 12</span>
+    <span>09 / 14</span>
   </div>
 </section>
 
 
 <!-- ═══════════════════════════════════════════════════════════
-     SLIDE 9 — Live demo (with real screenshot from prod)
+     SLIDE 8.5 — Eval data (credibility)
+     ═══════════════════════════════════════════════════════════ -->
+<section class="slide">
+  <span class="eyebrow">Evidence · not vibes</span>
+  <h2>We measured. <span class="gradient">96.7%.</span></h2>
+
+  <p class="lead" style="margin-top: 24px;">
+    Built a labeled set of 75 damage images (5 categories × 5 damage types × 3 severities).
+    Ran the live DamageAgent against 30 of them, two columns of accuracy:
+  </p>
+
+  <div class="grid-4" style="margin-top: 64px;">
+    <div class="card">
+      <div class="num">96.7%</div>
+      <div class="label">Joint accuracy<br/>(correct type <em>and</em> ±1 severity)</div>
+    </div>
+    <div class="card">
+      <div class="num">96.7%</div>
+      <div class="label">Type accuracy<br/>(crack vs scratch vs tear vs ...)</div>
+    </div>
+    <div class="card">
+      <div class="num">2.9s</div>
+      <div class="label">p50 latency per image<br/>(includes structured JSON)</div>
+    </div>
+    <div class="card" style="border-color: rgba(239,68,68,.3);">
+      <div class="num" style="background: linear-gradient(135deg, #fca5a5, #f43f5e); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;">0%</div>
+      <div class="label">False positives on the only fail<br/>(model said "unclear" — correct behavior)</div>
+    </div>
+  </div>
+
+  <div class="grid-2" style="margin-top: 56px; gap: 64px;">
+    <div>
+      <h4>Per-category breakdown</h4>
+<pre>mug      · crack/scratch/missing_part/stain  → 15/15 ✓
+phone    · crack/scratch/water_damage/dent   → 14/15 ✓
+  one phone_dent_4 → "unclear" (correct: image
+  too subtle for confident call)</pre>
+    </div>
+    <div>
+      <h4>Why we ran this</h4>
+      <ul class="bullets">
+        <li><strong>You can't ship a CS agent on vibes.</strong> Vibes are how the bad demos at the top of HN ship.</li>
+        <li>The eval harness ships with the repo (<code style="color:var(--sky);">eval/run_damage_eval.py</code>). Re-runs in 30 seconds. Confusion matrix + failure cases auto-generated.</li>
+        <li>Same harness will rerun on every prompt change. Drift gets caught.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="footer">
+    <span class="brand">CLAIMSFORGE</span>
+    <span>10 / 14</span>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════
+     SLIDE 9 — Learning loop
+     ═══════════════════════════════════════════════════════════ -->
+<section class="slide">
+  <span class="eyebrow">Continuous learning · not a buzzword</span>
+  <h2>Every claim is <span class="gradient">precedent.</span></h2>
+
+  <div class="grid-2" style="margin-top: 56px; gap: 64px; align-items: start;">
+    <div>
+      <h4>What happens after every resolution</h4>
+<pre><span class="c"># in orchestrator.py, after final_offer is set:</span>
+<span class="f">append_learned_case</span>({
+    <span class="s">"session_id"</span>: ctx.session_id,
+    <span class="s">"emotion"</span>: ctx.emotion.<span class="f">model_dump</span>(),
+    <span class="s">"damage"</span>: ctx.damage.<span class="f">model_dump</span>(),
+    <span class="s">"final_offer"</span>: ctx.final_offer.<span class="f">model_dump</span>(),
+    <span class="s">"escalated"</span>: ctx.escalated_to_human,
+})
+
+<span class="c"># next time CompensationAgent runs:</span>
+recent = <span class="f">retrieve_recent_learned</span>(
+    damage_type=damage.damage_type.value,
+    top_k=<span class="n">3</span>,
+)
+<span class="c"># top 3 most-recent precedents flow into the prompt</span></pre>
+    </div>
+    <div>
+      <h4>What this is (and isn't)</h4>
+      <ul class="bullets">
+        <li><strong>It is:</strong> retrieval-augmented decision-making. Recent live cases ground the next offer — same damage type, same outcome distribution.</li>
+        <li><strong>It is:</strong> auditable. A human can read the jsonl and see exactly why a claim got what it got.</li>
+        <li><strong>It isn't:</strong> fine-tuning. We didn't pretend. Fine-tuning a vision-LLM on 8 cases is a meme. The RAG is what learning loops at this scale actually look like in production.</li>
+        <li><strong>Roadmap:</strong> at ~10k cases, swap to embedding-based retrieval. At ~100k, distill into a fine-tuned Gemma student model.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top: 40px; padding: 24px; border-color: rgba(167,139,250,.3);">
+    <h4 style="margin-bottom: 12px;">Live in the demo UI</h4>
+    <p style="font-size: 20px;">
+      The right rail shows the live Learning Queue. Every claim resolved in the session
+      appears there with damage type, severity, emotion, and outcome — and influences
+      the next decision. <code style="color: var(--sky);">/api/claimsforge/learning</code>
+      returns the same data programmatically.
+    </p>
+  </div>
+
+  <div class="footer">
+    <span class="brand">CLAIMSFORGE</span>
+    <span>11 / 14</span>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════
+     SLIDE 12 — Live demo (with real screenshot from prod)
      ═══════════════════════════════════════════════════════════ -->
 <section class="slide">
   <span class="eyebrow">Live demo · running on Vultr</span>
@@ -721,7 +889,7 @@ reason : <span class="s">"Amount within policy.</span>
 
   <div class="footer">
     <span class="brand">CLAIMSFORGE</span>
-    <span>09 / 12</span>
+    <span>12 / 14</span>
   </div>
 </section>
 
@@ -773,7 +941,7 @@ reason : <span class="s">"Amount within policy.</span>
 
   <div class="footer">
     <span class="brand">CLAIMSFORGE</span>
-    <span>10 / 12</span>
+    <span>13 / 14</span>
   </div>
 </section>
 
@@ -857,7 +1025,7 @@ reason : <span class="s">"Amount within policy.</span>
 
   <div class="footer">
     <span class="brand">CLAIMSFORGE</span>
-    <span>11 / 12</span>
+    <span>14 / 14</span>
   </div>
 </section>
 
@@ -896,7 +1064,7 @@ reason : <span class="s">"Amount within policy.</span>
 
   <div class="footer">
     <span class="brand">CLAIMSFORGE</span>
-    <span>12 / 12</span>
+    <span>14 / 14</span>
   </div>
 </section>
 

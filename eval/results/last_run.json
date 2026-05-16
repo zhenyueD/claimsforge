@@ -1,0 +1,554 @@
+{
+  "summary": {
+    "total": 30,
+    "passed": 29,
+    "type_accuracy": 0.967,
+    "severity_accuracy": 0.967,
+    "joint_accuracy": 0.967,
+    "errors": 0,
+    "elapsed_s": 33.3,
+    "p50_latency_ms": 2919
+  },
+  "items": [
+    {
+      "id": "mug-001",
+      "file": "mug_crack_6_001.jpg",
+      "category": "mug",
+      "true_type": "crack",
+      "true_sev_range": [
+        5,
+        7
+      ],
+      "pred_type": "crack",
+      "pred_severity": 6,
+      "pred_confidence": 0.8,
+      "pred_reasoning": "图片显示杯身有明显裂纹，可能影响正常使用。",
+      "type_ok": true,
+      "sev_ok": true,
+      "ok": true,
+      "elapsed_ms": 2934
+    },
+    {
+      "id": "mug-003",
+      "file": "mug_crack_8_003.jpg",
+      "category": "mug",
+      "true_type": "crack",
+      "true_sev_range": [
+        7,
+        9
+      ],
+      "pred_type": "crack",
+      "pred_severity": 8,
+      "pred_confidence": 0.9,
+      "pred_reasoning": "图片显示杯身有明显裂纹，可能影响正常使用。",
+      "type_ok": true,
+      "sev_ok": true,
+      "ok": true,
+      "elapsed_ms": 3263
+    },
+    {
+      "id": "mug-002",
+      "file": "mug_crack_7_002.jpg",
+      "category": "mug",
+      "true_type": "crack",
+      "true_sev_range": [
+        6,
+        8
+      ],
+      "pred_type": "crack",
+      "pred_severity": 7,
+      "pred_confidence": 0.8,
+      "pred_reasoning": "图片显示杯身有明显裂纹，可能影响使用。",
+      "type_ok": true,
+      "sev_ok": true,
+      "ok": true,
+      "elapsed_ms": 3370
+    },
+    {
+      "id": "mug-005",
+      "file": "mug_crack_9_005.jpg",
+      "category": "mug",
+      "true_type": "crack",
+      "true_sev_range": [
+        8,
+        10
+      ],
+      "pred_type": "crack",
+      "pred_severity": 9,
+      "pred_confidence": 0.9,
+      "pred_reasoning": "图片显示杯身有大量红色裂纹，表明杯子已严重破损，无法正常使用。",
+      "type_ok": true,
+      "sev_ok": true,
+      "ok": true,
+      "elapsed_ms": 3037
+    },
+    {
+      "id": "mug-004",
+      "file": "mug_crack_8_004.jpg",
+      "category": "mug",
+      "true_type": "crack",
+      "true_sev_range": [
+        7,
+        9
+      ],
+      "pred_type": "crack",
+      "pred_severity": 8,
+      "pred_confidence": 0.9,
+      "pred_reasoning": "图片显示杯身有明显裂纹，可能影响正常使用。",
+      "type_ok": true,
+      "sev_ok": true,
+      "ok": true,
+      "elapsed_ms": 4040
+    },
+    {
+      "id": "mug-006",
+      "file": "mug_crack_10_006.jpg",
+      "category": "mug",
+      "true_type": "crack",
+      "true_sev_range": [
+        9,
+        10
+      ],
+      "pred_type": "crack",
+      "pred_severity": 10,
+      "pred_confidence": 0.9,
+      "pred_reasoning": "图片显示马克杯内部有大量红色裂纹，表明杯子已完全破裂，无法使用。",
+      "type_ok": true,
+      "sev_ok": true,
+      "ok": true,
+      "elapsed_ms": 5913
+    },
+    {
+      "id": "mug-008",
+      "file": "mug_scratch_3_008.jpg",
+      "category": "mug",
+      "true_type": "scratch",
+      "true_sev_range": [
+        2,
+        4
+      ],
+      "pred_type": "scratch",
+      "pred_severity": 3,
+      "pred_confidence": 0.8,
+      "pred_reasoning": "图片显示杯身有几处细微划痕，符合客户描述的划痕情况，但划痕不深，不影响正常使用。",
+      "type_ok": true,
+      "sev_ok": true,
+      "ok": true,
+      "elapsed_ms": 3722
+    },
+    {
+      "id": "mug-007",
+      "file": "mug_scratch_2_007.jpg",
+      "category": "mug",
+      "true_type": "scratch",
+      "true_sev_range": [
+        1,
+        3
+      ],
+      "pred_type": "scratch",
+      "pred_severity": 3,
+      "pred_confidence": 0.8,
+      "pred_reasoning": "图片显示杯身有两条短划痕，属于轻微外观瑕疵，不影响正常使用。",
+      "type_ok": true,
+      "sev_ok": true,
+      "ok": true,
+      "elapsed_ms": 5277
+    },
+    {
+      "id": "mug-009",
+      "file": "mug_scratch_4_009.jpg",
+      "category": "mug",
+      "true_type": "scratch",
+      "true_sev_range": [
+        3,
+        5
+      ],
+      "pred_type": "scratch",
+      "pred_severity": 4,
+      "pred_confidence": 0.8,
+      "pred_reasoning": "图片显示杯身有数道划痕，虽然不影响使用，但影响外观。",
+      "type_ok": true,
+      "sev_ok": true,
+      "ok": true,
+      "elapsed_ms": 2631
+    },
+    {
+      "id": "mug-010",
+      "file": "mug_missing_part_7_010.jpg",
+      "category": "mug",
+      "true_type": "missing_part",
+      "true_sev_range": [
+        6,
+        8
+      ],
+      "pred_type": "missing_part",
+      "pred_severity": 7,
+      "pred_confidence": 0.8,
+      "pred_reasoning": "图片显示杯子顶部有明显的黑色缺失部分，与客户描述的“missing part”相符。",
+      "type_ok": true,
+      "sev_ok": true,
+      "ok": true,
+      "elapsed_ms": 2341
+    },
+    {
+      "id": "mug-012",
+      "file": "mug_missing_part_9_012.jpg",
+      "category": "mug",
+      "true_type": "missing_part",
+      "true_sev_range": [
+        8,
+        10
+      ],
+      "pred_type": "missing_part",
+      "pred_severity": 9,
+      "pred_confidence": 0.9,
+      "pred_reasoning": "图片显示杯口上方有明显的缺失部分，且客户描述与图片一致。",
+      "type_ok": true,
+      "sev_ok": true,
+      "ok": true,
+      "elapsed_ms": 2801
+    },
+    {
+      "id": "mug-011",
+      "file": "mug_missing_part_8_011.jpg",
+      "category": "mug",
+      "true_type": "missing_part",
+      "true_sev_range": [
+        7,
+        9
+      ],
+      "pred_type": "missing_part",
+      "pred_severity": 8,
+      "pred_confidence": 0.9,
+      "pred_reasoning": "图片显示杯子顶部有明显的黑色缺失部分，与客户描述的“missing part”一致，严重影响使用。",
+      "type_ok": true,
+      "sev_ok": true,
+      "ok": true,
+      "elapsed_ms": 4356
+    },
+    {
+      "id": "mug-013",
+      "file": "mug_stain_3_013.jpg",
+      "category": "mug",
+      "true_type": "stain",
+      "true_sev_range": [
+        2,
+        4
+      ],
+      "pred_type": "stain",
+      "pred_severity": 3,
+      "pred_confidence": 0.8,
+      "pred_reasoning": "图片显示杯身有几处棕色污渍，符合客户描述的\"stain\"。",
+      "type_ok": true,
+      "sev_ok": true,
+      "ok": true,
+      "elapsed_ms": 2919
+    },
+    {
+      "id": "mug-014",
+      "file": "mug_stain_4_014.jpg",
+      "category": "mug",
+      "true_type": "stain",
+      "true_sev_range": [
+        3,
+        5
+      ],
+      "pred_type": "stain",
+      "pred_severity": 4,
+      "pred_confidence": 0.8,
+      "pred_reasoning": "图片显示杯子内部有明显的棕色污渍，符合客户描述。",
+      "type_ok": true,
+      "sev_ok": true,
+      "ok": true,
+      "elapsed_ms": 2444
+    },
+    {
+      "id": "mug-015",
+      "file": "mug_stain_5_015.jpg",
+      "category": "mug",
+      "true_type": "stain",
+      "true_sev_range": [
+        4,
+        6
+      ],
+      "pred_type": "stain",
+      "pred_severity": 5,
+      "pred_confidence": 0.8,
+      "pred_reasoning": "图片显示马克杯表面有多个棕色污渍，影响美观，但功能上可能仍可使用。",
+      "type_ok": true,
+      "sev_ok": true,
+      "ok": true,
+      "elapsed_ms": 2275
+    },
+    {
+      "id": "phone-016",
+      "file": "phone_crack_7_016.jpg",
+      "category": "phone",
+      "true_type": "crack",
+      "true_sev_range": [
+        6,
+        8
+      ],
+      "pred_type": "crack",
+      "pred_severity": 7,
+      "pred_confidence": 0.9,
+      "pred_reasoning": "图片显示手机屏幕中部有明显的放射状裂纹，可能影响正常使用。",
+      "type_ok": true,
+      "sev_ok": true,
+      "ok": true,
+      "elapsed_ms": 4265
+    },
+    {
+      "id": "phone-017",
+      "file": "phone_crack_8_017.jpg",
+      "category": "phone",
+      "true_type": "crack",
+      "true_sev_range": [
+        7,
+        9
+      ],
+      "pred_type": "crack",
+      "pred_severity": 8,
+      "pred_confidence": 0.9,
+      "pred_reasoning": "图片显示手机屏幕中央有明显的裂纹，呈放射状，严重影响使用。",
+      "type_ok": true,
+      "sev_ok": true,
+      "ok": true,
+      "elapsed_ms": 3286
+    },
+    {
+      "id": "phone-018",
+      "file": "phone_crack_9_018.jpg",
+      "category": "phone",
+      "true_type": "crack",
+      "true_sev_range": [
+        8,
+        10
+      ],
+      "pred_type": "crack",
+      "pred_severity": 9,
+      "pred_confidence": 0.9,
+      "pred_reasoning": "图片显示手机屏幕中央有明显的放射状裂纹，严重影响使用。",
+      "type_ok": true,
+      "sev_ok": true,
+      "ok": true,
+      "elapsed_ms": 2914
+    },
+    {
+      "id": "phone-019",
+      "file": "phone_scratch_3_019.jpg",
+      "category": "phone",
+      "true_type": "scratch",
+      "true_sev_range": [
+        2,
+        4
+      ],
+      "pred_type": "scratch",
+      "pred_severity": 3,
+      "pred_confidence": 0.9,
+      "pred_reasoning": "图片显示手机屏幕上有数条白色划痕，符合客户描述的划痕情况。",
+      "type_ok": true,
+      "sev_ok": true,
+      "ok": true,
+      "elapsed_ms": 2266
+    },
+    {
+      "id": "phone-021",
+      "file": "phone_scratch_5_021.jpg",
+      "category": "phone",
+      "true_type": "scratch",
+      "true_sev_range": [
+        4,
+        6
+      ],
+      "pred_type": "scratch",
+      "pred_severity": 5,
+      "pred_confidence": 0.8,
+      "pred_reasoning": "图片显示手机屏幕有多条划痕，可能影响正常使用。",
+      "type_ok": true,
+      "sev_ok": true,
+      "ok": true,
+      "elapsed_ms": 2837
+    },
+    {
+      "id": "phone-022",
+      "file": "phone_scratch_5_022.jpg",
+      "category": "phone",
+      "true_type": "scratch",
+      "true_sev_range": [
+        4,
+        6
+      ],
+      "pred_type": "scratch",
+      "pred_severity": 5,
+      "pred_confidence": 0.8,
+      "pred_reasoning": "图片显示手机屏幕有多条明显划痕，影响美观和使用体验。",
+      "type_ok": true,
+      "sev_ok": true,
+      "ok": true,
+      "elapsed_ms": 2851
+    },
+    {
+      "id": "phone-020",
+      "file": "phone_scratch_4_020.jpg",
+      "category": "phone",
+      "true_type": "scratch",
+      "true_sev_range": [
+        3,
+        5
+      ],
+      "pred_type": "scratch",
+      "pred_severity": 4,
+      "pred_confidence": 0.8,
+      "pred_reasoning": "图片显示手机屏幕上有数条白色划痕，与客户描述一致。",
+      "type_ok": true,
+      "sev_ok": true,
+      "ok": true,
+      "elapsed_ms": 5248
+    },
+    {
+      "id": "phone-023",
+      "file": "phone_scratch_6_023.jpg",
+      "category": "phone",
+      "true_type": "scratch",
+      "true_sev_range": [
+        5,
+        7
+      ],
+      "pred_type": "scratch",
+      "pred_severity": 6,
+      "pred_confidence": 0.8,
+      "pred_reasoning": "图片显示手机屏幕有多条明显划痕，可能影响正常使用。",
+      "type_ok": true,
+      "sev_ok": true,
+      "ok": true,
+      "elapsed_ms": 2990
+    },
+    {
+      "id": "phone-024",
+      "file": "phone_scratch_7_024.jpg",
+      "category": "phone",
+      "true_type": "scratch",
+      "true_sev_range": [
+        6,
+        8
+      ],
+      "pred_type": "scratch",
+      "pred_severity": 7,
+      "pred_confidence": 0.8,
+      "pred_reasoning": "图片显示手机屏幕有多条明显划痕，可能影响正常使用。",
+      "type_ok": true,
+      "sev_ok": true,
+      "ok": true,
+      "elapsed_ms": 2342
+    },
+    {
+      "id": "phone-025",
+      "file": "phone_water_damage_8_025.jpg",
+      "category": "phone",
+      "true_type": "water_damage",
+      "true_sev_range": [
+        7,
+        9
+      ],
+      "pred_type": "water_damage",
+      "pred_severity": 8,
+      "pred_confidence": 0.8,
+      "pred_reasoning": "图片显示手机屏幕内部有明显的水渍状蓝色斑点，与客户描述的水损坏相符，可能严重影响使用。",
+      "type_ok": true,
+      "sev_ok": true,
+      "ok": true,
+      "elapsed_ms": 3313
+    },
+    {
+      "id": "phone-026",
+      "file": "phone_water_damage_9_026.jpg",
+      "category": "phone",
+      "true_type": "water_damage",
+      "true_sev_range": [
+        8,
+        10
+      ],
+      "pred_type": "water_damage",
+      "pred_severity": 9,
+      "pred_confidence": 0.9,
+      "pred_reasoning": "图片显示手机屏幕内部有明显的水渍状蓝色斑点，表明存在严重的进水损坏，可能导致设备无法正常使用。",
+      "type_ok": true,
+      "sev_ok": true,
+      "ok": true,
+      "elapsed_ms": 2814
+    },
+    {
+      "id": "phone-027",
+      "file": "phone_water_damage_10_027.jpg",
+      "category": "phone",
+      "true_type": "water_damage",
+      "true_sev_range": [
+        9,
+        10
+      ],
+      "pred_type": "water_damage",
+      "pred_severity": 10,
+      "pred_confidence": 0.9,
+      "pred_reasoning": "图片显示手机屏幕内部有大量蓝色圆形斑点，符合水渍或液体渗入的典型表现，且数量众多，严重影响屏幕显示。",
+      "type_ok": true,
+      "sev_ok": true,
+      "ok": true,
+      "elapsed_ms": 2654
+    },
+    {
+      "id": "phone-028",
+      "file": "phone_dent_4_028.jpg",
+      "category": "phone",
+      "true_type": "dent",
+      "true_sev_range": [
+        3,
+        5
+      ],
+      "pred_type": "unclear",
+      "pred_severity": 0,
+      "pred_confidence": 0.1,
+      "pred_reasoning": "图片显示的是一个手机的示意图，无法判断是否存在凹痕。",
+      "type_ok": false,
+      "sev_ok": false,
+      "ok": false,
+      "elapsed_ms": 2552
+    },
+    {
+      "id": "phone-029",
+      "file": "phone_dent_5_029.jpg",
+      "category": "phone",
+      "true_type": "dent",
+      "true_sev_range": [
+        4,
+        6
+      ],
+      "pred_type": "dent",
+      "pred_severity": 5,
+      "pred_confidence": 0.7,
+      "pred_reasoning": "图片显示手机顶部左上角有明显的凹陷，与客户描述的'dent'相符。",
+      "type_ok": true,
+      "sev_ok": true,
+      "ok": true,
+      "elapsed_ms": 2828
+    },
+    {
+      "id": "phone-030",
+      "file": "phone_dent_6_030.jpg",
+      "category": "phone",
+      "true_type": "dent",
+      "true_sev_range": [
+        5,
+        7
+      ],
+      "pred_type": "dent",
+      "pred_severity": 6,
+      "pred_confidence": 0.8,
+      "pred_reasoning": "图片显示手机顶部左侧边缘有明显的凹陷，符合客户描述的'dent'。",
+      "type_ok": true,
+      "sev_ok": true,
+      "ok": true,
+      "elapsed_ms": 2903
+    }
+  ]
+}

@@ -516,6 +516,7 @@ async def submit_claim(req: ClaimRequest, background_tasks: BackgroundTasks):
     return {
         "session_id": session_id,
         "intent": result.intent.model_dump() if result.intent else None,
+        "emotion": result.emotion.model_dump() if result.emotion else None,
         "damage": result.damage.model_dump() if result.damage else None,
         "offer": result.offer.model_dump() if result.offer else None,
         "verification": result.verification.model_dump() if result.verification else None,
