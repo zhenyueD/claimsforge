@@ -49,6 +49,107 @@ def parse_docx(blob: bytes) -> str:
     return "\n".join(paras).strip()
 
 
+def parse_pptx(blob: bytes) -> str:
+    """Extract text from every slide in a .pptx deck."""
+    import pptx
+    prs = pptx.Presentation(io.BytesIO(blob))
+    out = []
+    for i, slide in enumerate(prs.slides, start=1):
+        parts = [f"## Slide {i}"]
+        for shape in slide.shapes:
+            if hasattr(shape, "text") and shape.text and shape.text.strip():
+                parts.append(shape.text.strip())
+            if shape.has_table:
+                for row in shape.table.rows:
+                    parts.append(" | ".join(cell.text.strip() for cell in row.cells))
+        out.append("\n".join(parts))
+    return "\n\n".join(out).strip()
+
+
+def parse_xlsx(blob: bytes) -> str:
+    """Extract cells from every sheet of an .xlsx workbook."""
+    from openpyxl import load_workbook
+    wb = load_workbook(io.BytesIO(blob), data_only=True, read_only=True)
+    out = []
+    for ws in wb.worksheets:
+        rows = []
+        for row in ws.iter_rows(values_only=True):
+            cells = [str(c).strip() for c in row if c is not None and str(c).strip()]
+            if cells:
+                rows.append(" | ".join(cells))
+        if rows:
+            out.append(f"## Sheet: {ws.title}\n" + "\n".join(rows))
+    return "\n\n".join(out).strip()
+
+
+def parse_xls(blob: bytes) -> str:
+    """Legacy .xls — xlrd only handles up to .xls (2003)."""
+    import xlrd
+    wb = xlrd.open_workbook(file_contents=blob)
+    out = []
+    for sheet in wb.sheets():
+        rows = []
+        for r in range(sheet.nrows):
+            cells = [str(sheet.cell_value(r, c)).strip() for c in range(sheet.ncols)]
+            cells = [c for c in cells if c]
+            if cells:
+                rows.append(" | ".join(cells))
+        if rows:
+            out.append(f"## Sheet: {sheet.name}\n" + "\n".join(rows))
+    return "\n\n".join(out).strip()
+
+
+def parse_via_gemini_file_api(blob: bytes, filename: str) -> str:
+    """Fallback: upload the bytes to Gemini and ask it to transcribe.
+    Handles .doc, .ppt, and anything else we can't parse locally."""
+    from google import genai as _genai
+    from google.genai import types as _gtypes
+    import gemini_client as _gc
+    client = _gc.get_client()
+
+    # Upload as a temp file (Gemini file API)
+    import tempfile
+    suffix = Path(filename).suffix or ".bin"
+    with tempfile.NamedTemporaryFile(suffix=suffix, delete=False) as tmp:
+        tmp.write(blob)
+        tmp_path = tmp.name
+
+    try:
+        uploaded = client.files.upload(file=tmp_path)
+        # Wait for processing
+        for _ in range(20):
+            f = client.files.get(name=uploaded.name)
+            if str(f.state) in ("ACTIVE", "FileState.ACTIVE"):
+                break
+            time.sleep(0.5)
+
+        resp = client.models.generate_content(
+            model="gemini-2.5-flash",
+            contents=[
+                "Transcribe ALL text content from this document, faithfully. "
+                "Preserve section structure with ## headers where appropriate. "
+                "Do not summarize. Output plain text only.",
+                uploaded,
+            ],
+            config=_gtypes.GenerateContentConfig(
+                temperature=0,
+                max_output_tokens=16000,
+                thinking_config=_gtypes.ThinkingConfig(thinking_budget=0),
+            ),
+        )
+        text = (resp.text or "").strip()
+        try:
+            client.files.delete(name=uploaded.name)
+        except Exception:
+            pass
+        return text
+    finally:
+        try:
+            Path(tmp_path).unlink()
+        except Exception:
+            pass
+
+
 def parse_text(blob: bytes) -> str:
     for enc in ("utf-8", "utf-16", "gbk", "latin-1"):
         try:
@@ -60,12 +161,30 @@ def parse_text(blob: bytes) -> str:
 
 def parse_document(filename: str, blob: bytes) -> str:
     lower = filename.lower()
-    if lower.endswith(".pdf"):
-        return parse_pdf(blob)
-    if lower.endswith(".docx") or lower.endswith(".doc"):
-        return parse_docx(blob)
-    # markdown / txt / json / csv all fall through
-    return parse_text(blob)
+    try:
+        if lower.endswith(".pdf"):
+            return parse_pdf(blob)
+        if lower.endswith(".docx"):
+            return parse_docx(blob)
+        if lower.endswith(".pptx"):
+            return parse_pptx(blob)
+        if lower.endswith(".xlsx"):
+            return parse_xlsx(blob)
+        if lower.endswith(".xls"):
+            return parse_xls(blob)
+        # Legacy formats: Gemini File API can parse them directly
+        if lower.endswith(".doc") or lower.endswith(".ppt"):
+            logger.info("legacy format %s → Gemini File API fallback", filename)
+            return parse_via_gemini_file_api(blob, filename)
+        # Plain text / markdown / json / csv
+        return parse_text(blob)
+    except Exception as e:
+        logger.warning("local parse of %s failed (%s), trying Gemini File API fallback", filename, e)
+        try:
+            return parse_via_gemini_file_api(blob, filename)
+        except Exception as e2:
+            logger.error("Gemini fallback also failed for %s: %s", filename, e2)
+            raise
 
 
 # ─────────────────────────────────────────────────────────

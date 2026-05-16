@@ -38,6 +38,13 @@ import gemini_client
 from knowledge import get_learning_stats
 from unified_kb import get_kb_stats, list_gaps, list_feedback, Feedback, log_feedback, make_id
 from ingestion import ingest_document, IngestionReport
+from training import (
+    create_session as training_create_session,
+    get_session as training_get_session,
+    submit_trainee_reply as training_submit_reply,
+    close_session as training_close_session,
+    PersonaDifficulty,
+)
 
 # Per-session multi-turn store (in-memory; would be redis in prod-multi-instance)
 claim_sessions: dict[str, list[TurnRecord]] = {}
@@ -728,6 +735,68 @@ async def claimsforge_health():
             if DEMO_SCENARIOS_PATH.exists() else 0
         ),
     }
+
+
+# ═══════════════════════════════════════════════════════════════════
+#  Training Mode — AI plays the customer, human gets coached
+# ═══════════════════════════════════════════════════════════════════
+
+@app.post("/api/training/session")
+async def training_session_create(req: dict):
+    """Start a new training session. Returns the generated persona + opening message."""
+    diff_raw = (req.get("difficulty") or "medium").lower()
+    try:
+        diff = PersonaDifficulty(diff_raw)
+    except ValueError:
+        diff = PersonaDifficulty.MEDIUM
+    language = req.get("language", "en")
+    domain_hint = req.get("domain_hint")
+    session = await run_in_threadpool(training_create_session, diff, domain_hint, language)
+    return session.model_dump()
+
+
+@app.post("/api/training/reply")
+async def training_session_reply(req: dict):
+    """Trainee submits a reply. Returns per-turn assessment + customer's next message."""
+    sid = req.get("session_id", "")
+    reply = (req.get("reply") or "").strip()
+    if not sid or not reply:
+        raise HTTPException(status_code=400, detail="session_id and reply required")
+    try:
+        result = await run_in_threadpool(training_submit_reply, sid, reply)
+        return result
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+
+
+@app.post("/api/training/close")
+async def training_session_close(req: dict):
+    """End session, get the final coaching report. High-quality (≥75) sessions are written back to the KB."""
+    sid = req.get("session_id", "")
+    if not sid:
+        raise HTTPException(status_code=400, detail="session_id required")
+    try:
+        report = await run_in_threadpool(training_close_session, sid)
+        return report.model_dump()
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+
+
+@app.get("/api/training/session/{session_id}")
+async def training_session_get(session_id: str):
+    s = training_get_session(session_id)
+    if not s:
+        raise HTTPException(status_code=404, detail="session not found")
+    return s.model_dump()
+
+
+@app.get("/training")
+async def training_ui():
+    from fastapi.responses import FileResponse
+    p = WEB_DIR / "training.html"
+    if p.exists():
+        return FileResponse(str(p))
+    raise HTTPException(status_code=404, detail="training.html missing")
 
 
 # ── Static page routes ──────────────────────────────────────

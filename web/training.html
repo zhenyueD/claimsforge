@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Training · ClaimsForge</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg: #07080d; --bg-2: #0d0f17; --bg-3: #121521;
+    --surface: rgba(255,255,255,.03); --surface-2: rgba(255,255,255,.05);
+    --fg: #f3f4f6; --muted: #9ca3af; --dim: #6b7280;
+    --line: rgba(255,255,255,.08); --line-strong: rgba(255,255,255,.14);
+    --indigo: #6366f1; --violet: #a78bfa; --sky: #38bdf8;
+    --emerald: #10b981; --amber: #f59e0b; --rose: #f43f5e; --pink: #ec4899;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--fg); overflow: hidden; height: 100vh; }
+  code, pre, .mono { font-family: 'JetBrains Mono', monospace; }
+
+  .topbar {
+    position: fixed; top: 0; left: 0; right: 0; height: 56px;
+    background: rgba(7,8,13,.85); backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--line);
+    display: flex; align-items: center; padding: 0 28px; z-index: 100;
+  }
+  .brand { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 17px; }
+  .brand-mark {
+    width: 26px; height: 26px; border-radius: 7px;
+    background: linear-gradient(135deg, #6366f1, #a78bfa, #ec4899);
+    box-shadow: 0 4px 12px rgba(99,102,241,.5);
+    position: relative;
+  }
+  .brand-mark::before {
+    content: ''; position: absolute; inset: 5px;
+    border: 1.5px solid rgba(255,255,255,.55);
+    border-radius: 3px; border-bottom-color: transparent; border-left-color: transparent;
+    transform: rotate(45deg);
+  }
+  .brand-name { background: linear-gradient(135deg, #f3f4f6, #c7d2fe); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+  .brand-tag {
+    margin-left: 12px; padding: 2px 10px;
+    background: rgba(236,72,153,.15); border: 1px solid rgba(236,72,153,.3);
+    border-radius: 999px; font-size: 11px; font-weight: 600; letter-spacing: .04em;
+    color: #f9a8d4; text-transform: uppercase;
+  }
+  .spacer { flex: 1; }
+  .topbar a { color: var(--muted); font-size: 12px; text-decoration: none; padding: 6px 12px; border-radius: 8px; margin-left: 4px; }
+  .topbar a:hover { background: var(--surface); color: var(--fg); }
+  .topbar a.active { background: var(--surface-2); color: var(--pink); border: 1px solid rgba(236,72,153,.3); }
+
+  .app {
+    position: fixed; top: 56px; bottom: 0; left: 0; right: 0;
+    display: grid;
+    grid-template-columns: 320px minmax(0, 1fr) 380px;
+    min-height: 0;
+  }
+  .col-left, .col-mid, .col-right { overflow-y: auto; overflow-x: hidden; min-height: 0; }
+  .col-left { border-right: 1px solid var(--line); background: var(--bg-2); padding: 24px 20px; }
+  .col-mid { display: flex; flex-direction: column; overflow: hidden; }
+  .col-right { border-left: 1px solid var(--line); background: var(--bg-2); padding: 24px 20px; }
+
+  .section-title { font-size: 11px; font-weight: 700; letter-spacing: .12em; color: var(--dim); text-transform: uppercase; margin-bottom: 14px; }
+
+  /* Setup screen */
+  .setup-card {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 14px;
+    padding: 22px; margin-bottom: 18px;
+  }
+  .setup-card h3 { font-size: 14px; margin-bottom: 10px; color: var(--violet); }
+  .setup-row { display: flex; gap: 8px; margin-bottom: 12px; }
+  .setup-row label { font-size: 11px; color: var(--muted); display: block; margin-bottom: 4px; text-transform: uppercase; letter-spacing: .08em; }
+  .pick-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; }
+  .pick-btn {
+    padding: 9px; background: var(--bg-3); border: 1px solid var(--line);
+    color: var(--muted); border-radius: 8px; font-size: 12px;
+    cursor: pointer; transition: all .12s; text-align: center;
+  }
+  .pick-btn:hover { border-color: var(--line-strong); color: var(--fg); }
+  .pick-btn.active { background: rgba(236,72,153,.12); border-color: rgba(236,72,153,.4); color: #f9a8d4; }
+  .start-btn {
+    background: linear-gradient(135deg, #ec4899, #a78bfa); color: white;
+    border: none; padding: 11px 16px; border-radius: 10px;
+    font-size: 13px; font-weight: 700; cursor: pointer; width: 100%;
+    box-shadow: 0 4px 14px rgba(236,72,153,.35);
+  }
+  .start-btn:hover { transform: translateY(-1px); }
+
+  /* Persona panel (left during session) */
+  .persona-card {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 14px;
+    padding: 18px; margin-bottom: 14px;
+  }
+  .persona-avatar {
+    width: 60px; height: 60px; border-radius: 50%;
+    background: linear-gradient(135deg, #ec4899, #a78bfa);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 26px; margin-bottom: 12px;
+  }
+  .persona-name { font-size: 17px; font-weight: 800; margin-bottom: 4px; }
+  .persona-arch { font-size: 11px; color: var(--muted); margin-bottom: 8px; font-family: 'JetBrains Mono', monospace; }
+  .diff-pill {
+    display: inline-block; padding: 2px 9px; border-radius: 999px;
+    font-size: 10px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase;
+  }
+  .diff-easy { background: rgba(16,185,129,.15); color: #6ee7b7; }
+  .diff-medium { background: rgba(245,158,11,.15); color: #fcd34d; }
+  .diff-hard { background: rgba(244,63,94,.18); color: #fda4af; }
+  .diff-expert { background: rgba(239,68,68,.25); color: #fca5a5; }
+
+  .persona-section { margin-top: 14px; font-size: 12px; }
+  .persona-section .label { color: var(--dim); font-size: 10px; text-transform: uppercase; letter-spacing: .08em; margin-bottom: 4px; }
+  .persona-section .body { color: var(--fg); line-height: 1.5; }
+  .persona-section ul { list-style: none; padding: 0; margin-top: 4px; }
+  .persona-section li { padding: 3px 0 3px 14px; position: relative; color: var(--muted); }
+  .persona-section li::before { content: '·'; position: absolute; left: 4px; color: var(--pink); }
+
+  /* Chat */
+  .chat-area {
+    flex: 1 1 0; min-height: 0; overflow-y: auto;
+    padding: 28px 36px; scroll-behavior: smooth;
+  }
+  .msg { display: flex; gap: 12px; margin-bottom: 20px; max-width: 720px; }
+  .msg.trainee { flex-direction: row-reverse; margin-left: auto; }
+  .msg-av {
+    width: 32px; height: 32px; border-radius: 9px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center; font-size: 14px;
+  }
+  .msg.customer .msg-av { background: linear-gradient(135deg, #ec4899, #f43f5e); }
+  .msg.trainee .msg-av { background: linear-gradient(135deg, #6366f1, #a78bfa); }
+  .msg-bubble {
+    padding: 12px 16px; background: var(--surface); border: 1px solid var(--line);
+    border-radius: 14px; font-size: 14px; line-height: 1.55;
+    white-space: pre-wrap; word-break: break-word;
+  }
+  .msg.trainee .msg-bubble { background: linear-gradient(135deg, rgba(99,102,241,.16), rgba(167,139,250,.1)); border-color: rgba(99,102,241,.3); }
+  .msg-meta { font-size: 10px; color: var(--dim); margin-top: 4px; }
+
+  .input-area {
+    border-top: 1px solid var(--line); padding: 16px 36px; background: var(--bg-2); flex-shrink: 0;
+  }
+  .input-row {
+    display: flex; gap: 10px;
+    background: var(--bg); border: 1px solid var(--line-strong);
+    border-radius: 14px; padding: 10px 12px;
+  }
+  .input-row:focus-within { border-color: rgba(236,72,153,.5); }
+  .input-box {
+    flex: 1; background: transparent; border: none; color: var(--fg);
+    font-family: inherit; font-size: 14px; line-height: 1.5;
+    resize: none; outline: none; min-height: 24px; max-height: 140px;
+  }
+  .send-btn {
+    background: linear-gradient(135deg, #ec4899, #a78bfa); color: white;
+    border: none; width: 38px; height: 38px; border-radius: 10px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 4px 12px rgba(236,72,153,.35);
+  }
+  .send-btn:disabled { opacity: .4; cursor: not-allowed; }
+  .input-hint { font-size: 10px; color: var(--dim); margin-top: 8px; display: flex; justify-content: space-between; }
+
+  /* Assessment panel (right) */
+  .assess-card {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 14px;
+    padding: 18px; margin-bottom: 14px;
+  }
+  .assess-card .label { font-size: 10px; color: var(--dim); text-transform: uppercase; letter-spacing: .08em; margin-bottom: 6px; }
+  .score-bar { display: grid; grid-template-columns: 100px 1fr 30px; gap: 8px; align-items: center; margin-bottom: 6px; font-size: 12px; }
+  .score-bar .axis { color: var(--muted); }
+  .score-bar .num { color: var(--fg); font-weight: 700; text-align: right; font-family: 'JetBrains Mono', monospace; }
+  .score-track { height: 5px; background: var(--bg-3); border-radius: 3px; overflow: hidden; }
+  .score-fill { height: 100%; background: linear-gradient(90deg, #ef4444 0%, #f59e0b 50%, #10b981 100%); transition: width .5s; }
+  .assess-notes { font-size: 12px; color: #e5e7eb; line-height: 1.5; margin-top: 12px; padding: 10px 12px; background: var(--bg-3); border-left: 2px solid var(--pink); border-radius: 6px; }
+  .improvement {
+    margin-top: 10px; padding: 10px 12px;
+    background: rgba(167,139,250,.08); border: 1px solid rgba(167,139,250,.2);
+    border-radius: 8px; font-size: 12px; color: #c4b5fd;
+  }
+  .improvement::before { content: '💡 '; }
+
+  .end-btn {
+    background: var(--surface-2); border: 1px solid var(--line-strong);
+    color: var(--fg); padding: 10px 14px; border-radius: 10px; cursor: pointer;
+    font-size: 12px; font-weight: 600; width: 100%; margin-top: 10px;
+  }
+  .end-btn:hover { background: var(--bg-3); border-color: rgba(244,63,94,.3); color: var(--rose); }
+
+  /* Final report modal */
+  .report-bg {
+    position: fixed; inset: 0; background: rgba(0,0,0,.75); backdrop-filter: blur(8px);
+    z-index: 200; display: none; align-items: center; justify-content: center; padding: 20px;
+  }
+  .report-bg.open { display: flex; }
+  .report {
+    background: var(--bg-2); border: 1px solid var(--line-strong); border-radius: 18px;
+    padding: 32px; max-width: 720px; width: 100%; max-height: 90vh; overflow-y: auto;
+  }
+  .report h2 { font-size: 22px; margin-bottom: 6px; background: linear-gradient(135deg, #ec4899, #a78bfa); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+  .report .overall {
+    text-align: center; margin: 20px 0; padding: 24px; background: var(--bg-3); border-radius: 14px;
+  }
+  .report .overall .num {
+    font-size: 72px; font-weight: 900; line-height: 1;
+    background: linear-gradient(135deg, #a78bfa, #ec4899); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .report .overall .label { font-size: 12px; color: var(--muted); margin-top: 8px; text-transform: uppercase; letter-spacing: .08em; }
+  .report .headline { font-size: 16px; color: var(--fg); margin: 16px 0; line-height: 1.5; padding: 14px; background: rgba(167,139,250,.08); border-left: 3px solid var(--violet); border-radius: 8px; }
+  .axis-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin: 16px 0; }
+  .axis-card { background: var(--bg-3); padding: 12px; border-radius: 10px; text-align: center; }
+  .axis-card .axis-num { font-size: 22px; font-weight: 800; color: var(--violet); }
+  .axis-card .axis-name { font-size: 10px; color: var(--muted); margin-top: 2px; text-transform: uppercase; }
+  .report h4 { color: var(--violet); font-size: 13px; margin: 18px 0 8px; text-transform: uppercase; letter-spacing: .06em; }
+  .report ul { margin-left: 18px; font-size: 13px; line-height: 1.6; color: #e5e7eb; }
+  .report .close { float: right; background: none; border: none; color: var(--muted); font-size: 20px; cursor: pointer; }
+
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-thumb { background: var(--line); border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand">
+    <div class="brand-mark"></div>
+    <span class="brand-name">ClaimsForge</span>
+    <span class="brand-tag">Training Mode</span>
+  </div>
+  <div class="spacer"></div>
+  <a href="/">← Agent demo</a>
+  <a href="/kb">📚 KB</a>
+  <a href="/training" class="active">🎓 Training</a>
+</div>
+
+<div class="app">
+
+  <!-- LEFT: Setup OR persona during session -->
+  <aside class="col-left">
+    <div id="setupView">
+      <div class="setup-card">
+        <h3>🎓 Start a training session</h3>
+        <p style="font-size: 12px; color: var(--muted); line-height: 1.5;">An AI customer (calibrated for difficulty) will message you. You reply as a CS agent. After each turn we score you on 5 axes; at the end you get a coaching report.</p>
+      </div>
+      <div class="setup-card">
+        <div class="setup-row" style="flex-direction: column;">
+          <label>Difficulty</label>
+          <div class="pick-grid" id="diffPicker">
+            <div class="pick-btn" data-diff="easy">😊 Easy</div>
+            <div class="pick-btn active" data-diff="medium">😐 Medium</div>
+            <div class="pick-btn" data-diff="hard">😡 Hard</div>
+            <div class="pick-btn" data-diff="expert">⚖️ Expert</div>
+          </div>
+        </div>
+        <div class="setup-row" style="flex-direction: column; margin-top: 14px;">
+          <label>Language</label>
+          <div class="pick-grid" id="langPicker">
+            <div class="pick-btn active" data-lang="en">English</div>
+            <div class="pick-btn" data-lang="zh">中文</div>
+          </div>
+        </div>
+        <button class="start-btn" style="margin-top: 18px;" onclick="startSession()">Generate persona & start</button>
+      </div>
+    </div>
+
+    <div id="personaView" style="display: none;">
+      <!-- populated by JS -->
+    </div>
+  </aside>
+
+  <!-- MID: Chat -->
+  <main class="col-mid">
+    <div class="chat-area" id="chatArea">
+      <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; color:var(--dim); text-align:center; gap:12px;">
+        <div style="font-size:36px;">🎓</div>
+        <div style="font-size:24px; font-weight:700; background:linear-gradient(135deg,#ec4899,#a78bfa); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent;">Practice your craft.</div>
+        <div style="font-size:13px; color:var(--muted); max-width:420px;">Pick a difficulty on the left → an AI persona arrives → reply in character as a CS agent → get a per-turn score and a final coaching report.</div>
+      </div>
+    </div>
+    <div class="input-area" id="inputArea" style="display: none;">
+      <div class="input-row">
+        <textarea class="input-box" id="trainInput" placeholder="Reply as a CS agent…" rows="1"></textarea>
+        <button class="send-btn" id="sendBtn" onclick="submitReply()">→</button>
+      </div>
+      <div class="input-hint">
+        <span>Turn <span id="turnCount" class="mono">0</span></span>
+        <span><kbd>Enter</kbd> send · <kbd>Shift+Enter</kbd> newline</span>
+      </div>
+    </div>
+  </main>
+
+  <!-- RIGHT: Per-turn assessment -->
+  <aside class="col-right">
+    <div id="assessView">
+      <div class="section-title">Live assessment</div>
+      <div style="color: var(--dim); font-size: 12px; line-height: 1.5;">Assessments appear here after each trainee reply. Start a session on the left to begin.</div>
+    </div>
+  </aside>
+</div>
+
+<!-- Final report modal -->
+<div id="reportBg" class="report-bg">
+  <div class="report" id="reportBody">
+    <!-- populated by JS -->
+  </div>
+</div>
+
+<script>
+let pickedDiff = 'medium';
+let pickedLang = 'en';
+let currentSession = null;
+
+function $(id) { return document.getElementById(id); }
+function setHTML(el, html) { el['inner' + 'HTML'] = html; }
+function escHtml(s) {
+  if (s == null) return '';
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+document.querySelectorAll('#diffPicker .pick-btn').forEach(b => {
+  b.onclick = () => {
+    document.querySelectorAll('#diffPicker .pick-btn').forEach(x => x.classList.remove('active'));
+    b.classList.add('active');
+    pickedDiff = b.dataset.diff;
+  };
+});
+document.querySelectorAll('#langPicker .pick-btn').forEach(b => {
+  b.onclick = () => {
+    document.querySelectorAll('#langPicker .pick-btn').forEach(x => x.classList.remove('active'));
+    b.classList.add('active');
+    pickedLang = b.dataset.lang;
+  };
+});
+
+async function startSession() {
+  const btn = document.querySelector('.start-btn');
+  btn.disabled = true; btn.textContent = 'Generating persona…';
+  try {
+    const r = await fetch('/api/training/session', {
+      method: 'POST', headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ difficulty: pickedDiff, language: pickedLang })
+    });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    currentSession = await r.json();
+    renderPersona(currentSession.persona);
+    renderInitialMessage(currentSession);
+    $('setupView').style.display = 'none';
+    $('personaView').style.display = 'block';
+    $('inputArea').style.display = 'block';
+    $('trainInput').focus();
+  } catch (e) {
+    alert('Failed to create session: ' + e.message);
+    btn.disabled = false; btn.textContent = 'Generate persona & start';
+  }
+}
+
+function renderPersona(p) {
+  const init = (p.name || '?').charAt(0).toUpperCase();
+  setHTML($('personaView'),
+    '<div class="persona-card">' +
+      '<div class="persona-avatar">' + escHtml(init) + '</div>' +
+      '<div class="persona-name">' + escHtml(p.name) + '</div>' +
+      '<div class="persona-arch">' + escHtml(p.archetype) + '</div>' +
+      '<span class="diff-pill diff-' + p.difficulty + '">' + p.difficulty + '</span>' +
+      '<div class="persona-section">' +
+        '<div class="label">Backstory</div>' +
+        '<div class="body">' + escHtml(p.backstory) + '</div>' +
+      '</div>' +
+      '<div class="persona-section">' +
+        '<div class="label">Hidden goals</div>' +
+        '<ul>' + (p.hidden_goals || []).map(g => '<li>' + escHtml(g) + '</li>').join('') + '</ul>' +
+      '</div>' +
+      '<div class="persona-section">' +
+        '<div class="label">What would resolve it</div>' +
+        '<ul>' + (p.acceptance_criteria || []).map(g => '<li>' + escHtml(g) + '</li>').join('') + '</ul>' +
+      '</div>' +
+    '</div>' +
+    '<button class="end-btn" onclick="endSession()">End session & get coaching report</button>'
+  );
+}
+
+function renderInitialMessage(s) {
+  const area = $('chatArea');
+  setHTML(area, '');
+  appendMsg('customer', s.transcript[0].content, s.persona.name);
+}
+
+function appendMsg(role, text, name) {
+  const area = $('chatArea');
+  const div = document.createElement('div');
+  div.className = 'msg ' + role;
+  const av = role === 'customer'
+    ? '<div class="msg-av">🙎</div>'
+    : '<div class="msg-av">🎧</div>';
+  setHTML(div,
+    av +
+    '<div><div class="msg-bubble">' + escHtml(text) + '</div>' +
+    (name ? '<div class="msg-meta">' + escHtml(name) + '</div>' : '') + '</div>'
+  );
+  area.appendChild(div);
+  area.scrollTop = area.scrollHeight;
+}
+
+$('trainInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    submitReply();
+  }
+});
+
+async function submitReply() {
+  const input = $('trainInput');
+  const text = input.value.trim();
+  if (!text || !currentSession) return;
+  $('sendBtn').disabled = true;
+  appendMsg('trainee', text);
+  input.value = '';
+
+  // Placeholder thinking message
+  const thinkDiv = document.createElement('div');
+  thinkDiv.className = 'msg customer';
+  setHTML(thinkDiv, '<div class="msg-av">🙎</div><div class="msg-bubble" style="color:var(--muted);font-style:italic;">…thinking + scoring your reply…</div>');
+  $('chatArea').appendChild(thinkDiv);
+  $('chatArea').scrollTop = $('chatArea').scrollHeight;
+
+  try {
+    const r = await fetch('/api/training/reply', {
+      method: 'POST', headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ session_id: currentSession.session_id, reply: text })
+    });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const data = await r.json();
+    thinkDiv.remove();
+    if (data.next_customer_message) {
+      appendMsg('customer', data.next_customer_message, currentSession.persona.name);
+    }
+    renderAssessment(data.assessment);
+    $('turnCount').textContent = Math.floor(data.transcript_length / 2);
+  } catch (e) {
+    thinkDiv.remove();
+    appendMsg('customer', '⚠ ' + e.message);
+  } finally {
+    $('sendBtn').disabled = false;
+    $('trainInput').focus();
+  }
+}
+
+function renderAssessment(a) {
+  const axes = ['empathy', 'accuracy', 'specificity', 'professionalism', 'deescalation'];
+  const bars = axes.map(ax => {
+    const v = a[ax];
+    return '<div class="score-bar">' +
+      '<span class="axis">' + ax + '</span>' +
+      '<div class="score-track"><div class="score-fill" style="width:' + (v*10) + '%"></div></div>' +
+      '<span class="num">' + v + '/10</span>' +
+    '</div>';
+  }).join('');
+  setHTML($('assessView'),
+    '<div class="section-title">Latest turn assessment</div>' +
+    '<div class="assess-card">' +
+      bars +
+      '<div class="assess-notes">' + escHtml(a.notes) + '</div>' +
+      (a.improvement ? '<div class="improvement">' + escHtml(a.improvement) + '</div>' : '') +
+    '</div>' +
+    (a.cited_kb_ids && a.cited_kb_ids.length ?
+      '<div class="assess-card"><div class="label">KB entries the system thought were relevant</div>' +
+      a.cited_kb_ids.map(id => '<div style="font-size:11px;color:var(--muted);font-family:JetBrains Mono,monospace;padding:3px 0;">· ' + escHtml(id) + '</div>').join('') +
+      '</div>' : '')
+  );
+}
+
+async function endSession() {
+  if (!currentSession) return;
+  try {
+    const r = await fetch('/api/training/close', {
+      method: 'POST', headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ session_id: currentSession.session_id })
+    });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const report = await r.json();
+    showReport(report);
+  } catch (e) {
+    alert('Failed to close session: ' + e.message);
+  }
+}
+
+function showReport(r) {
+  const axes = [
+    ['Empathy', r.avg_empathy],
+    ['Accuracy', r.avg_accuracy],
+    ['Specificity', r.avg_specificity],
+    ['Professionalism', r.avg_professionalism],
+    ['De-escalation', r.avg_deescalation],
+  ];
+  setHTML($('reportBody'),
+    '<button class="close" onclick="closeReport()">✕</button>' +
+    '<h2>Coaching report</h2>' +
+    '<div class="overall"><div class="num">' + r.overall_score + '</div><div class="label">Overall score · 0-100</div></div>' +
+    '<div class="headline">' + escHtml(r.headline) + '</div>' +
+    '<div class="axis-grid">' +
+      axes.map(([name, v]) =>
+        '<div class="axis-card"><div class="axis-num">' + v + '</div><div class="axis-name">' + name + '</div></div>'
+      ).join('') +
+    '</div>' +
+    '<div style="font-size:13px;color:var(--muted);margin-top:6px;">Customer outcome: <strong style="color:var(--fg);">' + escHtml(r.customer_outcome) + '</strong></div>' +
+    (r.strengths && r.strengths.length ? '<h4>✅ Strengths</h4><ul>' + r.strengths.map(s => '<li>' + escHtml(s) + '</li>').join('') + '</ul>' : '') +
+    (r.weaknesses && r.weaknesses.length ? '<h4>⚠ Areas to improve</h4><ul>' + r.weaknesses.map(s => '<li>' + escHtml(s) + '</li>').join('') + '</ul>' : '') +
+    (r.drills && r.drills.length ? '<h4>🎯 Recommended drills</h4><ul>' + r.drills.map(s => '<li>' + escHtml(s) + '</li>').join('') + '</ul>' : '') +
+    '<div style="margin-top:18px;text-align:center;"><button class="start-btn" style="display:inline-block;width:auto;padding:10px 20px;" onclick="newSession()">Start a new session</button></div>'
+  );
+  $('reportBg').classList.add('open');
+}
+
+function closeReport() {
+  $('reportBg').classList.remove('open');
+}
+
+function newSession() {
+  closeReport();
+  currentSession = null;
+  $('setupView').style.display = 'block';
+  $('personaView').style.display = 'none';
+  $('inputArea').style.display = 'none';
+  setHTML($('chatArea'),
+    '<div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; color:var(--dim); text-align:center; gap:12px;">' +
+    '<div style="font-size:36px;">🎓</div>' +
+    '<div style="font-size:24px; font-weight:700; background:linear-gradient(135deg,#ec4899,#a78bfa); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent;">Practice your craft.</div>' +
+    '</div>');
+  setHTML($('assessView'),
+    '<div class="section-title">Live assessment</div>' +
+    '<div style="color: var(--dim); font-size: 12px; line-height: 1.5;">Assessments appear here after each trainee reply.</div>');
+  document.querySelector('.start-btn').disabled = false;
+  document.querySelector('.start-btn').textContent = 'Generate persona & start';
+}
+</script>
+</body>
+</html>
