@@ -78,9 +78,9 @@ Vultr Cloud Compute (Frankfurt) — Ubuntu 24.04 + nginx + systemd
 
 ### Application URL
 ```
-http://<VULTR_IP>     # 或域名
+http://45.32.154.255
 ```
-（用户填：部署完后从 Vultr instance 详情页拿 IP）
+✅ 已部署到 Vultr Cloud Compute Frankfurt，5/5 smoke 测试通过。
 
 ---
 

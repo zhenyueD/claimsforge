@@ -4,7 +4,7 @@
 
 🏆 Built for **Milan AI Week 2026 — AI Agent Olympics Hackathon** (Google Gemini + Vultr tracks).
 
-🔗 **Live demo:** _coming after Vultr deploy_
+🔗 **Live demo:** **http://45.32.154.255/** (Vultr Frankfurt)
 🎬 **Demo video:** _coming on May 19_
 📦 **Tech:** FastAPI · Python 3.12 · Gemini 2.5 Flash + Vision · Vultr Cloud Compute
 
