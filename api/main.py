@@ -31,6 +31,11 @@ from knowledge_pipeline import get_kb_stats, get_gaps_report, add_entry
 from observer import get_health_status, generate_daily_report, submit_satisfaction, generate_morning_brief
 from utils import safe_save_json, safe_load_json, sanitize_user_input, has_injection_risk
 
+# ClaimsForge multi-agent pipeline
+import orchestrator
+from schemas import ClaimContext, Emotion, AgentTrace
+import gemini_client
+
 app = FastAPI(title="AI客服团队 3.0", version="3.0.0")
 
 # 修复：安全响应头
@@ -368,6 +373,176 @@ async def vector_stats():
         return get_index_stats()
     except Exception as e:
         return {"status": "error", "error": str(e)}
+
+
+# ═══════════════════════════════════════════════════════════════════
+#  ClaimsForge — Multi-agent claims pipeline endpoints
+# ═══════════════════════════════════════════════════════════════════
+
+UPLOADS_DIR = BASE / "data" / "uploads"
+UPLOADS_DIR.mkdir(parents=True, exist_ok=True)
+DEMO_IMAGES_DIR = BASE / "data" / "demo_images"
+DEMO_SCENARIOS_PATH = BASE / "data" / "demo_scenarios.json"
+
+MAX_IMAGE_BYTES = 5 * 1024 * 1024  # 5MB
+ALLOWED_IMAGE_MIME = {"image/jpeg", "image/png", "image/webp"}
+
+
+from fastapi import UploadFile, File, Form
+from fastapi.responses import FileResponse
+
+
+class ClaimRequest(BaseModel):
+    message: str = Field(..., min_length=1, max_length=2000)
+    session_id: str = Field(default="", max_length=64)
+    image_id: Optional[str] = Field(default=None, max_length=128)
+    estimated_value_cents: int = Field(default=5000, ge=0, le=1_000_000)
+
+
+@app.post("/api/upload-image")
+async def upload_image(file: UploadFile = File(...)):
+    if file.content_type not in ALLOWED_IMAGE_MIME:
+        raise HTTPException(status_code=400, detail=f"unsupported image type: {file.content_type}")
+    raw = await file.read()
+    if len(raw) > MAX_IMAGE_BYTES:
+        raise HTTPException(status_code=400, detail=f"image too large: {len(raw)} bytes > 5MB")
+    # resize to max 1024px for cost + speed (Pillow)
+    try:
+        from PIL import Image
+        img = Image.open(io.BytesIO(raw))
+        img.thumbnail((1024, 1024))
+        out = io.BytesIO()
+        fmt = "JPEG" if file.content_type == "image/jpeg" else "PNG"
+        img.convert("RGB").save(out, format=fmt, quality=85)
+        raw = out.getvalue()
+        width, height = img.size
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"invalid image: {e}")
+
+    image_id = uuid.uuid4().hex
+    ext = "jpg" if file.content_type == "image/jpeg" else file.content_type.split("/")[-1]
+    (UPLOADS_DIR / f"{image_id}.{ext}").write_bytes(raw)
+    return {"image_id": f"{image_id}.{ext}", "width": width, "height": height, "bytes": len(raw)}
+
+
+@app.get("/api/demo-scenarios")
+async def list_demo_scenarios():
+    try:
+        return json.loads(DEMO_SCENARIOS_PATH.read_text(encoding="utf-8"))
+    except FileNotFoundError:
+        return {"version": "", "scenarios": []}
+
+
+@app.get("/api/demo-images/{filename}")
+async def serve_demo_image(filename: str):
+    # path traversal guard
+    if "/" in filename or ".." in filename:
+        raise HTTPException(status_code=400, detail="invalid filename")
+    path = DEMO_IMAGES_DIR / filename
+    if not path.exists():
+        raise HTTPException(status_code=404, detail="demo image not found")
+    return FileResponse(str(path))
+
+
+@app.get("/api/uploads/{image_id}")
+async def serve_uploaded(image_id: str):
+    if "/" in image_id or ".." in image_id:
+        raise HTTPException(status_code=400, detail="invalid image_id")
+    path = UPLOADS_DIR / image_id
+    if not path.exists():
+        raise HTTPException(status_code=404, detail="image not found")
+    return FileResponse(str(path))
+
+
+def _load_image_bytes(image_id: Optional[str]) -> Optional[bytes]:
+    """支持两种 image_id：上传的 (uuid.jpg) 和 demo 的 (demo:mug_crack.jpg)"""
+    if not image_id:
+        return None
+    if image_id.startswith("demo:"):
+        fname = image_id[len("demo:"):]
+        if "/" in fname or ".." in fname:
+            return None
+        path = DEMO_IMAGES_DIR / fname
+    else:
+        if "/" in image_id or ".." in image_id:
+            return None
+        path = UPLOADS_DIR / image_id
+    if not path.exists():
+        return None
+    return path.read_bytes()
+
+
+@app.post("/api/claim")
+async def submit_claim(req: ClaimRequest, background_tasks: BackgroundTasks):
+    """ClaimsForge multi-agent pipeline. Streams agent traces over WebSocket as they complete."""
+    session_id = req.session_id or uuid.uuid4().hex[:8]
+
+    # input sanitation (reuse existing security guards)
+    cleaned = sanitize_user_input(req.message, max_length=2000)
+    if has_injection_risk(cleaned):
+        raise HTTPException(status_code=400, detail="message contains disallowed content")
+
+    image_bytes = await run_in_threadpool(_load_image_bytes, req.image_id)
+
+    ctx = ClaimContext(
+        session_id=session_id,
+        user_message=cleaned,
+        image_id=req.image_id,
+        image_bytes=image_bytes,
+    )
+
+    # collect traces synchronously, then broadcast post-hoc to keep API contract simple.
+    collected_traces: list[AgentTrace] = []
+
+    def trace_cb(trace: AgentTrace) -> None:
+        collected_traces.append(trace)
+
+    def run_pipeline():
+        return orchestrator.run(ctx, on_trace=trace_cb, estimated_value_cents=req.estimated_value_cents)
+
+    result = await run_in_threadpool(run_pipeline)
+
+    # broadcast each trace as a separate WS event (live agent timeline on the UI)
+    for tr in collected_traces:
+        background_tasks.add_task(broadcast, "agent_trace", {
+            "session_id": session_id,
+            "agent": tr.agent.value,
+            "status": tr.status,
+            "summary": tr.summary,
+            "elapsed_ms": tr.elapsed_ms,
+        })
+
+    return {
+        "session_id": session_id,
+        "intent": result.intent.model_dump() if result.intent else None,
+        "damage": result.damage.model_dump() if result.damage else None,
+        "offer": result.offer.model_dump() if result.offer else None,
+        "verification": result.verification.model_dump() if result.verification else None,
+        "final_offer": result.final_offer.model_dump() if result.final_offer else None,
+        "final_reply": result.final_reply,
+        "escalated": result.escalated_to_human,
+        "traces": [t.model_dump() for t in result.traces],
+        "image_id": req.image_id,
+    }
+
+
+@app.get("/api/claimsforge/health")
+async def claimsforge_health():
+    """Show whether Gemini key + policies are loaded."""
+    from compensation_agent import load_policies
+    try:
+        policies = load_policies()
+        n = len(policies.get("policies", []))
+    except Exception:
+        n = 0
+    return {
+        "gemini": gemini_client.get_status(),
+        "policies_loaded": n,
+        "demo_scenarios": (
+            len(json.loads(DEMO_SCENARIOS_PATH.read_text(encoding="utf-8")).get("scenarios", []))
+            if DEMO_SCENARIOS_PATH.exists() else 0
+        ),
+    }
 
 
 # ── 首页重定向 ───────────────────────────────────────────────

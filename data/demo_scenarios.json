@@ -1,0 +1,32 @@
+{
+  "version": "2026-05-16",
+  "scenarios": [
+    {
+      "id": "mug-crack",
+      "title": "破裂马克杯",
+      "description": "客户收到陶瓷马克杯时杯口已经裂开",
+      "user_message": "我的马克杯收到时杯口就裂了一道 3cm 的口子，根本没法用，订单号 ORD-MUG-2024。希望全额退款。",
+      "image_filename": "mug_crack.jpg",
+      "estimated_value_cents": 2400,
+      "expected_outcome": "full_refund ¥24 / Verifier approve"
+    },
+    {
+      "id": "laptop-scratch",
+      "title": "划痕笔记本",
+      "description": "客户收到笔电时屏幕有多道划痕",
+      "user_message": "刚收到的笔记本电脑屏幕上有几道明显划痕，订单 ORD-LP-7788。看起来不像新机，希望补偿。",
+      "image_filename": "laptop_scratch.jpg",
+      "estimated_value_cents": 80000,
+      "expected_outcome": "partial_refund ~¥400 or escalate to human (high value + scratch)"
+    },
+    {
+      "id": "jacket-tear",
+      "title": "撕裂外套",
+      "description": "客户描述外套袖子有撕裂",
+      "user_message": "外套袖子刚到就破了一道大口子，订单号 ORD-JK-3344，做工太差！我已经很失望了，要求换货！",
+      "image_filename": "jacket_tear.jpg",
+      "estimated_value_cents": 19900,
+      "expected_outcome": "replacement (elevated emotion = empathetic tone)"
+    }
+  ]
+}
