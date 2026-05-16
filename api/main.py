@@ -516,10 +516,13 @@ async def submit_claim(req: ClaimRequest, background_tasks: BackgroundTasks):
     def trace_cb(trace: AgentTrace) -> None:
         collected_traces.append(trace)
 
-    def run_pipeline():
-        return orchestrator.run(ctx, on_trace=trace_cb, estimated_value_cents=req.estimated_value_cents)
-
-    result = await run_in_threadpool(run_pipeline)
+    # v5 Patch 3: use async pipeline — Emotion/Needs/Damage run in parallel.
+    # The sync orchestrator.run() is kept for /api/training and any non-async callers.
+    result = await orchestrator.run_async(
+        ctx,
+        on_trace=trace_cb,
+        estimated_value_cents=req.estimated_value_cents,
+    )
 
     # broadcast each trace as a separate WS event (live agent timeline on the UI)
     for tr in collected_traces:
