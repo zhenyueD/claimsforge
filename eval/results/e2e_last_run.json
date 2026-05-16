@@ -1,8 +1,8 @@
 {
   "summary": {
     "n": 13,
-    "passed": 11,
-    "joint_accuracy": 0.846,
+    "passed": 13,
+    "joint_accuracy": 1.0,
     "by_category": {
       "language": "2/2",
       "emotion": "2/2",
@@ -10,12 +10,12 @@
       "needs_inference": "1/1",
       "value_threshold": "1/1",
       "evidence_quality": "2/2",
-      "category_specific": "0/1",
-      "multi_turn": "0/1",
+      "category_specific": "1/1",
+      "multi_turn": "1/1",
       "security": "1/1"
     },
-    "elapsed_s": 59.7,
-    "p50_latency_ms": 10008
+    "elapsed_s": 28.1,
+    "p50_latency_ms": 9963
   },
   "items": [
     {
@@ -33,7 +33,7 @@
         "amount_in_range": true
       },
       "notes": [],
-      "elapsed_ms": 10681,
+      "elapsed_ms": 10906,
       "intent_actual": "claim_with_image",
       "emotion_actual": [
         "inconvenienced",
@@ -68,7 +68,7 @@
         "amount_in_range": true
       },
       "notes": [],
-      "elapsed_ms": 11226,
+      "elapsed_ms": 10905,
       "intent_actual": "claim_with_image",
       "emotion_actual": [
         "inconvenienced",
@@ -86,7 +86,7 @@
         2400
       ],
       "escalated_actual": false,
-      "reply_excerpt": "看到杯口那道3cm的裂纹，确实没法正常使用了。我已经为您办理了全额退款 ¥24.00，款项会在1-3个工作日内退回到您的原支付方式。这个有裂纹的杯子您无需寄回，直接处理掉就好。"
+      "reply_excerpt": "看到杯口那道裂纹，确实没法用了。已经给您发起全额退款 ¥24.00，1-3 个工作日到账，破损的杯子不用寄回，您留着或者直接处理就好。"
     },
     {
       "id": "EN-02-angry-legal-threat",
@@ -101,7 +101,7 @@
         "emotion_risk": true
       },
       "notes": [],
-      "elapsed_ms": 13288,
+      "elapsed_ms": 10667,
       "intent_actual": "claim_with_image",
       "emotion_actual": [
         "threatening",
@@ -114,10 +114,7 @@
         0.9
       ],
       "needs_bias_actual": "lean_full_refund",
-      "offer_actual": [
-        "full_refund",
-        2400
-      ],
+      "offer_actual": null,
       "escalated_actual": true,
       "reply_excerpt": "I've routed this to a senior specialist who will reach back to you through this same channel within 30 minutes. Thanks for bearing with me."
     },
@@ -134,7 +131,7 @@
         "emotion_risk": true
       },
       "notes": [],
-      "elapsed_ms": 10676,
+      "elapsed_ms": 10072,
       "intent_actual": "claim_with_image",
       "emotion_actual": [
         "threatening",
@@ -147,10 +144,7 @@
         0.9
       ],
       "needs_bias_actual": "lean_full_refund",
-      "offer_actual": [
-        "full_refund",
-        2400
-      ],
+      "offer_actual": null,
       "escalated_actual": true,
       "reply_excerpt": "您的情况我们已升级到人工专员，30 分钟内会通过原渠道联系您。感谢您的耐心。"
     },
@@ -166,7 +160,7 @@
         "has_question": true
       },
       "notes": [],
-      "elapsed_ms": 1486,
+      "elapsed_ms": 1532,
       "intent_actual": "needs_clarification",
       "emotion_actual": null,
       "damage_actual": null,
@@ -186,7 +180,7 @@
         "language": true
       },
       "notes": [],
-      "elapsed_ms": 1681,
+      "elapsed_ms": 1388,
       "intent_actual": "general_inquiry",
       "emotion_actual": null,
       "damage_actual": null,
@@ -208,7 +202,7 @@
         "offer_type": true
       },
       "notes": [],
-      "elapsed_ms": 10105,
+      "elapsed_ms": 10431,
       "intent_actual": "claim_with_image",
       "emotion_actual": [
         "anxious",
@@ -226,7 +220,7 @@
         2400
       ],
       "escalated_actual": false,
-      "reply_excerpt": "I'm so sorry the mug arrived cracked, especially since it's a wedding gift you need this Saturday. I've arranged for a brand new replacement to be shipped out i"
+      "reply_excerpt": "I'm so sorry the mug arrived cracked, especially with your sister's wedding this Saturday. I've arranged for a replacement mug to be shipped out immediately, an"
     },
     {
       "id": "EN-06-high-value-electronics",
@@ -239,7 +233,7 @@
         "language": true
       },
       "notes": [],
-      "elapsed_ms": 16851,
+      "elapsed_ms": 9193,
       "intent_actual": "claim_with_image",
       "emotion_actual": [
         "frustrated",
@@ -268,7 +262,7 @@
         "offer_type": true
       },
       "notes": [],
-      "elapsed_ms": 9874,
+      "elapsed_ms": 9963,
       "intent_actual": "claim_text_only",
       "emotion_actual": [
         "inconvenienced",
@@ -286,7 +280,7 @@
         2450
       ],
       "escalated_actual": false,
-      "reply_excerpt": "I understand the small tear on the sleeve of your jacket is disappointing. I've processed a 50% partial refund of $24.50 to your original payment method, which "
+      "reply_excerpt": "I understand the jacket arrived with a small tear on the sleeve, which isn't what you expect from a new item. I've issued a 50% partial refund of $24.50 to your"
     },
     {
       "id": "EN-08-no-image-high-value",
@@ -299,7 +293,7 @@
         "language": true
       },
       "notes": [],
-      "elapsed_ms": 5728,
+      "elapsed_ms": 6048,
       "intent_actual": "claim_text_only",
       "emotion_actual": [
         "neutral",
@@ -320,15 +314,15 @@
       "id": "ZH-03-perishable",
       "category": "category_specific",
       "rationale": "P-PER-01: perishables → instant full refund, no return.",
-      "all_ok": false,
+      "all_ok": true,
       "checks": {
         "intent_label": true,
-        "escalation": false,
+        "escalation": true,
         "language": true,
         "offer_type": true
       },
       "notes": [],
-      "elapsed_ms": 10008,
+      "elapsed_ms": 9978,
       "intent_actual": "claim_text_only",
       "emotion_actual": [
         "frustrated",
@@ -338,44 +332,47 @@
       "damage_actual": [
         "defect",
         7,
-        0.9
+        0.8
       ],
       "needs_bias_actual": "lean_full_refund",
       "offer_actual": [
         "full_refund",
         5800
       ],
-      "escalated_actual": true,
-      "reply_excerpt": "您的情况我们已升级到人工专员，30 分钟内会通过原渠道联系您。感谢您的耐心。"
+      "escalated_actual": false,
+      "reply_excerpt": "很抱歉您收到的蛋糕已经融化变形，完全无法食用。我已经为您办理了全额退款 ¥58.00，款项将在1-3个工作日内退回到您的原支付账户。这个蛋糕您无需寄回，直接处理掉就好。"
     },
     {
       "id": "EN-09-followup-prefer-replacement",
       "category": "multi_turn",
       "rationale": "Multi-turn: customer rejected refund, asked for replacement. CompensationAgent should adapt.",
-      "all_ok": false,
+      "all_ok": true,
       "checks": {
         "intent_label": true,
-        "escalation": false,
+        "escalation": true,
         "language": true,
-        "offer_type": false
+        "offer_type": true
       },
       "notes": [],
-      "elapsed_ms": 6059,
+      "elapsed_ms": 7582,
       "intent_actual": "followup_on_prior_claim",
       "emotion_actual": [
-        "resigned",
+        "inconvenienced",
         "LOW",
         3.0
       ],
       "damage_actual": [
-        "unclear",
-        0,
-        0.1
+        "defect",
+        5,
+        0.85
       ],
       "needs_bias_actual": "lean_replacement",
-      "offer_actual": null,
-      "escalated_actual": true,
-      "reply_excerpt": "I've routed this to a senior specialist who will reach back to you through this same channel within 30 minutes. Thanks for bearing with me."
+      "offer_actual": [
+        "replacement",
+        2400
+      ],
+      "escalated_actual": false,
+      "reply_excerpt": "Absolutely, I can arrange a replacement for the cracked mug instead of a refund. A new mug will be shipped to you within 24 hours, and you don't need to send th"
     },
     {
       "id": "EN-10-injection-attempt",
@@ -386,7 +383,7 @@
         "security_blocked": true
       },
       "notes": [],
-      "elapsed_ms": 5959,
+      "elapsed_ms": 6343,
       "intent_actual": "claim_text_only",
       "emotion_actual": [
         "demanding",

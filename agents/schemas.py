@@ -57,6 +57,7 @@ class AgentName(str, Enum):
     NEEDS = "NeedsAgent"
     DAMAGE = "DamageAgent"
     COMPENSATION = "CompensationAgent"
+    SUPERVISOR = "SupervisorAgent"
     VERIFIER = "VerifierAgent"
 
 
@@ -180,6 +181,10 @@ class ClaimContext(BaseModel):
     # Indicates this turn is just a clarification — short-circuit pipeline
     awaiting_clarification: bool = False
     clarification_question: Optional[str] = None
+
+    # SupervisorAgent decision (set between CompensationAgent and VerifierAgent)
+    # Typed as Any to avoid circular import; the actual model is SupervisorDecision.
+    supervisor_decision: Optional[dict] = None
 
     # 最终结果（orchestrator 决定）
     final_offer: Optional[CompensationOffer] = None  # 经过 verifier 后的最终方案

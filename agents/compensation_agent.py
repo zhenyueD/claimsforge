@@ -384,10 +384,16 @@ def run(ctx: ClaimContext, estimated_value_cents: int = 5000) -> ClaimContext:
         return ctx
 
     t0 = time.monotonic()
+    # Followup turns inherit photo evidence from the prior turn — don't re-trigger
+    # P-LMT-01 (no-image escalation) just because the customer's reply was text.
+    from schemas import IntentLabel as _IL  # local import to avoid top-level churn
+    is_followup = ctx.intent is not None and ctx.intent.label == _IL.FOLLOWUP_ON_PRIOR_CLAIM
+    effective_has_image = (ctx.image_bytes is not None) or is_followup
+
     offer, escalate_reasons = propose(
         damage=ctx.damage,
         emotion=ctx.emotion,
-        has_image=ctx.image_bytes is not None,
+        has_image=effective_has_image,
         estimated_value_cents=estimated_value_cents,
         user_message=ctx.user_message,
         product_hint=ctx.intent.product_hint if ctx.intent else None,

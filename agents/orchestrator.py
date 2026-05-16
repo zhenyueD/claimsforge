@@ -29,17 +29,34 @@ from schemas import (
     AgentName,
     AgentTrace,
     ClaimContext,
+    DamageAssessment,
+    DamageType,
     Emotion,
     IntentLabel,
     Needs,
     VerifierVerdict,
 )
 
+
+def _placeholder_damage_for_followup(ctx: ClaimContext) -> DamageAssessment:
+    """Followup turns rarely re-attach the image. Skip vision and synthesize a
+    high-confidence carry-over damage so compensation_agent can renegotiate
+    from the prior turn's evidence (which is already in history)."""
+    return DamageAssessment(
+        damage_type=DamageType.DEFECT,
+        severity=5,
+        affected_parts=[],
+        confidence=0.85,
+        reasoning="Follow-up turn — damage evidence carried over from prior conversation.",
+        evidence_quote=None,
+    )
+
 import intent_agent
 import emotion_agent
 import needs_agent
 import damage_agent
 import compensation_agent
+import supervisor
 import verifier_agent
 from knowledge import append_learned_case
 
@@ -168,25 +185,43 @@ def run(
     needs_agent.run(ctx)
     emit(ctx.traces[-1])
 
-    # Stage 4: Damage（即使无图也跑，只是 confidence 会低）
-    damage_agent.run(ctx)
-    emit(ctx.traces[-1])
+    # Stage 4: Damage (skip Vision on followup-without-image; carry damage over)
+    is_followup_no_image = (
+        ctx.intent.label == IntentLabel.FOLLOWUP_ON_PRIOR_CLAIM and ctx.image_bytes is None
+    )
+    if is_followup_no_image:
+        ctx.damage = _placeholder_damage_for_followup(ctx)
+        ctx.add_trace(AgentName.DAMAGE, status="ok",
+                      summary="followup carry-over (skipped vision)", elapsed_ms=0)
+        emit(ctx.traces[-1])
+    else:
+        damage_agent.run(ctx)
+        emit(ctx.traces[-1])
 
-    # 损坏证据极弱直接升级
-    if ctx.damage and ctx.damage.confidence < 0.2:
-        ctx.escalated_to_human = True
-        ctx.final_reply = _format_final_reply(ctx)
-        elapsed = int((time.monotonic() - pipeline_start) * 1000)
-        logger.info("pipeline done (escalated, low confidence) in %dms", elapsed)
-        return ctx
+        # 损坏证据极弱直接升级 (followup carry-over has conf=0.85 so won't trigger)
+        if ctx.damage and ctx.damage.confidence < 0.2:
+            ctx.escalated_to_human = True
+            ctx.final_reply = _format_final_reply(ctx)
+            elapsed = int((time.monotonic() - pipeline_start) * 1000)
+            logger.info("pipeline done (escalated, low confidence) in %dms", elapsed)
+            return ctx
 
     # Stage 5: Compensation (sees damage + emotion + needs + history)
     compensation_agent.run(ctx, estimated_value_cents=estimated_value_cents)
     emit(ctx.traces[-1])
 
-    if ctx.offer is None:
-        # compensation 无法出方案 → 升级
-        ctx.escalated_to_human = True
+    # Stage 5.5: Supervisor (hard pure-Python rules — Sierra-style safety gate)
+    # Can:
+    #   - FORCE_ESCALATE on water-damaged electronics / legal threats / luxury
+    #   - UN_ESCALATE perishables wrongly held back by P-LMT-01 (no-image rule)
+    #   - CAP_AMOUNT when offer exceeds MAX_CASH_PAYMENT_CENTS or 100% of order
+    # Runs BEFORE Verifier so the LLM-driven verifier can only soft-revise the
+    # already-bounded offer, not exceed the hard caps.
+    supervisor.run(ctx, estimated_value_cents=estimated_value_cents)
+    emit(ctx.traces[-1])
+
+    if ctx.offer is None or ctx.escalated_to_human:
+        # Supervisor or earlier stages decided this needs a human; skip Verifier.
         ctx.final_reply = _format_final_reply(ctx)
         return ctx
 
@@ -355,17 +390,27 @@ async def run_async(
         return ctx
 
     # ─── Stage 2-4: Emotion ‖ Needs ‖ Damage (parallel)
+    # Followup-without-image carries damage over from prior turn — no vision call.
+    is_followup_no_image = (
+        ctx.intent.label == IntentLabel.FOLLOWUP_ON_PRIOR_CLAIM and ctx.image_bytes is None
+    )
     pre_len = len(ctx.traces)
-    await asyncio.gather(
+    parallel_tasks = [
         asyncio.to_thread(emotion_agent.run, ctx),
         asyncio.to_thread(needs_agent.run, ctx),
-        asyncio.to_thread(damage_agent.run, ctx),
-    )
+    ]
+    if is_followup_no_image:
+        ctx.damage = _placeholder_damage_for_followup(ctx)
+        ctx.add_trace(AgentName.DAMAGE, status="ok",
+                      summary="followup carry-over (skipped vision)", elapsed_ms=0)
+    else:
+        parallel_tasks.append(asyncio.to_thread(damage_agent.run, ctx))
+    await asyncio.gather(*parallel_tasks)
     # Emit traces in real completion order
     for tr in ctx.traces[pre_len:]:
         emit(tr)
 
-    # Low-confidence short-circuit (same as sync run())
+    # Low-confidence short-circuit (followup carry-over has conf=0.85)
     if ctx.damage and ctx.damage.confidence < 0.2:
         ctx.escalated_to_human = True
         ctx.final_reply = _format_final_reply(ctx)
@@ -377,8 +422,11 @@ async def run_async(
     await asyncio.to_thread(compensation_agent.run, ctx, estimated_value_cents=estimated_value_cents)
     emit(ctx.traces[-1])
 
-    if ctx.offer is None:
-        ctx.escalated_to_human = True
+    # ─── Stage 5.5: Supervisor (pure-Python hard gate — see supervisor.py docstring)
+    await asyncio.to_thread(supervisor.run, ctx, estimated_value_cents=estimated_value_cents)
+    emit(ctx.traces[-1])
+
+    if ctx.offer is None or ctx.escalated_to_human:
         ctx.final_reply = _format_final_reply(ctx)
         return ctx
 

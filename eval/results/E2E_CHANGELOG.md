@@ -2,3 +2,8 @@
 
 - **2026-05-16 21:58** · n=4 · joint=50.0% · p50=11700ms · cats={'language': '1/1', 'emotion': '0/1', 'intent_routing': '1/1', 'value_threshold': '0/1'}
 - **2026-05-16 22:01** · n=13 · joint=84.6% · p50=10008ms · cats={'language': '2/2', 'emotion': '2/2', 'intent_routing': '2/2', 'needs_inference': '1/1', 'value_threshold': '1/1', 'evidence_quality': '2/2', 'category_specific': '0/1', 'multi_turn': '0/1', 'security': '1/1'}
+- **2026-05-16 22:11** · n=13 · joint=84.6% · p50=8827ms · cats={'language': '2/2', 'emotion': '2/2', 'intent_routing': '2/2', 'needs_inference': '1/1', 'value_threshold': '1/1', 'evidence_quality': '2/2', 'category_specific': '0/1', 'multi_turn': '0/1', 'security': '1/1'}
+- **2026-05-16 22:16** · n=13 · joint=92.3% · p50=9517ms · cats={'language': '2/2', 'emotion': '2/2', 'intent_routing': '2/2', 'needs_inference': '1/1', 'value_threshold': '1/1', 'evidence_quality': '2/2', 'category_specific': '1/1', 'multi_turn': '0/1', 'security': '1/1'}
+- **2026-05-16 22:20** · n=0 · joint=0.0% · p50=0ms · cats={}
+- **2026-05-16 22:20** · n=1 · joint=100.0% · p50=8647ms · cats={'multi_turn': '1/1'}
+- **2026-05-16 22:21** · n=13 · joint=100.0% · p50=9963ms · cats={'language': '2/2', 'emotion': '2/2', 'intent_routing': '2/2', 'needs_inference': '1/1', 'value_threshold': '1/1', 'evidence_quality': '2/2', 'category_specific': '1/1', 'multi_turn': '1/1', 'security': '1/1'}
