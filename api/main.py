@@ -404,7 +404,9 @@ ALLOWED_IMAGE_MIME = {"image/jpeg", "image/png", "image/webp"}
 
 
 from fastapi import UploadFile, File, Form
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, StreamingResponse
+import json as _json
+import asyncio as _asyncio
 
 
 class ClaimRequest(BaseModel):
@@ -487,6 +489,158 @@ def _load_image_bytes(image_id: Optional[str]) -> Optional[bytes]:
     return path.read_bytes()
 
 
+def _persist_session_after_claim(session_id: str, cleaned_msg: str, result) -> int:
+    """Shared session-write logic between /api/claim and /api/claim/stream.
+
+    Appends user + assistant turns to claim_sessions, bounds the buffer,
+    and returns the resulting history_length.
+    """
+    now = datetime.now().isoformat()
+    decision = None
+    if result.final_offer:
+        decision = f"{result.final_offer.offer_type.value} ${result.final_offer.amount_cents/100:.2f}"
+    elif result.escalated_to_human:
+        decision = "escalated to human"
+    elif result.awaiting_clarification:
+        decision = f"asked clarification: {result.clarification_question}"
+
+    turns = claim_sessions.setdefault(session_id, [])
+    turns.append(TurnRecord(
+        role="user", content=cleaned_msg, timestamp=now,
+        emotion_score=result.emotion.score if result.emotion else None,
+    ))
+    turns.append(TurnRecord(
+        role="assistant", content=result.final_reply or "", timestamp=now,
+        decision_summary=decision,
+        offer_amount_cents=result.final_offer.amount_cents if result.final_offer else None,
+        offer_type=result.final_offer.offer_type.value if result.final_offer else None,
+    ))
+    if len(turns) > SESSION_MAX_TURNS * 2:
+        del turns[: len(turns) - SESSION_MAX_TURNS * 2]
+    return len(turns)
+
+
+def _result_to_dict(result, session_id: str, image_id: Optional[str], history_length: int) -> dict:
+    """Same shape /api/claim has always returned. Pulled out so streaming
+    endpoint emits identical final payload."""
+    return {
+        "session_id": session_id,
+        "intent": result.intent.model_dump() if result.intent else None,
+        "emotion": result.emotion.model_dump() if result.emotion else None,
+        "needs": result.needs.model_dump() if result.needs else None,
+        "damage": result.damage.model_dump() if result.damage else None,
+        "offer": result.offer.model_dump() if result.offer else None,
+        "verification": result.verification.model_dump() if result.verification else None,
+        "final_offer": result.final_offer.model_dump() if result.final_offer else None,
+        "final_reply": result.final_reply,
+        "escalated": result.escalated_to_human,
+        "awaiting_clarification": result.awaiting_clarification,
+        "clarification_question": result.clarification_question,
+        "traces": [t.model_dump() for t in result.traces],
+        "image_id": image_id,
+        "history_length": history_length,
+    }
+
+
+@app.post("/api/claim/stream")
+async def submit_claim_stream(req: ClaimRequest):
+    """Server-Sent Events version of /api/claim — each agent emits a 'trace'
+    event the instant it completes (instead of the old behavior that
+    broadcast all traces only after the whole pipeline finished).
+
+    Event types:
+      trace  · one agent finished — {agent, status, summary, elapsed_ms}
+      final  · pipeline done — full result dict (same shape as /api/claim)
+      error  · runner crashed — {detail}
+      done   · stream terminator (clients close connection here)
+
+    Frontend pattern (POST + SSE, since EventSource doesn't support POST):
+        const r = await fetch('/api/claim/stream', { method:'POST', ... })
+        const reader = r.body.getReader();
+        // parse \\n\\n-separated `event: X\\ndata: {…}` blocks
+    """
+    session_id = req.session_id or uuid.uuid4().hex[:8]
+    cleaned = sanitize_user_input(req.message, max_length=2000)
+    if has_injection_risk(cleaned):
+        raise HTTPException(status_code=400, detail="message contains disallowed content")
+
+    image_bytes = await run_in_threadpool(_load_image_bytes, req.image_id)
+    prior_history = claim_sessions.get(session_id, [])
+
+    ctx = ClaimContext(
+        session_id=session_id,
+        user_message=cleaned,
+        image_id=req.image_id,
+        image_bytes=image_bytes,
+        history=list(prior_history),
+    )
+
+    queue: _asyncio.Queue = _asyncio.Queue()
+    loop = _asyncio.get_running_loop()
+
+    def trace_cb(trace: AgentTrace) -> None:
+        # Called from worker threads inside asyncio.to_thread — thread-safe
+        # path back into the event loop's queue.
+        try:
+            loop.call_soon_threadsafe(
+                queue.put_nowait,
+                ("trace", {
+                    "session_id": session_id,
+                    "agent": trace.agent.value,
+                    "status": trace.status,
+                    "summary": trace.summary,
+                    "elapsed_ms": trace.elapsed_ms,
+                }),
+            )
+        except Exception as e:
+            logger.warning("trace_cb dispatch failed: %s", e)
+
+    async def runner():
+        try:
+            result = await orchestrator.run_async(
+                ctx,
+                on_trace=trace_cb,
+                estimated_value_cents=req.estimated_value_cents,
+            )
+            history_length = _persist_session_after_claim(session_id, cleaned, result)
+            # Also broadcast traces to the old WebSocket for any client still on /ws
+            for tr in result.traces:
+                broadcasted = {
+                    "session_id": session_id,
+                    "agent": tr.agent.value,
+                    "status": tr.status,
+                    "summary": tr.summary,
+                    "elapsed_ms": tr.elapsed_ms,
+                }
+                _asyncio.create_task(broadcast("agent_trace", broadcasted))
+            payload = _result_to_dict(result, session_id, req.image_id, history_length)
+            queue.put_nowait(("final", payload))
+        except Exception as e:
+            logger.exception("stream runner crashed")
+            queue.put_nowait(("error", {"detail": str(e)[:300]}))
+        finally:
+            queue.put_nowait(("done", None))
+
+    _asyncio.create_task(runner())
+
+    async def event_stream():
+        while True:
+            event_type, payload = await queue.get()
+            data = _json.dumps(payload, ensure_ascii=False) if payload is not None else "{}"
+            yield f"event: {event_type}\ndata: {data}\n\n"
+            if event_type == "done":
+                break
+
+    return StreamingResponse(
+        event_stream(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "X-Accel-Buffering": "no",  # nginx: don't buffer SSE
+        },
+    )
+
+
 @app.post("/api/claim")
 async def submit_claim(req: ClaimRequest, background_tasks: BackgroundTasks):
     """ClaimsForge multi-agent pipeline. Streams agent traces over WebSocket as they complete."""
@@ -534,52 +688,9 @@ async def submit_claim(req: ClaimRequest, background_tasks: BackgroundTasks):
             "elapsed_ms": tr.elapsed_ms,
         })
 
-    # Persist this turn to the session store for next round.
-    now = datetime.now().isoformat()
-    decision = None
-    if result.final_offer:
-        decision = f"{result.final_offer.offer_type.value} ${result.final_offer.amount_cents/100:.2f}"
-    elif result.escalated_to_human:
-        decision = "escalated to human"
-    elif result.awaiting_clarification:
-        decision = f"asked clarification: {result.clarification_question}"
-
-    turns = claim_sessions.setdefault(session_id, [])
-    turns.append(TurnRecord(
-        role="user",
-        content=cleaned,
-        timestamp=now,
-        emotion_score=result.emotion.score if result.emotion else None,
-    ))
-    turns.append(TurnRecord(
-        role="assistant",
-        content=result.final_reply or "",
-        timestamp=now,
-        decision_summary=decision,
-        offer_amount_cents=result.final_offer.amount_cents if result.final_offer else None,
-        offer_type=result.final_offer.offer_type.value if result.final_offer else None,
-    ))
-    # bound the buffer
-    if len(turns) > SESSION_MAX_TURNS * 2:
-        del turns[: len(turns) - SESSION_MAX_TURNS * 2]
-
-    return {
-        "session_id": session_id,
-        "intent": result.intent.model_dump() if result.intent else None,
-        "emotion": result.emotion.model_dump() if result.emotion else None,
-        "needs": result.needs.model_dump() if result.needs else None,
-        "damage": result.damage.model_dump() if result.damage else None,
-        "offer": result.offer.model_dump() if result.offer else None,
-        "verification": result.verification.model_dump() if result.verification else None,
-        "final_offer": result.final_offer.model_dump() if result.final_offer else None,
-        "final_reply": result.final_reply,
-        "escalated": result.escalated_to_human,
-        "awaiting_clarification": result.awaiting_clarification,
-        "clarification_question": result.clarification_question,
-        "traces": [t.model_dump() for t in result.traces],
-        "image_id": req.image_id,
-        "history_length": len(turns),
-    }
+    # Persist + return — same helpers used by /api/claim/stream so payloads stay identical
+    history_length = _persist_session_after_claim(session_id, cleaned, result)
+    return _result_to_dict(result, session_id, req.image_id, history_length)
 
 
 @app.post("/api/claim/reset")

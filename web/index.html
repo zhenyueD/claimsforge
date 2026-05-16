@@ -1221,7 +1221,11 @@ async function sendMessage() {
   window.addEventListener('claimsforge:agent_trace', traceHandler);
 
   try {
-    const r = await fetch('/api/claim', {
+    // v5 P4: streaming pipeline — each agent's trace arrives the instant it
+    // completes. We render traces from the SSE 'trace' events directly
+    // (the old WS 'agent_trace' fan-out still runs server-side for backwards
+    // compat, but we ignore it here to avoid double-counting).
+    const r = await fetch('/api/claim/stream', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -1232,10 +1236,50 @@ async function sendMessage() {
       })
     });
     if (!r.ok) throw new Error('HTTP ' + r.status);
-    const d = await r.json();
-    renderResult(d);
-    updateMetrics(d, performance.now() - startedAt);
-    refreshLearning();
+
+    const reader = r.body.getReader();
+    const decoder = new TextDecoder();
+    let buf = '';
+    let finalPayload = null;
+
+    while (true) {
+      const { value, done } = await reader.read();
+      if (done) break;
+      buf += decoder.decode(value, { stream: true });
+      // Split on the SSE event boundary
+      while (buf.indexOf('\n\n') >= 0) {
+        const idx = buf.indexOf('\n\n');
+        const block = buf.slice(0, idx);
+        buf = buf.slice(idx + 2);
+        if (!block.trim()) continue;
+        const lines = block.split('\n');
+        const evLine = lines.find(l => l.startsWith('event: '));
+        const dataLine = lines.find(l => l.startsWith('data: '));
+        if (!evLine) continue;
+        const evType = evLine.slice(7).trim();
+        let payload = {};
+        try { payload = dataLine ? JSON.parse(dataLine.slice(6)) : {}; }
+        catch (_) { /* ignore parse error */ }
+
+        if (evType === 'trace') {
+          // Render immediately — this is the real-time UX win
+          appendTraceLine(traceCard, payload);
+          markAgentActive(payload);
+        } else if (evType === 'final') {
+          finalPayload = payload;
+          renderResult(payload);
+        } else if (evType === 'error') {
+          throw new Error(payload.detail || 'stream error');
+        } else if (evType === 'done') {
+          // stream complete
+        }
+      }
+    }
+
+    if (finalPayload) {
+      updateMetrics(finalPayload, performance.now() - startedAt);
+      refreshLearning();
+    }
   } catch (err) {
     appendHTML(traceCard, '<div class="trace-line"><div class="trace-dot error"></div><div class="trace-agent" style="color:var(--rose);">ERROR</div><div class="trace-summary">' + escapeHtml(err.message || 'Request failed') + '</div><div class="trace-time">—</div></div>');
   } finally {
