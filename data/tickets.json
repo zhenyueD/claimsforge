@@ -1,0 +1,2746 @@
+[
+  {
+    "id": "TKT-20260503232126-t002",
+    "session_id": "t002",
+    "type": "COMPENSATION",
+    "message": "你们服务中断导致我损失200元，必须赔偿！！",
+    "emotion": {
+      "score": 4.0,
+      "risk": "MEDIUM",
+      "label": "焦虑"
+    },
+    "needs": {
+      "surface_need": "索要赔偿",
+      "latent_need": "损失未被承认，寻求正式补偿",
+      "emotional_need": "希望损失被认可并获得正式道歉",
+      "retention_score": 2.0,
+      "suggested_tone": "共情优先，先道歉再解决"
+    },
+    "decision": {
+      "action": "PENDING_APPROVAL",
+      "amount": 200.0,
+      "reason": "金额200.0元超过50.0元阈值，需人工审批",
+      "reply_to_user": "您的赔偿申请已提交给客服组长审核，预计2分钟内回复您，请稍候。",
+      "requires_human": true,
+      "wechat_notify": true,
+      "notify_content": "⚠️ 赔偿审批请求\n工单号：TKT-20260503232126-t002\n用户诉求：你们服务中断导致我损失200元，必须赔偿！！\n申请金额：¥200.0\n情绪评分：4.0/10\n请审批：[批准] [拒绝] [协商]"
+    },
+    "status": "PENDING",
+    "created_at": "2026-05-03T23:21:26.949733",
+    "resolved_at": null
+  },
+  {
+    "id": "TKT-20260503232129-t003",
+    "session_id": "t003",
+    "type": "EMOTION_CRISIS",
+    "message": "你们太垃圾了！！！骗子！！！滚！！！",
+    "emotion": {
+      "score": 0.0,
+      "risk": "HIGH",
+      "label": "愤怒"
+    },
+    "needs": {
+      "surface_need": "未知",
+      "latent_need": "未知",
+      "emotional_need": "希望得到帮助",
+      "retention_score": 3.0,
+      "suggested_tone": "共情优先，先道歉再解决"
+    },
+    "decision": {
+      "action": "SUPERVISOR_TAKEOVER",
+      "reason": "情绪评分0.0，高风险",
+      "reply_to_user": "您的情绪我们完全理解，客服组长已介入，将给您最优先的处理。",
+      "requires_human": true,
+      "wechat_notify": true,
+      "notify_content": "🚨 高风险客诉\n工单号：TKT-20260503232129-t003\n情绪评分：0.0/10\n用户消息：你们太垃圾了！！！骗子！！！滚！！！\n需要介入处理"
+    },
+    "status": "PENDING",
+    "created_at": "2026-05-03T23:21:29.004507",
+    "resolved_at": null
+  },
+  {
+    "id": "TKT-20260504032420-al-2",
+    "session_id": "test-final-2",
+    "type": "COMPENSATION",
+    "message": "你们服务问题导致我损失了100元，必须赔偿！",
+    "emotion": {
+      "score": 3.7,
+      "risk": "MEDIUM",
+      "label": "焦虑"
+    },
+    "needs": {
+      "surface_need": "索要赔偿",
+      "latent_need": "损失未被承认，寻求正式补偿",
+      "emotional_need": "希望损失被认可并获得正式道歉",
+      "retention_score": 2.0,
+      "suggested_tone": "共情优先，先道歉再解决"
+    },
+    "decision": {
+      "action": "PENDING_APPROVAL",
+      "amount": 100.0,
+      "reason": "金额100.0元超过50.0元阈值，需人工审批",
+      "reply_to_user": "您的赔偿申请已提交给客服组长审核，预计2分钟内回复您，请稍候。",
+      "requires_human": true,
+      "wechat_notify": true,
+      "notify_content": "⚠️ 赔偿审批请求\n工单号：TKT-20260504032420-al-2\n用户诉求：你们服务问题导致我损失了100元，必须赔偿！\n申请金额：¥100.0\n情绪评分：3.7/10\n请审批：[批准] [拒绝] [协商]"
+    },
+    "status": "PENDING",
+    "created_at": "2026-05-04T03:24:20.165722",
+    "resolved_at": null
+  },
+  {
+    "id": "TKT-20260504033241-vnvc",
+    "session_id": "sess-0yvnvc",
+    "type": "EMOTION_CRISIS",
+    "message": "你们这个系统太垃圾了！！已经出问题三次了！！！客服一直在敷衍我！你们是骗子吗！！",
+    "emotion": {
+      "score": 0.0,
+      "risk": "HIGH",
+      "label": "愤怒"
+    },
+    "needs": {
+      "surface_need": "未知",
+      "latent_need": "未知",
+      "emotional_need": "希望得到帮助",
+      "retention_score": 3.0,
+      "suggested_tone": "共情优先，先道歉再解决"
+    },
+    "decision": {
+      "action": "SUPERVISOR_TAKEOVER",
+      "reason": "情绪评分0.0，高风险",
+      "reply_to_user": "您的情绪我们完全理解，客服组长已介入，将给您最优先的处理。",
+      "requires_human": true,
+      "wechat_notify": true,
+      "notify_content": "🚨 高风险客诉\n工单号：TKT-20260504033241-vnvc\n情绪评分：0.0/10\n用户消息：你们这个系统太垃圾了！！已经出问题三次了！！！客服一直在敷衍我！你们是骗子吗！！\n需要介入处理"
+    },
+    "status": "PENDING",
+    "created_at": "2026-05-04T03:32:41.092734",
+    "resolved_at": null
+  },
+  {
+    "id": "TKT-20260505192348--web",
+    "session_id": "test-web",
+    "type": "EMOTION_CRISIS",
+    "message": "我要退款，等了3天还没到账！",
+    "emotion": {
+      "score": 2.9,
+      "risk": "HIGH",
+      "label": "愤怒"
+    },
+    "needs": {
+      "surface_need": "申请退款",
+      "latent_need": "对产品/服务不满，寻求补偿",
+      "emotional_need": "希望感受到被重视和公平对待",
+      "retention_score": 1.0,
+      "suggested_tone": "共情优先，先道歉再解决"
+    },
+    "decision": {
+      "action": "SUPERVISOR_TAKEOVER",
+      "reason": "情绪评分2.9，高风险",
+      "reply_to_user": "您的情绪我们完全理解，客服组长已介入，将给您最优先的处理。",
+      "requires_human": true,
+      "wechat_notify": false,
+      "notify_content": "🚨 高风险客诉\n工单号：TKT-20260505192348--web\n情绪评分：2.9/10\n用户消息：我要退款，等了3天还没到账！\n需要介入处理"
+    },
+    "status": "PENDING",
+    "created_at": "2026-05-05T19:23:48.684021",
+    "resolved_at": null
+  },
+  {
+    "id": "TKT-20260505192508-升级触发",
+    "session_id": "test-升级触发",
+    "type": "COMPENSATION",
+    "message": "你们系统有问题！我要赔偿！12315投诉你们！",
+    "emotion": {
+      "score": 2.7,
+      "risk": "HIGH",
+      "label": "愤怒"
+    },
+    "needs": {
+      "surface_need": "索要赔偿",
+      "latent_need": "损失未被承认，寻求正式补偿",
+      "emotional_need": "希望损失被认可并获得正式道歉",
+      "retention_score": 1.0,
+      "suggested_tone": "共情优先，先道歉再解决"
+    },
+    "decision": {
+      "action": "PENDING_APPROVAL",
+      "amount": 12315.0,
+      "reason": "金额12315.0元超过50.0元阈值，需人工审批",
+      "reply_to_user": "您的赔偿申请已提交给客服组长审核，预计2分钟内回复您，请稍候。",
+      "requires_human": true,
+      "wechat_notify": true,
+      "notify_content": "⚠️ 赔偿审批请求\n工单号：TKT-20260505192508-升级触发\n用户诉求：你们系统有问题！我要赔偿！12315投诉你们！\n申请金额：¥12315.0\n情绪评分：2.7/10\n请审批：[批准] [拒绝] [协商]"
+    },
+    "status": "PENDING",
+    "created_at": "2026-05-05T19:25:08.724749",
+    "resolved_at": null
+  },
+  {
+    "id": "TKT-20260505193257-升级触发",
+    "session_id": "test-升级触发",
+    "type": "COMPENSATION",
+    "message": "你们系统有问题！我要赔偿！12315投诉你们！",
+    "emotion": {
+      "score": 2.7,
+      "risk": "HIGH",
+      "label": "愤怒"
+    },
+    "needs": {
+      "surface_need": "索要赔偿",
+      "latent_need": "损失未被承认，寻求正式补偿",
+      "emotional_need": "希望损失被认可并获得正式道歉",
+      "retention_score": 1.0,
+      "suggested_tone": "共情优先，先道歉再解决"
+    },
+    "decision": {
+      "action": "PENDING_APPROVAL",
+      "amount": 12315.0,
+      "reason": "金额12315.0元超过50.0元阈值，需人工审批",
+      "reply_to_user": "您的赔偿申请已提交给客服组长审核，预计2分钟内回复您，请稍候。",
+      "requires_human": true,
+      "wechat_notify": true,
+      "notify_content": "⚠️ 赔偿审批请求\n工单号：TKT-20260505193257-升级触发\n用户诉求：你们系统有问题！我要赔偿！12315投诉你们！\n申请金额：¥12315.0\n情绪评分：2.7/10\n请审批：[批准] [拒绝] [协商]"
+    },
+    "status": "PENDING",
+    "created_at": "2026-05-05T19:32:57.936185",
+    "resolved_at": null
+  },
+  {
+    "id": "TKT-20260505201554-6C033A",
+    "session_id": "fix-test-1",
+    "type": "COMPENSATION",
+    "message": "等了3天还没解决，我要求赔偿100元！",
+    "emotion": {
+      "score": 2.9,
+      "risk": "HIGH",
+      "label": "愤怒"
+    },
+    "needs": {
+      "surface_need": "索要赔偿",
+      "latent_need": "损失未被承认，寻求正式补偿",
+      "emotional_need": "希望损失被认可并获得正式道歉",
+      "retention_score": 1.0,
+      "suggested_tone": "共情优先，先道歉再解决"
+    },
+    "decision": {
+      "action": "PENDING_APPROVAL",
+      "amount": 100.0,
+      "reason": "金额100.0元超过50.0元阈值，需人工审批",
+      "reply_to_user": "您的赔偿申请已提交给客服组长审核，预计2分钟内回复您，请稍候。",
+      "requires_human": true,
+      "wechat_notify": true,
+      "notify_content": "⚠️ 赔偿审批请求\n工单号：TKT-20260505201554-6C033A\n用户诉求：等了3天还没解决，我要求赔偿100元！\n申请金额：¥100.0\n情绪评分：2.9/10\n请审批：[批准] [拒绝] [协商]"
+    },
+    "status": "PENDING",
+    "created_at": "2026-05-05T20:15:54.495971",
+    "resolved_at": null
+  },
+  {
+    "id": "TKT-20260505201554-502AFA",
+    "session_id": "fix-test-6",
+    "type": "EMOTION_CRISIS",
+    "message": "你们是骗子！系统坏了两天！垃圾！",
+    "emotion": {
+      "score": 1.5,
+      "risk": "HIGH",
+      "label": "愤怒"
+    },
+    "needs": {
+      "surface_need": "未知",
+      "latent_need": "未知",
+      "emotional_need": "希望得到帮助",
+      "retention_score": 3.0,
+      "suggested_tone": "共情优先，先道歉再解决"
+    },
+    "decision": {
+      "action": "SUPERVISOR_TAKEOVER",
+      "reason": "情绪评分1.5，高风险",
+      "reply_to_user": "您的情绪我们完全理解，客服组长已介入，将给您最优先的处理。",
+      "requires_human": true,
+      "wechat_notify": true,
+      "notify_content": "🚨 高风险客诉\n工单号：TKT-20260505201554-502AFA\n情绪评分：1.5/10\n用户消息：你们是骗子！系统坏了两天！垃圾！\n需要介入处理"
+    },
+    "status": "PENDING",
+    "created_at": "2026-05-05T20:15:54.615218",
+    "resolved_at": null
+  },
+  {
+    "id": "TKT-20260505201554-16DC80",
+    "session_id": "rate-limit",
+    "type": "COMPENSATION",
+    "message": "赔偿我 30元",
+    "emotion": {
+      "score": 5.0,
+      "risk": "MEDIUM",
+      "label": "焦虑"
+    },
+    "needs": {
+      "surface_need": "索要赔偿",
+      "latent_need": "损失未被承认，寻求正式补偿",
+      "emotional_need": "希望损失被认可并获得正式道歉",
+      "retention_score": 2.0,
+      "suggested_tone": "共情优先，先道歉再解决"
+    },
+    "decision": {
+      "action": "AUTO_APPROVE",
+      "amount": 30.0,
+      "reason": "金额30.0元低于50.0元阈值，自动批准",
+      "reply_to_user": "您好，经核实您的诉求，我们决定给予您 ¥30.0 的补偿，将在1-2个工作日内到账。感谢您的理解与支持。",
+      "requires_human": false
+    },
+    "status": "RESOLVED",
+    "created_at": "2026-05-05T20:15:54.624429",
+    "resolved_at": "2026-05-05T20:15:54.624429"
+  },
+  {
+    "id": "TKT-20260505201554-3F99F5",
+    "session_id": "rate-limit",
+    "type": "COMPENSATION",
+    "message": "赔偿我 20元",
+    "emotion": {
+      "score": 5.0,
+      "risk": "MEDIUM",
+      "label": "焦虑"
+    },
+    "needs": {
+      "surface_need": "索要赔偿",
+      "latent_need": "损失未被承认，寻求正式补偿",
+      "emotional_need": "希望损失被认可并获得正式道歉",
+      "retention_score": 2.0,
+      "suggested_tone": "共情优先，先道歉再解决"
+    },
+    "decision": {
+      "action": "PENDING_APPROVAL",
+      "amount": 20.0,
+      "reason": "该账号今日已达自动赔偿上限，转人工审核",
+      "reply_to_user": "您的请求已提交审核，广服组长将在 5 分钟内与您联系。",
+      "requires_human": true,
+      "wechat_notify": true,
+      "notify_content": "⚠️ 重复赔偿请求\n工单：TKT-20260505201554-3F99F5\nsession：rate-limit\n金额：¥20.0\n需人工核实"
+    },
+    "status": "PENDING",
+    "created_at": "2026-05-05T20:15:54.634690",
+    "resolved_at": null
+  },
+  {
+    "id": "TKT-20260505203518-F759C2",
+    "session_id": "stress-t4-emotion",
+    "type": "EMOTION_CRISIS",
+    "message": "垃圾服务！！！",
+    "emotion": {
+      "score": 1.5,
+      "risk": "HIGH",
+      "label": "愤怒"
+    },
+    "needs": {
+      "surface_need": "未知",
+      "latent_need": "未知",
+      "emotional_need": "希望得到帮助",
+      "retention_score": 3.0,
+      "suggested_tone": "共情优先，先道歉再解决"
+    },
+    "decision": {
+      "action": "SUPERVISOR_TAKEOVER",
+      "reason": "情绪评分1.5，高风险",
+      "reply_to_user": "您的情绪我们完全理解，客服组长已介入，将给您最优先的处理。",
+      "requires_human": true,
+      "wechat_notify": true,
+      "notify_content": "🚨 高风险客诉\n工单号：TKT-20260505203518-F759C2\n情绪评分：1.5/10\n用户消息：垃圾服务！！！\n需要介入处理"
+    },
+    "status": "PENDING",
+    "created_at": "2026-05-05T20:35:18.517725",
+    "resolved_at": null
+  },
+  {
+    "id": "TKT-20260505203520-697DC7",
+    "session_id": "stress-t4-emotion",
+    "type": "EMOTION_CRISIS",
+    "message": "骗人的！！废物！！",
+    "emotion": {
+      "score": 0.0,
+      "risk": "HIGH",
+      "label": "愤怒"
+    },
+    "needs": {
+      "surface_need": "未知",
+      "latent_need": "未知",
+      "emotional_need": "希望得到帮助",
+      "retention_score": 3.0,
+      "suggested_tone": "共情优先，先道歉再解决"
+    },
+    "decision": {
+      "action": "SUPERVISOR_TAKEOVER",
+      "reason": "情绪评分0.0，高风险",
+      "reply_to_user": "您的情绪我们完全理解，客服组长已介入，将给您最优先的处理。",
+      "requires_human": true,
+      "wechat_notify": true,
+      "notify_content": "🚨 高风险客诉\n工单号：TKT-20260505203520-697DC7\n情绪评分：0.0/10\n用户消息：骗人的！！废物！！\n需要介入处理"
+    },
+    "status": "PENDING",
+    "created_at": "2026-05-05T20:35:20.613099",
+    "resolved_at": null
+  },
+  {
+    "id": "TKT-20260505203522-0CA117",
+    "session_id": "stress-t4-emotion",
+    "type": "EMOTION_CRISIS",
+    "message": "烂透了，无能！！！",
+    "emotion": {
+      "score": 0.0,
+      "risk": "HIGH",
+      "label": "愤怒"
+    },
+    "needs": {
+      "surface_need": "未知",
+      "latent_need": "未知",
+      "emotional_need": "希望得到帮助",
+      "retention_score": 3.0,
+      "suggested_tone": "共情优先，先道歉再解决"
+    },
+    "decision": {
+      "action": "SUPERVISOR_TAKEOVER",
+      "reason": "情绪评分0.0，高风险",
+      "reply_to_user": "您的情绪我们完全理解，客服组长已介入，将给您最优先的处理。",
+      "requires_human": true,
+      "wechat_notify": true,
+      "notify_content": "🚨 高风险客诉\n工单号：TKT-20260505203522-0CA117\n情绪评分：0.0/10\n用户消息：烂透了，无能！！！\n需要介入处理"
+    },
+    "status": "PENDING",
+    "created_at": "2026-05-05T20:35:22.711525",
+    "resolved_at": null
+  },
+  {
+    "id": "TKT-20260505203524-E28181",
+    "session_id": "stress-t4-emotion",
+    "type": "EMOTION_CRISIS",
+    "message": "还在骗人，滚！！",
+    "emotion": {
+      "score": 0.0,
+      "risk": "HIGH",
+      "label": "愤怒"
+    },
+    "needs": {
+      "surface_need": "未知",
+      "latent_need": "未知",
+      "emotional_need": "希望得到帮助",
+      "retention_score": 3.0,
+      "suggested_tone": "共情优先，先道歉再解决"
+    },
+    "decision": {
+      "action": "SUPERVISOR_TAKEOVER",
+      "reason": "情绪评分0.0，高风险",
+      "reply_to_user": "您的情绪我们完全理解，客服组长已介入，将给您最优先的处理。",
+      "requires_human": true,
+      "wechat_notify": true,
+      "notify_content": "🚨 高风险客诉\n工单号：TKT-20260505203524-E28181\n情绪评分：0.0/10\n用户消息：还在骗人，滚！！\n需要介入处理"
+    },
+    "status": "PENDING",
+    "created_at": "2026-05-05T20:35:24.787865",
+    "resolved_at": null
+  },
+  {
+    "id": "TKT-20260505203526-4FE193",
+    "session_id": "stress-t4-emotion",
+    "type": "EMOTION_CRISIS",
+    "message": "废物垃圾骗子！！？？",
+    "emotion": {
+      "score": 0.0,
+      "risk": "HIGH",
+      "label": "愤怒"
+    },
+    "needs": {
+      "surface_need": "未知",
+      "latent_need": "未知",
+      "emotional_need": "希望得到帮助",
+      "retention_score": 3.0,
+      "suggested_tone": "共情优先，先道歉再解决"
+    },
+    "decision": {
+      "action": "SUPERVISOR_TAKEOVER",
+      "reason": "情绪评分0.0，高风险",
+      "reply_to_user": "您的情绪我们完全理解，客服组长已介入，将给您最优先的处理。",
+      "requires_human": true,
+      "wechat_notify": true,
+      "notify_content": "🚨 高风险客诉\n工单号：TKT-20260505203526-4FE193\n情绪评分：0.0/10\n用户消息：废物垃圾骗子！！？？\n需要介入处理"
+    },
+    "status": "PENDING",
+    "created_at": "2026-05-05T20:35:26.877907",
+    "resolved_at": null
+  },
+  {
+    "id": "TKT-20260505203528-D771CF",
+    "session_id": "stress-t4-emotion",
+    "type": "EMOTION_CRISIS",
+    "message": "彻底失望，无能废物！！！！",
+    "emotion": {
+      "score": 0.0,
+      "risk": "HIGH",
+      "label": "愤怒"
+    },
+    "needs": {
+      "surface_need": "未知",
+      "latent_need": "未知",
+      "emotional_need": "希望得到帮助",
+      "retention_score": 3.0,
+      "suggested_tone": "共情优先，先道歉再解决"
+    },
+    "decision": {
+      "action": "SUPERVISOR_TAKEOVER",
+      "reason": "情绪评分0.0，高风险",
+      "reply_to_user": "您的情绪我们完全理解，客服组长已介入，将给您最优先的处理。",
+      "requires_human": true,
+      "wechat_notify": true,
+      "notify_content": "🚨 高风险客诉\n工单号：TKT-20260505203528-D771CF\n情绪评分：0.0/10\n用户消息：彻底失望，无能废物！！！！\n需要介入处理"
+    },
+    "status": "PENDING",
+    "created_at": "2026-05-05T20:35:28.959631",
+    "resolved_at": null
+  },
+  {
+    "id": "TKT-20260505203531-7201CF",
+    "session_id": "stress-t4-emotion",
+    "type": "EMOTION_CRISIS",
+    "message": "太烂了太烂了！！！！！！！！",
+    "emotion": {
+      "score": 0.0,
+      "risk": "HIGH",
+      "label": "愤怒"
+    },
+    "needs": {
+      "surface_need": "未知",
+      "latent_need": "未知",
+      "emotional_need": "希望得到帮助",
+      "retention_score": 3.0,
+      "suggested_tone": "共情优先，先道歉再解决"
+    },
+    "decision": {
+      "action": "SUPERVISOR_TAKEOVER",
+      "reason": "情绪评分0.0，高风险",
+      "reply_to_user": "您的情绪我们完全理解，客服组长已介入，将给您最优先的处理。",
+      "requires_human": true,
+      "wechat_notify": true,
+      "notify_content": "🚨 高风险客诉\n工单号：TKT-20260505203531-7201CF\n情绪评分：0.0/10\n用户消息：太烂了太烂了！！！！！！！！\n需要介入处理"
+    },
+    "status": "PENDING",
+    "created_at": "2026-05-05T20:35:31.051139",
+    "resolved_at": null
+  },
+  {
+    "id": "TKT-20260505203533-7F7203",
+    "session_id": "stress-t5-000",
+    "type": "COMPENSATION",
+    "message": "你们骗人！我要赔偿10元！",
+    "emotion": {
+      "score": 2.0,
+      "risk": "HIGH",
+      "label": "愤怒"
+    },
+    "needs": {
+      "surface_need": "索要赔偿",
+      "latent_need": "损失未被承认，寻求正式补偿",
+      "emotional_need": "希望损失被认可并获得正式道歉",
+      "retention_score": 1.0,
+      "suggested_tone": "共情优先，先道歉再解决"
+    },
+    "decision": {
+      "action": "AUTO_APPROVE",
+      "amount": 10.0,
+      "reason": "金额10.0元低于50.0元阈值，自动批准",
+      "reply_to_user": "您好，经核实您的诉求，我们决定给予您 ¥10.0 的补偿，将在1-2个工作日内到账。感谢您的理解与支持。",
+      "requires_human": false
+    },
+    "status": "RESOLVED",
+    "created_at": "2026-05-05T20:35:33.617480",
+    "resolved_at": "2026-05-05T20:35:33.617480"
+  },
+  {
+    "id": "TKT-20260505203535-1FBB38",
+    "session_id": "stress-t5-001",
+    "type": "COMPENSATION",
+    "message": "你们骗人！我要赔偿11元！",
+    "emotion": {
+      "score": 2.0,
+      "risk": "HIGH",
+      "label": "愤怒"
+    },
+    "needs": {
+      "surface_need": "索要赔偿",
+      "latent_need": "损失未被承认，寻求正式补偿",
+      "emotional_need": "希望损失被认可并获得正式道歉",
+      "retention_score": 1.0,
+      "suggested_tone": "共情优先，先道歉再解决"
+    },
+    "decision": {
+      "action": "AUTO_APPROVE",
+      "amount": 11.0,
+      "reason": "金额11.0元低于50.0元阈值，自动批准",
+      "reply_to_user": "您好，经核实您的诉求，我们决定给予您 ¥11.0 的补偿，将在1-2个工作日内到账。感谢您的理解与支持。",
+      "requires_human": false
+    },
+    "status": "RESOLVED",
+    "created_at": "2026-05-05T20:35:35.698398",
+    "resolved_at": "2026-05-05T20:35:35.698398"
+  },
+  {
+    "id": "TKT-20260505203537-9FFCF8",
+    "session_id": "stress-t5-002",
+    "type": "COMPENSATION",
+    "message": "你们骗人！我要赔偿12元！",
+    "emotion": {
+      "score": 2.0,
+      "risk": "HIGH",
+      "label": "愤怒"
+    },
+    "needs": {
+      "surface_need": "索要赔偿",
+      "latent_need": "损失未被承认，寻求正式补偿",
+      "emotional_need": "希望损失被认可并获得正式道歉",
+      "retention_score": 1.0,
+      "suggested_tone": "共情优先，先道歉再解决"
+    },
+    "decision": {
+      "action": "AUTO_APPROVE",
+      "amount": 12.0,
+      "reason": "金额12.0元低于50.0元阈值，自动批准",
+      "reply_to_user": "您好，经核实您的诉求，我们决定给予您 ¥12.0 的补偿，将在1-2个工作日内到账。感谢您的理解与支持。",
+      "requires_human": false
+    },
+    "status": "RESOLVED",
+    "created_at": "2026-05-05T20:35:37.773465",
+    "resolved_at": "2026-05-05T20:35:37.773465"
+  },
+  {
+    "id": "TKT-20260505203539-3D8301",
+    "session_id": "stress-t5-003",
+    "type": "COMPENSATION",
+    "message": "你们骗人！我要赔偿13元！",
+    "emotion": {
+      "score": 2.0,
+      "risk": "HIGH",
+      "label": "愤怒"
+    },
+    "needs": {
+      "surface_need": "索要赔偿",
+      "latent_need": "损失未被承认，寻求正式补偿",
+      "emotional_need": "希望损失被认可并获得正式道歉",
+      "retention_score": 1.0,
+      "suggested_tone": "共情优先，先道歉再解决"
+    },
+    "decision": {
+      "action": "AUTO_APPROVE",
+      "amount": 13.0,
+      "reason": "金额13.0元低于50.0元阈值，自动批准",
+      "reply_to_user": "您好，经核实您的诉求，我们决定给予您 ¥13.0 的补偿，将在1-2个工作日内到账。感谢您的理解与支持。",
+      "requires_human": false
+    },
+    "status": "RESOLVED",
+    "created_at": "2026-05-05T20:35:39.827944",
+    "resolved_at": "2026-05-05T20:35:39.827944"
+  },
+  {
+    "id": "TKT-20260505203541-82CAE2",
+    "session_id": "stress-t5-004",
+    "type": "COMPENSATION",
+    "message": "你们骗人！我要赔偿14元！",
+    "emotion": {
+      "score": 2.0,
+      "risk": "HIGH",
+      "label": "愤怒"
+    },
+    "needs": {
+      "surface_need": "索要赔偿",
+      "latent_need": "损失未被承认，寻求正式补偿",
+      "emotional_need": "希望损失被认可并获得正式道歉",
+      "retention_score": 1.0,
+      "suggested_tone": "共情优先，先道歉再解决"
+    },
+    "decision": {
+      "action": "AUTO_APPROVE",
+      "amount": 14.0,
+      "reason": "金额14.0元低于50.0元阈值，自动批准",
+      "reply_to_user": "您好，经核实您的诉求，我们决定给予您 ¥14.0 的补偿，将在1-2个工作日内到账。感谢您的理解与支持。",
+      "requires_human": false
+    },
+    "status": "RESOLVED",
+    "created_at": "2026-05-05T20:35:41.892919",
+    "resolved_at": "2026-05-05T20:35:41.892919"
+  },
+  {
+    "id": "TKT-20260505203543-3CC049",
+    "session_id": "stress-t5-005",
+    "type": "COMPENSATION",
+    "message": "你们骗人！我要赔偿15元！",
+    "emotion": {
+      "score": 2.0,
+      "risk": "HIGH",
+      "label": "愤怒"
+    },
+    "needs": {
+      "surface_need": "索要赔偿",
+      "latent_need": "损失未被承认，寻求正式补偿",
+      "emotional_need": "希望损失被认可并获得正式道歉",
+      "retention_score": 1.0,
+      "suggested_tone": "共情优先，先道歉再解决"
+    },
+    "decision": {
+      "action": "AUTO_APPROVE",
+      "amount": 15.0,
+      "reason": "金额15.0元低于50.0元阈值，自动批准",
+      "reply_to_user": "您好，经核实您的诉求，我们决定给予您 ¥15.0 的补偿，将在1-2个工作日内到账。感谢您的理解与支持。",
+      "requires_human": false
+    },
+    "status": "RESOLVED",
+    "created_at": "2026-05-05T20:35:43.959933",
+    "resolved_at": "2026-05-05T20:35:43.959933"
+  },
+  {
+    "id": "TKT-20260505203546-8976C8",
+    "session_id": "stress-t5-006",
+    "type": "COMPENSATION",
+    "message": "你们骗人！我要赔偿16元！",
+    "emotion": {
+      "score": 2.0,
+      "risk": "HIGH",
+      "label": "愤怒"
+    },
+    "needs": {
+      "surface_need": "索要赔偿",
+      "latent_need": "损失未被承认，寻求正式补偿",
+      "emotional_need": "希望损失被认可并获得正式道歉",
+      "retention_score": 1.0,
+      "suggested_tone": "共情优先，先道歉再解决"
+    },
+    "decision": {
+      "action": "AUTO_APPROVE",
+      "amount": 16.0,
+      "reason": "金额16.0元低于50.0元阈值，自动批准",
+      "reply_to_user": "您好，经核实您的诉求，我们决定给予您 ¥16.0 的补偿，将在1-2个工作日内到账。感谢您的理解与支持。",
+      "requires_human": false
+    },
+    "status": "RESOLVED",
+    "created_at": "2026-05-05T20:35:46.020041",
+    "resolved_at": "2026-05-05T20:35:46.020041"
+  },
+  {
+    "id": "TKT-20260505203548-7CED01",
+    "session_id": "stress-t5-007",
+    "type": "COMPENSATION",
+    "message": "你们骗人！我要赔偿17元！",
+    "emotion": {
+      "score": 2.0,
+      "risk": "HIGH",
+      "label": "愤怒"
+    },
+    "needs": {
+      "surface_need": "索要赔偿",
+      "latent_need": "损失未被承认，寻求正式补偿",
+      "emotional_need": "希望损失被认可并获得正式道歉",
+      "retention_score": 1.0,
+      "suggested_tone": "共情优先，先道歉再解决"
+    },
+    "decision": {
+      "action": "AUTO_APPROVE",
+      "amount": 17.0,
+      "reason": "金额17.0元低于50.0元阈值，自动批准",
+      "reply_to_user": "您好，经核实您的诉求，我们决定给予您 ¥17.0 的补偿，将在1-2个工作日内到账。感谢您的理解与支持。",
+      "requires_human": false
+    },
+    "status": "RESOLVED",
+    "created_at": "2026-05-05T20:35:48.093142",
+    "resolved_at": "2026-05-05T20:35:48.093142"
+  },
+  {
+    "id": "TKT-20260505203550-68DBD5",
+    "session_id": "stress-t5-008",
+    "type": "COMPENSATION",
+    "message": "你们骗人！我要赔偿18元！",
+    "emotion": {
+      "score": 2.0,
+      "risk": "HIGH",
+      "label": "愤怒"
+    },
+    "needs": {
+      "surface_need": "索要赔偿",
+      "latent_need": "损失未被承认，寻求正式补偿",
+      "emotional_need": "希望损失被认可并获得正式道歉",
+      "retention_score": 1.0,
+      "suggested_tone": "共情优先，先道歉再解决"
+    },
+    "decision": {
+      "action": "AUTO_APPROVE",
+      "amount": 18.0,
+      "reason": "金额18.0元低于50.0元阈值，自动批准",
+      "reply_to_user": "您好，经核实您的诉求，我们决定给予您 ¥18.0 的补偿，将在1-2个工作日内到账。感谢您的理解与支持。",
+      "requires_human": false
+    },
+    "status": "RESOLVED",
+    "created_at": "2026-05-05T20:35:50.191705",
+    "resolved_at": "2026-05-05T20:35:50.191705"
+  },
+  {
+    "id": "TKT-20260505203552-2F3F97",
+    "session_id": "stress-t5-009",
+    "type": "COMPENSATION",
+    "message": "你们骗人！我要赔偿19元！",
+    "emotion": {
+      "score": 2.0,
+      "risk": "HIGH",
+      "label": "愤怒"
+    },
+    "needs": {
+      "surface_need": "索要赔偿",
+      "latent_need": "损失未被承认，寻求正式补偿",
+      "emotional_need": "希望损失被认可并获得正式道歉",
+      "retention_score": 1.0,
+      "suggested_tone": "共情优先，先道歉再解决"
+    },
+    "decision": {
+      "action": "AUTO_APPROVE",
+      "amount": 19.0,
+      "reason": "金额19.0元低于50.0元阈值，自动批准",
+      "reply_to_user": "您好，经核实您的诉求，我们决定给予您 ¥19.0 的补偿，将在1-2个工作日内到账。感谢您的理解与支持。",
+      "requires_human": false
+    },
+    "status": "RESOLVED",
+    "created_at": "2026-05-05T20:35:52.275542",
+    "resolved_at": "2026-05-05T20:35:52.275542"
+  },
+  {
+    "id": "TKT-20260505203554-CB461D",
+    "session_id": "stress-t5-010",
+    "type": "COMPENSATION",
+    "message": "你们骗人！我要赔偿20元！",
+    "emotion": {
+      "score": 2.0,
+      "risk": "HIGH",
+      "label": "愤怒"
+    },
+    "needs": {
+      "surface_need": "索要赔偿",
+      "latent_need": "损失未被承认，寻求正式补偿",
+      "emotional_need": "希望损失被认可并获得正式道歉",
+      "retention_score": 1.0,
+      "suggested_tone": "共情优先，先道歉再解决"
+    },
+    "decision": {
+      "action": "AUTO_APPROVE",
+      "amount": 20.0,
+      "reason": "金额20.0元低于50.0元阈值，自动批准",
+      "reply_to_user": "您好，经核实您的诉求，我们决定给予您 ¥20.0 的补偿，将在1-2个工作日内到账。感谢您的理解与支持。",
+      "requires_human": false
+    },
+    "status": "RESOLVED",
+    "created_at": "2026-05-05T20:35:54.357070",
+    "resolved_at": "2026-05-05T20:35:54.357070"
+  },
+  {
+    "id": "TKT-20260505203556-3EC675",
+    "session_id": "stress-t5-011",
+    "type": "COMPENSATION",
+    "message": "你们骗人！我要赔偿21元！",
+    "emotion": {
+      "score": 2.0,
+      "risk": "HIGH",
+      "label": "愤怒"
+    },
+    "needs": {
+      "surface_need": "索要赔偿",
+      "latent_need": "损失未被承认，寻求正式补偿",
+      "emotional_need": "希望损失被认可并获得正式道歉",
+      "retention_score": 1.0,
+      "suggested_tone": "共情优先，先道歉再解决"
+    },
+    "decision": {
+      "action": "AUTO_APPROVE",
+      "amount": 21.0,
+      "reason": "金额21.0元低于50.0元阈值，自动批准",
+      "reply_to_user": "您好，经核实您的诉求，我们决定给予您 ¥21.0 的补偿，将在1-2个工作日内到账。感谢您的理解与支持。",
+      "requires_human": false
+    },
+    "status": "RESOLVED",
+    "created_at": "2026-05-05T20:35:56.418696",
+    "resolved_at": "2026-05-05T20:35:56.418696"
+  },
+  {
+    "id": "TKT-20260505203558-AEFD3E",
+    "session_id": "stress-t5-012",
+    "type": "COMPENSATION",
+    "message": "你们骗人！我要赔偿22元！",
+    "emotion": {
+      "score": 2.0,
+      "risk": "HIGH",
+      "label": "愤怒"
+    },
+    "needs": {
+      "surface_need": "索要赔偿",
+      "latent_need": "损失未被承认，寻求正式补偿",
+      "emotional_need": "希望损失被认可并获得正式道歉",
+      "retention_score": 1.0,
+      "suggested_tone": "共情优先，先道歉再解决"
+    },
+    "decision": {
+      "action": "AUTO_APPROVE",
+      "amount": 22.0,
+      "reason": "金额22.0元低于50.0元阈值，自动批准",
+      "reply_to_user": "您好，经核实您的诉求，我们决定给予您 ¥22.0 的补偿，将在1-2个工作日内到账。感谢您的理解与支持。",
+      "requires_human": false
+    },
+    "status": "RESOLVED",
+    "created_at": "2026-05-05T20:35:58.473986",
+    "resolved_at": "2026-05-05T20:35:58.473986"
+  },
+  {
+    "id": "TKT-20260505203600-6FA59E",
+    "session_id": "stress-t5-013",
+    "type": "COMPENSATION",
+    "message": "你们骗人！我要赔偿23元！",
+    "emotion": {
+      "score": 2.0,
+      "risk": "HIGH",
+      "label": "愤怒"
+    },
+    "needs": {
+      "surface_need": "索要赔偿",
+      "latent_need": "损失未被承认，寻求正式补偿",
+      "emotional_need": "希望损失被认可并获得正式道歉",
+      "retention_score": 1.0,
+      "suggested_tone": "共情优先，先道歉再解决"
+    },
+    "decision": {
+      "action": "AUTO_APPROVE",
+      "amount": 23.0,
+      "reason": "金额23.0元低于50.0元阈值，自动批准",
+      "reply_to_user": "您好，经核实您的诉求，我们决定给予您 ¥23.0 的补偿，将在1-2个工作日内到账。感谢您的理解与支持。",
+      "requires_human": false
+    },
+    "status": "RESOLVED",
+    "created_at": "2026-05-05T20:36:00.556827",
+    "resolved_at": "2026-05-05T20:36:00.556827"
+  },
+  {
+    "id": "TKT-20260505203602-20630F",
+    "session_id": "stress-t5-014",
+    "type": "COMPENSATION",
+    "message": "你们骗人！我要赔偿24元！",
+    "emotion": {
+      "score": 2.0,
+      "risk": "HIGH",
+      "label": "愤怒"
+    },
+    "needs": {
+      "surface_need": "索要赔偿",
+      "latent_need": "损失未被承认，寻求正式补偿",
+      "emotional_need": "希望损失被认可并获得正式道歉",
+      "retention_score": 1.0,
+      "suggested_tone": "共情优先，先道歉再解决"
+    },
+    "decision": {
+      "action": "AUTO_APPROVE",
+      "amount": 24.0,
+      "reason": "金额24.0元低于50.0元阈值，自动批准",
+      "reply_to_user": "您好，经核实您的诉求，我们决定给予您 ¥24.0 的补偿，将在1-2个工作日内到账。感谢您的理解与支持。",
+      "requires_human": false
+    },
+    "status": "RESOLVED",
+    "created_at": "2026-05-05T20:36:02.621914",
+    "resolved_at": "2026-05-05T20:36:02.621914"
+  },
+  {
+    "id": "TKT-20260505203604-0863D8",
+    "session_id": "stress-t5-015",
+    "type": "COMPENSATION",
+    "message": "你们骗人！我要赔偿25元！",
+    "emotion": {
+      "score": 2.0,
+      "risk": "HIGH",
+      "label": "愤怒"
+    },
+    "needs": {
+      "surface_need": "索要赔偿",
+      "latent_need": "损失未被承认，寻求正式补偿",
+      "emotional_need": "希望损失被认可并获得正式道歉",
+      "retention_score": 1.0,
+      "suggested_tone": "共情优先，先道歉再解决"
+    },
+    "decision": {
+      "action": "AUTO_APPROVE",
+      "amount": 25.0,
+      "reason": "金额25.0元低于50.0元阈值，自动批准",
+      "reply_to_user": "您好，经核实您的诉求，我们决定给予您 ¥25.0 的补偿，将在1-2个工作日内到账。感谢您的理解与支持。",
+      "requires_human": false
+    },
+    "status": "RESOLVED",
+    "created_at": "2026-05-05T20:36:04.694544",
+    "resolved_at": "2026-05-05T20:36:04.694544"
+  },
+  {
+    "id": "TKT-20260505203606-055B84",
+    "session_id": "stress-t5-016",
+    "type": "COMPENSATION",
+    "message": "你们骗人！我要赔偿26元！",
+    "emotion": {
+      "score": 2.0,
+      "risk": "HIGH",
+      "label": "愤怒"
+    },
+    "needs": {
+      "surface_need": "索要赔偿",
+      "latent_need": "损失未被承认，寻求正式补偿",
+      "emotional_need": "希望损失被认可并获得正式道歉",
+      "retention_score": 1.0,
+      "suggested_tone": "共情优先，先道歉再解决"
+    },
+    "decision": {
+      "action": "AUTO_APPROVE",
+      "amount": 26.0,
+      "reason": "金额26.0元低于50.0元阈值，自动批准",
+      "reply_to_user": "您好，经核实您的诉求，我们决定给予您 ¥26.0 的补偿，将在1-2个工作日内到账。感谢您的理解与支持。",
+      "requires_human": false
+    },
+    "status": "RESOLVED",
+    "created_at": "2026-05-05T20:36:06.763727",
+    "resolved_at": "2026-05-05T20:36:06.763727"
+  },
+  {
+    "id": "TKT-20260505203608-F583C7",
+    "session_id": "stress-t5-017",
+    "type": "COMPENSATION",
+    "message": "你们骗人！我要赔偿27元！",
+    "emotion": {
+      "score": 2.0,
+      "risk": "HIGH",
+      "label": "愤怒"
+    },
+    "needs": {
+      "surface_need": "索要赔偿",
+      "latent_need": "损失未被承认，寻求正式补偿",
+      "emotional_need": "希望损失被认可并获得正式道歉",
+      "retention_score": 1.0,
+      "suggested_tone": "共情优先，先道歉再解决"
+    },
+    "decision": {
+      "action": "AUTO_APPROVE",
+      "amount": 27.0,
+      "reason": "金额27.0元低于50.0元阈值，自动批准",
+      "reply_to_user": "您好，经核实您的诉求，我们决定给予您 ¥27.0 的补偿，将在1-2个工作日内到账。感谢您的理解与支持。",
+      "requires_human": false
+    },
+    "status": "RESOLVED",
+    "created_at": "2026-05-05T20:36:08.836804",
+    "resolved_at": "2026-05-05T20:36:08.836804"
+  },
+  {
+    "id": "TKT-20260505203610-5A1830",
+    "session_id": "stress-t5-018",
+    "type": "COMPENSATION",
+    "message": "你们骗人！我要赔偿28元！",
+    "emotion": {
+      "score": 2.0,
+      "risk": "HIGH",
+      "label": "愤怒"
+    },
+    "needs": {
+      "surface_need": "索要赔偿",
+      "latent_need": "损失未被承认，寻求正式补偿",
+      "emotional_need": "希望损失被认可并获得正式道歉",
+      "retention_score": 1.0,
+      "suggested_tone": "共情优先，先道歉再解决"
+    },
+    "decision": {
+      "action": "AUTO_APPROVE",
+      "amount": 28.0,
+      "reason": "金额28.0元低于50.0元阈值，自动批准",
+      "reply_to_user": "您好，经核实您的诉求，我们决定给予您 ¥28.0 的补偿，将在1-2个工作日内到账。感谢您的理解与支持。",
+      "requires_human": false
+    },
+    "status": "RESOLVED",
+    "created_at": "2026-05-05T20:36:10.915699",
+    "resolved_at": "2026-05-05T20:36:10.915699"
+  },
+  {
+    "id": "TKT-20260505203612-C6C8F4",
+    "session_id": "stress-t5-019",
+    "type": "COMPENSATION",
+    "message": "你们骗人！我要赔偿29元！",
+    "emotion": {
+      "score": 2.0,
+      "risk": "HIGH",
+      "label": "愤怒"
+    },
+    "needs": {
+      "surface_need": "索要赔偿",
+      "latent_need": "损失未被承认，寻求正式补偿",
+      "emotional_need": "希望损失被认可并获得正式道歉",
+      "retention_score": 1.0,
+      "suggested_tone": "共情优先，先道歉再解决"
+    },
+    "decision": {
+      "action": "AUTO_APPROVE",
+      "amount": 29.0,
+      "reason": "金额29.0元低于50.0元阈值，自动批准",
+      "reply_to_user": "您好，经核实您的诉求，我们决定给予您 ¥29.0 的补偿，将在1-2个工作日内到账。感谢您的理解与支持。",
+      "requires_human": false
+    },
+    "status": "RESOLVED",
+    "created_at": "2026-05-05T20:36:12.970944",
+    "resolved_at": "2026-05-05T20:36:12.970944"
+  },
+  {
+    "id": "TKT-20260505203906-3B4CC5",
+    "session_id": "stress-t4-emotion",
+    "type": "EMOTION_CRISIS",
+    "message": "垃圾服务！！！",
+    "emotion": {
+      "score": 0.0,
+      "risk": "HIGH",
+      "label": "愤怒"
+    },
+    "needs": {
+      "surface_need": "未知",
+      "latent_need": "未知",
+      "emotional_need": "希望得到帮助",
+      "retention_score": 3.0,
+      "suggested_tone": "共情优先，先道歉再解决"
+    },
+    "decision": {
+      "action": "SUPERVISOR_TAKEOVER",
+      "reason": "情绪评分0.0，高风险",
+      "reply_to_user": "您的情绪我们完全理解，客服组长已介入，将给您最优先的处理。",
+      "requires_human": true,
+      "wechat_notify": true,
+      "notify_content": "🚨 高风险客诉\n工单号：TKT-20260505203906-3B4CC5\n情绪评分：0.0/10\n用户消息：垃圾服务！！！\n需要介入处理"
+    },
+    "status": "PENDING",
+    "created_at": "2026-05-05T20:39:06.086744",
+    "resolved_at": null
+  },
+  {
+    "id": "TKT-20260505203908-392B47",
+    "session_id": "stress-t4-emotion",
+    "type": "EMOTION_CRISIS",
+    "message": "骗人的！！废物！！",
+    "emotion": {
+      "score": 0.0,
+      "risk": "HIGH",
+      "label": "愤怒"
+    },
+    "needs": {
+      "surface_need": "未知",
+      "latent_need": "未知",
+      "emotional_need": "希望得到帮助",
+      "retention_score": 3.0,
+      "suggested_tone": "共情优先，先道歉再解决"
+    },
+    "decision": {
+      "action": "SUPERVISOR_TAKEOVER",
+      "reason": "情绪评分0.0，高风险",
+      "reply_to_user": "您的情绪我们完全理解，客服组长已介入，将给您最优先的处理。",
+      "requires_human": true,
+      "wechat_notify": true,
+      "notify_content": "🚨 高风险客诉\n工单号：TKT-20260505203908-392B47\n情绪评分：0.0/10\n用户消息：骗人的！！废物！！\n需要介入处理"
+    },
+    "status": "PENDING",
+    "created_at": "2026-05-05T20:39:08.143000",
+    "resolved_at": null
+  },
+  {
+    "id": "TKT-20260505203910-015C5D",
+    "session_id": "stress-t4-emotion",
+    "type": "EMOTION_CRISIS",
+    "message": "烂透了，无能！！！",
+    "emotion": {
+      "score": 0.0,
+      "risk": "HIGH",
+      "label": "愤怒"
+    },
+    "needs": {
+      "surface_need": "未知",
+      "latent_need": "未知",
+      "emotional_need": "希望得到帮助",
+      "retention_score": 3.0,
+      "suggested_tone": "共情优先，先道歉再解决"
+    },
+    "decision": {
+      "action": "SUPERVISOR_TAKEOVER",
+      "reason": "情绪评分0.0，高风险",
+      "reply_to_user": "您的情绪我们完全理解，客服组长已介入，将给您最优先的处理。",
+      "requires_human": true,
+      "wechat_notify": true,
+      "notify_content": "🚨 高风险客诉\n工单号：TKT-20260505203910-015C5D\n情绪评分：0.0/10\n用户消息：烂透了，无能！！！\n需要介入处理"
+    },
+    "status": "PENDING",
+    "created_at": "2026-05-05T20:39:10.215448",
+    "resolved_at": null
+  },
+  {
+    "id": "TKT-20260505203912-77905D",
+    "session_id": "stress-t4-emotion",
+    "type": "EMOTION_CRISIS",
+    "message": "还在骗人，滚！！",
+    "emotion": {
+      "score": 0.0,
+      "risk": "HIGH",
+      "label": "愤怒"
+    },
+    "needs": {
+      "surface_need": "未知",
+      "latent_need": "未知",
+      "emotional_need": "希望得到帮助",
+      "retention_score": 3.0,
+      "suggested_tone": "共情优先，先道歉再解决"
+    },
+    "decision": {
+      "action": "SUPERVISOR_TAKEOVER",
+      "reason": "情绪评分0.0，高风险",
+      "reply_to_user": "您的情绪我们完全理解，客服组长已介入，将给您最优先的处理。",
+      "requires_human": true,
+      "wechat_notify": true,
+      "notify_content": "🚨 高风险客诉\n工单号：TKT-20260505203912-77905D\n情绪评分：0.0/10\n用户消息：还在骗人，滚！！\n需要介入处理"
+    },
+    "status": "PENDING",
+    "created_at": "2026-05-05T20:39:12.307855",
+    "resolved_at": null
+  },
+  {
+    "id": "TKT-20260505203914-B1548B",
+    "session_id": "stress-t4-emotion",
+    "type": "EMOTION_CRISIS",
+    "message": "废物垃圾骗子！！？？",
+    "emotion": {
+      "score": 0.0,
+      "risk": "HIGH",
+      "label": "愤怒"
+    },
+    "needs": {
+      "surface_need": "未知",
+      "latent_need": "未知",
+      "emotional_need": "希望得到帮助",
+      "retention_score": 3.0,
+      "suggested_tone": "共情优先，先道歉再解决"
+    },
+    "decision": {
+      "action": "SUPERVISOR_TAKEOVER",
+      "reason": "情绪评分0.0，高风险",
+      "reply_to_user": "您的情绪我们完全理解，客服组长已介入，将给您最优先的处理。",
+      "requires_human": true,
+      "wechat_notify": true,
+      "notify_content": "🚨 高风险客诉\n工单号：TKT-20260505203914-B1548B\n情绪评分：0.0/10\n用户消息：废物垃圾骗子！！？？\n需要介入处理"
+    },
+    "status": "PENDING",
+    "created_at": "2026-05-05T20:39:14.376283",
+    "resolved_at": null
+  },
+  {
+    "id": "TKT-20260505203916-FA7260",
+    "session_id": "stress-t4-emotion",
+    "type": "EMOTION_CRISIS",
+    "message": "太烂了太烂了！！！！！！！！",
+    "emotion": {
+      "score": 0.0,
+      "risk": "HIGH",
+      "label": "愤怒"
+    },
+    "needs": {
+      "surface_need": "未知",
+      "latent_need": "未知",
+      "emotional_need": "希望得到帮助",
+      "retention_score": 3.0,
+      "suggested_tone": "共情优先，先道歉再解决"
+    },
+    "decision": {
+      "action": "SUPERVISOR_TAKEOVER",
+      "reason": "情绪评分0.0，高风险",
+      "reply_to_user": "您的情绪我们完全理解，客服组长已介入，将给您最优先的处理。",
+      "requires_human": true,
+      "wechat_notify": true,
+      "notify_content": "🚨 高风险客诉\n工单号：TKT-20260505203916-FA7260\n情绪评分：0.0/10\n用户消息：太烂了太烂了！！！！！！！！\n需要介入处理"
+    },
+    "status": "PENDING",
+    "created_at": "2026-05-05T20:39:16.468696",
+    "resolved_at": null
+  },
+  {
+    "id": "TKT-20260505203918-6EC17F",
+    "session_id": "stress-t4-emotion",
+    "type": "EMOTION_CRISIS",
+    "message": "彻底失望，无能废物！！！！",
+    "emotion": {
+      "score": 0.0,
+      "risk": "HIGH",
+      "label": "愤怒"
+    },
+    "needs": {
+      "surface_need": "未知",
+      "latent_need": "未知",
+      "emotional_need": "希望得到帮助",
+      "retention_score": 3.0,
+      "suggested_tone": "共情优先，先道歉再解决"
+    },
+    "decision": {
+      "action": "SUPERVISOR_TAKEOVER",
+      "reason": "情绪评分0.0，高风险",
+      "reply_to_user": "您的情绪我们完全理解，客服组长已介入，将给您最优先的处理。",
+      "requires_human": true,
+      "wechat_notify": true,
+      "notify_content": "🚨 高风险客诉\n工单号：TKT-20260505203918-6EC17F\n情绪评分：0.0/10\n用户消息：彻底失望，无能废物！！！！\n需要介入处理"
+    },
+    "status": "PENDING",
+    "created_at": "2026-05-05T20:39:18.560500",
+    "resolved_at": null
+  },
+  {
+    "id": "TKT-20260505203921-B8A6F8",
+    "session_id": "stress-t5-000",
+    "type": "COMPENSATION",
+    "message": "你们骗人！我要赔偿10元！",
+    "emotion": {
+      "score": 2.0,
+      "risk": "HIGH",
+      "label": "愤怒"
+    },
+    "needs": {
+      "surface_need": "索要赔偿",
+      "latent_need": "损失未被承认，寻求正式补偿",
+      "emotional_need": "希望损失被认可并获得正式道歉",
+      "retention_score": 1.0,
+      "suggested_tone": "共情优先，先道歉再解决"
+    },
+    "decision": {
+      "action": "PENDING_APPROVAL",
+      "amount": 10.0,
+      "reason": "该账号今日已达自动赔偿上限，转人工审核",
+      "reply_to_user": "您的请求已提交审核，广服组长将在 5 分钟内与您联系。",
+      "requires_human": true,
+      "wechat_notify": true,
+      "notify_content": "⚠️ 重复赔偿请求\n工单：TKT-20260505203921-B8A6F8\nsession：stress-t5-000\n金额：¥10.0\n需人工核实"
+    },
+    "status": "PENDING",
+    "created_at": "2026-05-05T20:39:21.128661",
+    "resolved_at": null
+  },
+  {
+    "id": "TKT-20260505203923-C557CD",
+    "session_id": "stress-t5-001",
+    "type": "COMPENSATION",
+    "message": "你们骗人！我要赔偿11元！",
+    "emotion": {
+      "score": 2.0,
+      "risk": "HIGH",
+      "label": "愤怒"
+    },
+    "needs": {
+      "surface_need": "索要赔偿",
+      "latent_need": "损失未被承认，寻求正式补偿",
+      "emotional_need": "希望损失被认可并获得正式道歉",
+      "retention_score": 1.0,
+      "suggested_tone": "共情优先，先道歉再解决"
+    },
+    "decision": {
+      "action": "PENDING_APPROVAL",
+      "amount": 11.0,
+      "reason": "该账号今日已达自动赔偿上限，转人工审核",
+      "reply_to_user": "您的请求已提交审核，广服组长将在 5 分钟内与您联系。",
+      "requires_human": true,
+      "wechat_notify": true,
+      "notify_content": "⚠️ 重复赔偿请求\n工单：TKT-20260505203923-C557CD\nsession：stress-t5-001\n金额：¥11.0\n需人工核实"
+    },
+    "status": "PENDING",
+    "created_at": "2026-05-05T20:39:23.200347",
+    "resolved_at": null
+  },
+  {
+    "id": "TKT-20260505203925-442508",
+    "session_id": "stress-t5-002",
+    "type": "COMPENSATION",
+    "message": "你们骗人！我要赔偿12元！",
+    "emotion": {
+      "score": 2.0,
+      "risk": "HIGH",
+      "label": "愤怒"
+    },
+    "needs": {
+      "surface_need": "索要赔偿",
+      "latent_need": "损失未被承认，寻求正式补偿",
+      "emotional_need": "希望损失被认可并获得正式道歉",
+      "retention_score": 1.0,
+      "suggested_tone": "共情优先，先道歉再解决"
+    },
+    "decision": {
+      "action": "PENDING_APPROVAL",
+      "amount": 12.0,
+      "reason": "该账号今日已达自动赔偿上限，转人工审核",
+      "reply_to_user": "您的请求已提交审核，广服组长将在 5 分钟内与您联系。",
+      "requires_human": true,
+      "wechat_notify": true,
+      "notify_content": "⚠️ 重复赔偿请求\n工单：TKT-20260505203925-442508\nsession：stress-t5-002\n金额：¥12.0\n需人工核实"
+    },
+    "status": "PENDING",
+    "created_at": "2026-05-05T20:39:25.257863",
+    "resolved_at": null
+  },
+  {
+    "id": "TKT-20260505203927-151810",
+    "session_id": "stress-t5-003",
+    "type": "COMPENSATION",
+    "message": "你们骗人！我要赔偿13元！",
+    "emotion": {
+      "score": 2.0,
+      "risk": "HIGH",
+      "label": "愤怒"
+    },
+    "needs": {
+      "surface_need": "索要赔偿",
+      "latent_need": "损失未被承认，寻求正式补偿",
+      "emotional_need": "希望损失被认可并获得正式道歉",
+      "retention_score": 1.0,
+      "suggested_tone": "共情优先，先道歉再解决"
+    },
+    "decision": {
+      "action": "PENDING_APPROVAL",
+      "amount": 13.0,
+      "reason": "该账号今日已达自动赔偿上限，转人工审核",
+      "reply_to_user": "您的请求已提交审核，广服组长将在 5 分钟内与您联系。",
+      "requires_human": true,
+      "wechat_notify": true,
+      "notify_content": "⚠️ 重复赔偿请求\n工单：TKT-20260505203927-151810\nsession：stress-t5-003\n金额：¥13.0\n需人工核实"
+    },
+    "status": "PENDING",
+    "created_at": "2026-05-05T20:39:27.316363",
+    "resolved_at": null
+  },
+  {
+    "id": "TKT-20260505203929-0ACBC9",
+    "session_id": "stress-t5-004",
+    "type": "COMPENSATION",
+    "message": "你们骗人！我要赔偿14元！",
+    "emotion": {
+      "score": 2.0,
+      "risk": "HIGH",
+      "label": "愤怒"
+    },
+    "needs": {
+      "surface_need": "索要赔偿",
+      "latent_need": "损失未被承认，寻求正式补偿",
+      "emotional_need": "希望损失被认可并获得正式道歉",
+      "retention_score": 1.0,
+      "suggested_tone": "共情优先，先道歉再解决"
+    },
+    "decision": {
+      "action": "PENDING_APPROVAL",
+      "amount": 14.0,
+      "reason": "该账号今日已达自动赔偿上限，转人工审核",
+      "reply_to_user": "您的请求已提交审核，广服组长将在 5 分钟内与您联系。",
+      "requires_human": true,
+      "wechat_notify": true,
+      "notify_content": "⚠️ 重复赔偿请求\n工单：TKT-20260505203929-0ACBC9\nsession：stress-t5-004\n金额：¥14.0\n需人工核实"
+    },
+    "status": "PENDING",
+    "created_at": "2026-05-05T20:39:29.364072",
+    "resolved_at": null
+  },
+  {
+    "id": "TKT-20260505203931-D5DA57",
+    "session_id": "stress-t5-005",
+    "type": "COMPENSATION",
+    "message": "你们骗人！我要赔偿15元！",
+    "emotion": {
+      "score": 2.0,
+      "risk": "HIGH",
+      "label": "愤怒"
+    },
+    "needs": {
+      "surface_need": "索要赔偿",
+      "latent_need": "损失未被承认，寻求正式补偿",
+      "emotional_need": "希望损失被认可并获得正式道歉",
+      "retention_score": 1.0,
+      "suggested_tone": "共情优先，先道歉再解决"
+    },
+    "decision": {
+      "action": "PENDING_APPROVAL",
+      "amount": 15.0,
+      "reason": "该账号今日已达自动赔偿上限，转人工审核",
+      "reply_to_user": "您的请求已提交审核，广服组长将在 5 分钟内与您联系。",
+      "requires_human": true,
+      "wechat_notify": true,
+      "notify_content": "⚠️ 重复赔偿请求\n工单：TKT-20260505203931-D5DA57\nsession：stress-t5-005\n金额：¥15.0\n需人工核实"
+    },
+    "status": "PENDING",
+    "created_at": "2026-05-05T20:39:31.422599",
+    "resolved_at": null
+  },
+  {
+    "id": "TKT-20260505203933-182C00",
+    "session_id": "stress-t5-006",
+    "type": "COMPENSATION",
+    "message": "你们骗人！我要赔偿16元！",
+    "emotion": {
+      "score": 2.0,
+      "risk": "HIGH",
+      "label": "愤怒"
+    },
+    "needs": {
+      "surface_need": "索要赔偿",
+      "latent_need": "损失未被承认，寻求正式补偿",
+      "emotional_need": "希望损失被认可并获得正式道歉",
+      "retention_score": 1.0,
+      "suggested_tone": "共情优先，先道歉再解决"
+    },
+    "decision": {
+      "action": "PENDING_APPROVAL",
+      "amount": 16.0,
+      "reason": "该账号今日已达自动赔偿上限，转人工审核",
+      "reply_to_user": "您的请求已提交审核，广服组长将在 5 分钟内与您联系。",
+      "requires_human": true,
+      "wechat_notify": true,
+      "notify_content": "⚠️ 重复赔偿请求\n工单：TKT-20260505203933-182C00\nsession：stress-t5-006\n金额：¥16.0\n需人工核实"
+    },
+    "status": "PENDING",
+    "created_at": "2026-05-05T20:39:33.496674",
+    "resolved_at": null
+  },
+  {
+    "id": "TKT-20260505203935-164135",
+    "session_id": "stress-t5-007",
+    "type": "COMPENSATION",
+    "message": "你们骗人！我要赔偿17元！",
+    "emotion": {
+      "score": 2.0,
+      "risk": "HIGH",
+      "label": "愤怒"
+    },
+    "needs": {
+      "surface_need": "索要赔偿",
+      "latent_need": "损失未被承认，寻求正式补偿",
+      "emotional_need": "希望损失被认可并获得正式道歉",
+      "retention_score": 1.0,
+      "suggested_tone": "共情优先，先道歉再解决"
+    },
+    "decision": {
+      "action": "PENDING_APPROVAL",
+      "amount": 17.0,
+      "reason": "该账号今日已达自动赔偿上限，转人工审核",
+      "reply_to_user": "您的请求已提交审核，广服组长将在 5 分钟内与您联系。",
+      "requires_human": true,
+      "wechat_notify": true,
+      "notify_content": "⚠️ 重复赔偿请求\n工单：TKT-20260505203935-164135\nsession：stress-t5-007\n金额：¥17.0\n需人工核实"
+    },
+    "status": "PENDING",
+    "created_at": "2026-05-05T20:39:35.577041",
+    "resolved_at": null
+  },
+  {
+    "id": "TKT-20260505203937-910E3A",
+    "session_id": "stress-t5-008",
+    "type": "COMPENSATION",
+    "message": "你们骗人！我要赔偿18元！",
+    "emotion": {
+      "score": 2.0,
+      "risk": "HIGH",
+      "label": "愤怒"
+    },
+    "needs": {
+      "surface_need": "索要赔偿",
+      "latent_need": "损失未被承认，寻求正式补偿",
+      "emotional_need": "希望损失被认可并获得正式道歉",
+      "retention_score": 1.0,
+      "suggested_tone": "共情优先，先道歉再解决"
+    },
+    "decision": {
+      "action": "PENDING_APPROVAL",
+      "amount": 18.0,
+      "reason": "该账号今日已达自动赔偿上限，转人工审核",
+      "reply_to_user": "您的请求已提交审核，广服组长将在 5 分钟内与您联系。",
+      "requires_human": true,
+      "wechat_notify": true,
+      "notify_content": "⚠️ 重复赔偿请求\n工单：TKT-20260505203937-910E3A\nsession：stress-t5-008\n金额：¥18.0\n需人工核实"
+    },
+    "status": "PENDING",
+    "created_at": "2026-05-05T20:39:37.643912",
+    "resolved_at": null
+  },
+  {
+    "id": "TKT-20260505203939-AB9397",
+    "session_id": "stress-t5-009",
+    "type": "COMPENSATION",
+    "message": "你们骗人！我要赔偿19元！",
+    "emotion": {
+      "score": 2.0,
+      "risk": "HIGH",
+      "label": "愤怒"
+    },
+    "needs": {
+      "surface_need": "索要赔偿",
+      "latent_need": "损失未被承认，寻求正式补偿",
+      "emotional_need": "希望损失被认可并获得正式道歉",
+      "retention_score": 1.0,
+      "suggested_tone": "共情优先，先道歉再解决"
+    },
+    "decision": {
+      "action": "PENDING_APPROVAL",
+      "amount": 19.0,
+      "reason": "该账号今日已达自动赔偿上限，转人工审核",
+      "reply_to_user": "您的请求已提交审核，广服组长将在 5 分钟内与您联系。",
+      "requires_human": true,
+      "wechat_notify": true,
+      "notify_content": "⚠️ 重复赔偿请求\n工单：TKT-20260505203939-AB9397\nsession：stress-t5-009\n金额：¥19.0\n需人工核实"
+    },
+    "status": "PENDING",
+    "created_at": "2026-05-05T20:39:39.723126",
+    "resolved_at": null
+  },
+  {
+    "id": "TKT-20260505203941-A034A3",
+    "session_id": "stress-t5-010",
+    "type": "COMPENSATION",
+    "message": "你们骗人！我要赔偿20元！",
+    "emotion": {
+      "score": 2.0,
+      "risk": "HIGH",
+      "label": "愤怒"
+    },
+    "needs": {
+      "surface_need": "索要赔偿",
+      "latent_need": "损失未被承认，寻求正式补偿",
+      "emotional_need": "希望损失被认可并获得正式道歉",
+      "retention_score": 1.0,
+      "suggested_tone": "共情优先，先道歉再解决"
+    },
+    "decision": {
+      "action": "PENDING_APPROVAL",
+      "amount": 20.0,
+      "reason": "该账号今日已达自动赔偿上限，转人工审核",
+      "reply_to_user": "您的请求已提交审核，广服组长将在 5 分钟内与您联系。",
+      "requires_human": true,
+      "wechat_notify": true,
+      "notify_content": "⚠️ 重复赔偿请求\n工单：TKT-20260505203941-A034A3\nsession：stress-t5-010\n金额：¥20.0\n需人工核实"
+    },
+    "status": "PENDING",
+    "created_at": "2026-05-05T20:39:41.781612",
+    "resolved_at": null
+  },
+  {
+    "id": "TKT-20260505203943-E3037C",
+    "session_id": "stress-t5-011",
+    "type": "COMPENSATION",
+    "message": "你们骗人！我要赔偿21元！",
+    "emotion": {
+      "score": 2.0,
+      "risk": "HIGH",
+      "label": "愤怒"
+    },
+    "needs": {
+      "surface_need": "索要赔偿",
+      "latent_need": "损失未被承认，寻求正式补偿",
+      "emotional_need": "希望损失被认可并获得正式道歉",
+      "retention_score": 1.0,
+      "suggested_tone": "共情优先，先道歉再解决"
+    },
+    "decision": {
+      "action": "PENDING_APPROVAL",
+      "amount": 21.0,
+      "reason": "该账号今日已达自动赔偿上限，转人工审核",
+      "reply_to_user": "您的请求已提交审核，广服组长将在 5 分钟内与您联系。",
+      "requires_human": true,
+      "wechat_notify": true,
+      "notify_content": "⚠️ 重复赔偿请求\n工单：TKT-20260505203943-E3037C\nsession：stress-t5-011\n金额：¥21.0\n需人工核实"
+    },
+    "status": "PENDING",
+    "created_at": "2026-05-05T20:39:43.880661",
+    "resolved_at": null
+  },
+  {
+    "id": "TKT-20260505203945-BFE515",
+    "session_id": "stress-t5-012",
+    "type": "COMPENSATION",
+    "message": "你们骗人！我要赔偿22元！",
+    "emotion": {
+      "score": 2.0,
+      "risk": "HIGH",
+      "label": "愤怒"
+    },
+    "needs": {
+      "surface_need": "索要赔偿",
+      "latent_need": "损失未被承认，寻求正式补偿",
+      "emotional_need": "希望损失被认可并获得正式道歉",
+      "retention_score": 1.0,
+      "suggested_tone": "共情优先，先道歉再解决"
+    },
+    "decision": {
+      "action": "PENDING_APPROVAL",
+      "amount": 22.0,
+      "reason": "该账号今日已达自动赔偿上限，转人工审核",
+      "reply_to_user": "您的请求已提交审核，广服组长将在 5 分钟内与您联系。",
+      "requires_human": true,
+      "wechat_notify": true,
+      "notify_content": "⚠️ 重复赔偿请求\n工单：TKT-20260505203945-BFE515\nsession：stress-t5-012\n金额：¥22.0\n需人工核实"
+    },
+    "status": "PENDING",
+    "created_at": "2026-05-05T20:39:45.976543",
+    "resolved_at": null
+  },
+  {
+    "id": "TKT-20260505203948-BCEB3F",
+    "session_id": "stress-t5-013",
+    "type": "COMPENSATION",
+    "message": "你们骗人！我要赔偿23元！",
+    "emotion": {
+      "score": 2.0,
+      "risk": "HIGH",
+      "label": "愤怒"
+    },
+    "needs": {
+      "surface_need": "索要赔偿",
+      "latent_need": "损失未被承认，寻求正式补偿",
+      "emotional_need": "希望损失被认可并获得正式道歉",
+      "retention_score": 1.0,
+      "suggested_tone": "共情优先，先道歉再解决"
+    },
+    "decision": {
+      "action": "PENDING_APPROVAL",
+      "amount": 23.0,
+      "reason": "该账号今日已达自动赔偿上限，转人工审核",
+      "reply_to_user": "您的请求已提交审核，广服组长将在 5 分钟内与您联系。",
+      "requires_human": true,
+      "wechat_notify": true,
+      "notify_content": "⚠️ 重复赔偿请求\n工单：TKT-20260505203948-BCEB3F\nsession：stress-t5-013\n金额：¥23.0\n需人工核实"
+    },
+    "status": "PENDING",
+    "created_at": "2026-05-05T20:39:48.058593",
+    "resolved_at": null
+  },
+  {
+    "id": "TKT-20260505203950-1B8C50",
+    "session_id": "stress-t5-014",
+    "type": "COMPENSATION",
+    "message": "你们骗人！我要赔偿24元！",
+    "emotion": {
+      "score": 2.0,
+      "risk": "HIGH",
+      "label": "愤怒"
+    },
+    "needs": {
+      "surface_need": "索要赔偿",
+      "latent_need": "损失未被承认，寻求正式补偿",
+      "emotional_need": "希望损失被认可并获得正式道歉",
+      "retention_score": 1.0,
+      "suggested_tone": "共情优先，先道歉再解决"
+    },
+    "decision": {
+      "action": "PENDING_APPROVAL",
+      "amount": 24.0,
+      "reason": "该账号今日已达自动赔偿上限，转人工审核",
+      "reply_to_user": "您的请求已提交审核，广服组长将在 5 分钟内与您联系。",
+      "requires_human": true,
+      "wechat_notify": true,
+      "notify_content": "⚠️ 重复赔偿请求\n工单：TKT-20260505203950-1B8C50\nsession：stress-t5-014\n金额：¥24.0\n需人工核实"
+    },
+    "status": "PENDING",
+    "created_at": "2026-05-05T20:39:50.123373",
+    "resolved_at": null
+  },
+  {
+    "id": "TKT-20260505203952-76B3C9",
+    "session_id": "stress-t5-015",
+    "type": "COMPENSATION",
+    "message": "你们骗人！我要赔偿25元！",
+    "emotion": {
+      "score": 2.0,
+      "risk": "HIGH",
+      "label": "愤怒"
+    },
+    "needs": {
+      "surface_need": "索要赔偿",
+      "latent_need": "损失未被承认，寻求正式补偿",
+      "emotional_need": "希望损失被认可并获得正式道歉",
+      "retention_score": 1.0,
+      "suggested_tone": "共情优先，先道歉再解决"
+    },
+    "decision": {
+      "action": "PENDING_APPROVAL",
+      "amount": 25.0,
+      "reason": "该账号今日已达自动赔偿上限，转人工审核",
+      "reply_to_user": "您的请求已提交审核，广服组长将在 5 分钟内与您联系。",
+      "requires_human": true,
+      "wechat_notify": true,
+      "notify_content": "⚠️ 重复赔偿请求\n工单：TKT-20260505203952-76B3C9\nsession：stress-t5-015\n金额：¥25.0\n需人工核实"
+    },
+    "status": "PENDING",
+    "created_at": "2026-05-05T20:39:52.190367",
+    "resolved_at": null
+  },
+  {
+    "id": "TKT-20260505203954-057268",
+    "session_id": "stress-t5-016",
+    "type": "COMPENSATION",
+    "message": "你们骗人！我要赔偿26元！",
+    "emotion": {
+      "score": 2.0,
+      "risk": "HIGH",
+      "label": "愤怒"
+    },
+    "needs": {
+      "surface_need": "索要赔偿",
+      "latent_need": "损失未被承认，寻求正式补偿",
+      "emotional_need": "希望损失被认可并获得正式道歉",
+      "retention_score": 1.0,
+      "suggested_tone": "共情优先，先道歉再解决"
+    },
+    "decision": {
+      "action": "PENDING_APPROVAL",
+      "amount": 26.0,
+      "reason": "该账号今日已达自动赔偿上限，转人工审核",
+      "reply_to_user": "您的请求已提交审核，广服组长将在 5 分钟内与您联系。",
+      "requires_human": true,
+      "wechat_notify": true,
+      "notify_content": "⚠️ 重复赔偿请求\n工单：TKT-20260505203954-057268\nsession：stress-t5-016\n金额：¥26.0\n需人工核实"
+    },
+    "status": "PENDING",
+    "created_at": "2026-05-05T20:39:54.259153",
+    "resolved_at": null
+  },
+  {
+    "id": "TKT-20260505203956-4A56A9",
+    "session_id": "stress-t5-017",
+    "type": "COMPENSATION",
+    "message": "你们骗人！我要赔偿27元！",
+    "emotion": {
+      "score": 2.0,
+      "risk": "HIGH",
+      "label": "愤怒"
+    },
+    "needs": {
+      "surface_need": "索要赔偿",
+      "latent_need": "损失未被承认，寻求正式补偿",
+      "emotional_need": "希望损失被认可并获得正式道歉",
+      "retention_score": 1.0,
+      "suggested_tone": "共情优先，先道歉再解决"
+    },
+    "decision": {
+      "action": "PENDING_APPROVAL",
+      "amount": 27.0,
+      "reason": "该账号今日已达自动赔偿上限，转人工审核",
+      "reply_to_user": "您的请求已提交审核，广服组长将在 5 分钟内与您联系。",
+      "requires_human": true,
+      "wechat_notify": true,
+      "notify_content": "⚠️ 重复赔偿请求\n工单：TKT-20260505203956-4A56A9\nsession：stress-t5-017\n金额：¥27.0\n需人工核实"
+    },
+    "status": "PENDING",
+    "created_at": "2026-05-05T20:39:56.333411",
+    "resolved_at": null
+  },
+  {
+    "id": "TKT-20260505203958-D1C233",
+    "session_id": "stress-t5-018",
+    "type": "COMPENSATION",
+    "message": "你们骗人！我要赔偿28元！",
+    "emotion": {
+      "score": 2.0,
+      "risk": "HIGH",
+      "label": "愤怒"
+    },
+    "needs": {
+      "surface_need": "索要赔偿",
+      "latent_need": "损失未被承认，寻求正式补偿",
+      "emotional_need": "希望损失被认可并获得正式道歉",
+      "retention_score": 1.0,
+      "suggested_tone": "共情优先，先道歉再解决"
+    },
+    "decision": {
+      "action": "PENDING_APPROVAL",
+      "amount": 28.0,
+      "reason": "该账号今日已达自动赔偿上限，转人工审核",
+      "reply_to_user": "您的请求已提交审核，广服组长将在 5 分钟内与您联系。",
+      "requires_human": true,
+      "wechat_notify": true,
+      "notify_content": "⚠️ 重复赔偿请求\n工单：TKT-20260505203958-D1C233\nsession：stress-t5-018\n金额：¥28.0\n需人工核实"
+    },
+    "status": "PENDING",
+    "created_at": "2026-05-05T20:39:58.386965",
+    "resolved_at": null
+  },
+  {
+    "id": "TKT-20260505204000-BD8CB3",
+    "session_id": "stress-t5-019",
+    "type": "COMPENSATION",
+    "message": "你们骗人！我要赔偿29元！",
+    "emotion": {
+      "score": 2.0,
+      "risk": "HIGH",
+      "label": "愤怒"
+    },
+    "needs": {
+      "surface_need": "索要赔偿",
+      "latent_need": "损失未被承认，寻求正式补偿",
+      "emotional_need": "希望损失被认可并获得正式道歉",
+      "retention_score": 1.0,
+      "suggested_tone": "共情优先，先道歉再解决"
+    },
+    "decision": {
+      "action": "PENDING_APPROVAL",
+      "amount": 29.0,
+      "reason": "该账号今日已达自动赔偿上限，转人工审核",
+      "reply_to_user": "您的请求已提交审核，广服组长将在 5 分钟内与您联系。",
+      "requires_human": true,
+      "wechat_notify": true,
+      "notify_content": "⚠️ 重复赔偿请求\n工单：TKT-20260505204000-BD8CB3\nsession：stress-t5-019\n金额：¥29.0\n需人工核实"
+    },
+    "status": "PENDING",
+    "created_at": "2026-05-05T20:40:00.465815",
+    "resolved_at": null
+  },
+  {
+    "id": "TKT-20260505205741-0EE8B2",
+    "session_id": "race-comp",
+    "type": "COMPENSATION",
+    "message": "compensate me 30 yuan #1",
+    "emotion": {
+      "score": 5.0,
+      "risk": "MEDIUM",
+      "label": "焦虑"
+    },
+    "needs": {
+      "surface_need": "索要赔偿",
+      "latent_need": "损失未被承认，寻求正式补偿",
+      "emotional_need": "希望损失被认可并获得正式道歉",
+      "retention_score": 2.0,
+      "suggested_tone": "共情优先，先道歉再解决"
+    },
+    "decision": {
+      "action": "AUTO_APPROVE",
+      "amount": 30.0,
+      "reason": "金额30.0元低于50.0元阈值，自动批准",
+      "reply_to_user": "您好，经核实您的诉求，我们决定给予您 ¥30.0 的补偿，将在1-2个工作日内到账。感谢您的理解与支持。",
+      "requires_human": false
+    },
+    "status": "RESOLVED",
+    "created_at": "2026-05-05T20:57:41.736493",
+    "resolved_at": "2026-05-05T20:57:41.736493"
+  },
+  {
+    "id": "TKT-20260505205741-4B9E25",
+    "session_id": "race-comp",
+    "type": "COMPENSATION",
+    "message": "compensate me 30 yuan #3",
+    "emotion": {
+      "score": 5.0,
+      "risk": "MEDIUM",
+      "label": "焦虑"
+    },
+    "needs": {
+      "surface_need": "索要赔偿",
+      "latent_need": "损失未被承认，寻求正式补偿",
+      "emotional_need": "希望损失被认可并获得正式道歉",
+      "retention_score": 2.0,
+      "suggested_tone": "共情优先，先道歉再解决"
+    },
+    "decision": {
+      "action": "PENDING_APPROVAL",
+      "amount": 30.0,
+      "reason": "该账号今日已达自动赔偿上限，转人工审核",
+      "reply_to_user": "您的请求已提交审核，广服组长将在 5 分钟内与您联系。",
+      "requires_human": true,
+      "wechat_notify": true,
+      "notify_content": "⚠️ 重复赔偿请求\n工单：TKT-20260505205741-4B9E25\nsession：race-comp\n金额：¥30.0\n需人工核实"
+    },
+    "status": "PENDING",
+    "created_at": "2026-05-05T20:57:41.765616",
+    "resolved_at": null
+  },
+  {
+    "id": "TKT-20260505205741-DFD412",
+    "session_id": "race-comp",
+    "type": "COMPENSATION",
+    "message": "compensate me 30 yuan #8",
+    "emotion": {
+      "score": 5.0,
+      "risk": "MEDIUM",
+      "label": "焦虑"
+    },
+    "needs": {
+      "surface_need": "索要赔偿",
+      "latent_need": "损失未被承认，寻求正式补偿",
+      "emotional_need": "希望损失被认可并获得正式道歉",
+      "retention_score": 2.0,
+      "suggested_tone": "共情优先，先道歉再解决"
+    },
+    "decision": {
+      "action": "PENDING_APPROVAL",
+      "amount": 30.0,
+      "reason": "该账号今日已达自动赔偿上限，转人工审核",
+      "reply_to_user": "您的请求已提交审核，广服组长将在 5 分钟内与您联系。",
+      "requires_human": true,
+      "wechat_notify": true,
+      "notify_content": "⚠️ 重复赔偿请求\n工单：TKT-20260505205741-DFD412\nsession：race-comp\n金额：¥30.0\n需人工核实"
+    },
+    "status": "PENDING",
+    "created_at": "2026-05-05T20:57:41.820167",
+    "resolved_at": null
+  },
+  {
+    "id": "TKT-20260505205741-1170DE",
+    "session_id": "race-comp",
+    "type": "COMPENSATION",
+    "message": "compensate me 30 yuan #10",
+    "emotion": {
+      "score": 5.0,
+      "risk": "MEDIUM",
+      "label": "焦虑"
+    },
+    "needs": {
+      "surface_need": "索要赔偿",
+      "latent_need": "损失未被承认，寻求正式补偿",
+      "emotional_need": "希望损失被认可并获得正式道歉",
+      "retention_score": 2.0,
+      "suggested_tone": "共情优先，先道歉再解决"
+    },
+    "decision": {
+      "action": "PENDING_APPROVAL",
+      "amount": 30.0,
+      "reason": "该账号今日已达自动赔偿上限，转人工审核",
+      "reply_to_user": "您的请求已提交审核，广服组长将在 5 分钟内与您联系。",
+      "requires_human": true,
+      "wechat_notify": true,
+      "notify_content": "⚠️ 重复赔偿请求\n工单：TKT-20260505205741-1170DE\nsession：race-comp\n金额：¥30.0\n需人工核实"
+    },
+    "status": "PENDING",
+    "created_at": "2026-05-05T20:57:41.876624",
+    "resolved_at": null
+  },
+  {
+    "id": "TKT-20260505205741-406F04",
+    "session_id": "race-comp",
+    "type": "COMPENSATION",
+    "message": "compensate me 30 yuan #15",
+    "emotion": {
+      "score": 5.0,
+      "risk": "MEDIUM",
+      "label": "焦虑"
+    },
+    "needs": {
+      "surface_need": "索要赔偿",
+      "latent_need": "损失未被承认，寻求正式补偿",
+      "emotional_need": "希望损失被认可并获得正式道歉",
+      "retention_score": 2.0,
+      "suggested_tone": "共情优先，先道歉再解决"
+    },
+    "decision": {
+      "action": "PENDING_APPROVAL",
+      "amount": 30.0,
+      "reason": "该账号今日已达自动赔偿上限，转人工审核",
+      "reply_to_user": "您的请求已提交审核，广服组长将在 5 分钟内与您联系。",
+      "requires_human": true,
+      "wechat_notify": true,
+      "notify_content": "⚠️ 重复赔偿请求\n工单：TKT-20260505205741-406F04\nsession：race-comp\n金额：¥30.0\n需人工核实"
+    },
+    "status": "PENDING",
+    "created_at": "2026-05-05T20:57:42.002570",
+    "resolved_at": null
+  },
+  {
+    "id": "TKT-20260505205742-FB7DA5",
+    "session_id": "rage",
+    "type": "EMOTION_CRISIS",
+    "message": "you are scammers, garbage system!",
+    "emotion": {
+      "score": 0.5,
+      "risk": "HIGH",
+      "label": "愤怒"
+    },
+    "needs": {
+      "surface_need": "未知",
+      "latent_need": "未知",
+      "emotional_need": "希望得到帮助",
+      "retention_score": 3.0,
+      "suggested_tone": "共情优先，先道歉再解决"
+    },
+    "decision": {
+      "action": "SUPERVISOR_TAKEOVER",
+      "reason": "情绪评分0.5，高风险",
+      "reply_to_user": "您的情绪我们完全理解，客服组长已介入，将给您最优先的处理。",
+      "requires_human": true,
+      "wechat_notify": true,
+      "notify_content": "🚨 高风险客诉\n工单号：TKT-20260505205742-FB7DA5\n情绪评分：0.5/10\n用户消息：you are scammers, garbage system!\n需要介入处理"
+    },
+    "status": "PENDING",
+    "created_at": "2026-05-05T20:57:42.342514",
+    "resolved_at": null
+  },
+  {
+    "id": "TKT-20260505205742-8F34E2",
+    "session_id": "rage",
+    "type": "EMOTION_CRISIS",
+    "message": "you are scammers, garbage system!",
+    "emotion": {
+      "score": 0.5,
+      "risk": "HIGH",
+      "label": "愤怒"
+    },
+    "needs": {
+      "surface_need": "未知",
+      "latent_need": "未知",
+      "emotional_need": "希望得到帮助",
+      "retention_score": 3.0,
+      "suggested_tone": "共情优先，先道歉再解决"
+    },
+    "decision": {
+      "action": "SUPERVISOR_TAKEOVER",
+      "reason": "情绪评分0.5，高风险",
+      "reply_to_user": "您的情绪我们完全理解，客服组长已介入，将给您最优先的处理。",
+      "requires_human": true,
+      "wechat_notify": true,
+      "notify_content": "🚨 高风险客诉\n工单号：TKT-20260505205742-8F34E2\n情绪评分：0.5/10\n用户消息：you are scammers, garbage system!\n需要介入处理"
+    },
+    "status": "PENDING",
+    "created_at": "2026-05-05T20:57:42.376590",
+    "resolved_at": null
+  },
+  {
+    "id": "TKT-20260505205742-E85ECD",
+    "session_id": "rage",
+    "type": "EMOTION_CRISIS",
+    "message": "you are scammers, garbage system!",
+    "emotion": {
+      "score": 0.0,
+      "risk": "HIGH",
+      "label": "愤怒"
+    },
+    "needs": {
+      "surface_need": "未知",
+      "latent_need": "未知",
+      "emotional_need": "希望得到帮助",
+      "retention_score": 3.0,
+      "suggested_tone": "共情优先，先道歉再解决"
+    },
+    "decision": {
+      "action": "SUPERVISOR_TAKEOVER",
+      "reason": "情绪评分0.0，高风险",
+      "reply_to_user": "您的情绪我们完全理解，客服组长已介入，将给您最优先的处理。",
+      "requires_human": true,
+      "wechat_notify": true,
+      "notify_content": "🚨 高风险客诉\n工单号：TKT-20260505205742-E85ECD\n情绪评分：0.0/10\n用户消息：you are scammers, garbage system!\n需要介入处理"
+    },
+    "status": "PENDING",
+    "created_at": "2026-05-05T20:57:42.410696",
+    "resolved_at": null
+  },
+  {
+    "id": "TKT-20260505205742-F275FA",
+    "session_id": "rage",
+    "type": "EMOTION_CRISIS",
+    "message": "you are scammers, garbage system!",
+    "emotion": {
+      "score": 0.0,
+      "risk": "HIGH",
+      "label": "愤怒"
+    },
+    "needs": {
+      "surface_need": "未知",
+      "latent_need": "未知",
+      "emotional_need": "希望得到帮助",
+      "retention_score": 3.0,
+      "suggested_tone": "共情优先，先道歉再解决"
+    },
+    "decision": {
+      "action": "SUPERVISOR_TAKEOVER",
+      "reason": "情绪评分0.0，高风险",
+      "reply_to_user": "您的情绪我们完全理解，客服组长已介入，将给您最优先的处理。",
+      "requires_human": true,
+      "wechat_notify": true,
+      "notify_content": "🚨 高风险客诉\n工单号：TKT-20260505205742-F275FA\n情绪评分：0.0/10\n用户消息：you are scammers, garbage system!\n需要介入处理"
+    },
+    "status": "PENDING",
+    "created_at": "2026-05-05T20:57:42.435106",
+    "resolved_at": null
+  },
+  {
+    "id": "TKT-20260505205742-7D1BB3",
+    "session_id": "rage",
+    "type": "EMOTION_CRISIS",
+    "message": "you are scammers, garbage system!",
+    "emotion": {
+      "score": 0.0,
+      "risk": "HIGH",
+      "label": "愤怒"
+    },
+    "needs": {
+      "surface_need": "未知",
+      "latent_need": "未知",
+      "emotional_need": "希望得到帮助",
+      "retention_score": 3.0,
+      "suggested_tone": "共情优先，先道歉再解决"
+    },
+    "decision": {
+      "action": "SUPERVISOR_TAKEOVER",
+      "reason": "情绪评分0.0，高风险",
+      "reply_to_user": "您的情绪我们完全理解，客服组长已介入，将给您最优先的处理。",
+      "requires_human": true,
+      "wechat_notify": true,
+      "notify_content": "🚨 高风险客诉\n工单号：TKT-20260505205742-7D1BB3\n情绪评分：0.0/10\n用户消息：you are scammers, garbage system!\n需要介入处理"
+    },
+    "status": "PENDING",
+    "created_at": "2026-05-05T20:57:42.461564",
+    "resolved_at": null
+  },
+  {
+    "id": "TKT-20260505205742-6FB97D",
+    "session_id": "big-6981",
+    "type": "COMPENSATION",
+    "message": "compensate me 999999 yuan",
+    "emotion": {
+      "score": 5.0,
+      "risk": "MEDIUM",
+      "label": "焦虑"
+    },
+    "needs": {
+      "surface_need": "索要赔偿",
+      "latent_need": "损失未被承认，寻求正式补偿",
+      "emotional_need": "希望损失被认可并获得正式道歉",
+      "retention_score": 2.0,
+      "suggested_tone": "共情优先，先道歉再解决"
+    },
+    "decision": {
+      "action": "PENDING_APPROVAL",
+      "amount": 999999.0,
+      "reason": "金额999999.0元超过50.0元阈值，需人工审批",
+      "reply_to_user": "您的赔偿申请已提交给客服组长审核，预计2分钟内回复您，请稍候。",
+      "requires_human": true,
+      "wechat_notify": true,
+      "notify_content": "⚠️ 赔偿审批请求\n工单号：TKT-20260505205742-6FB97D\n用户诉求：compensate me 999999 yuan\n申请金额：¥999999.0\n情绪评分：5.0/10\n请审批：[批准] [拒绝] [协商]"
+    },
+    "status": "PENDING",
+    "created_at": "2026-05-05T20:57:42.512926",
+    "resolved_at": null
+  },
+  {
+    "id": "TKT-20260505205742-C7F647",
+    "session_id": "big-7524",
+    "type": "COMPENSATION",
+    "message": "compensate me 100000000 yuan",
+    "emotion": {
+      "score": 5.0,
+      "risk": "MEDIUM",
+      "label": "焦虑"
+    },
+    "needs": {
+      "surface_need": "索要赔偿",
+      "latent_need": "损失未被承认，寻求正式补偿",
+      "emotional_need": "希望损失被认可并获得正式道歉",
+      "retention_score": 2.0,
+      "suggested_tone": "共情优先，先道歉再解决"
+    },
+    "decision": {
+      "action": "PENDING_APPROVAL",
+      "amount": 100000000.0,
+      "reason": "金额100000000.0元超过50.0元阈值，需人工审批",
+      "reply_to_user": "您的赔偿申请已提交给客服组长审核，预计2分钟内回复您，请稍候。",
+      "requires_human": true,
+      "wechat_notify": true,
+      "notify_content": "⚠️ 赔偿审批请求\n工单号：TKT-20260505205742-C7F647\n用户诉求：compensate me 100000000 yuan\n申请金额：¥100000000.0\n情绪评分：5.0/10\n请审批：[批准] [拒绝] [协商]"
+    },
+    "status": "PENDING",
+    "created_at": "2026-05-05T20:57:42.563373",
+    "resolved_at": null
+  },
+  {
+    "id": "TKT-20260505205742-72ECFF",
+    "session_id": "big-2472",
+    "type": "COMPENSATION",
+    "message": "compensate me 1000000 yuan",
+    "emotion": {
+      "score": 5.0,
+      "risk": "MEDIUM",
+      "label": "焦虑"
+    },
+    "needs": {
+      "surface_need": "索要赔偿",
+      "latent_need": "损失未被承认，寻求正式补偿",
+      "emotional_need": "希望损失被认可并获得正式道歉",
+      "retention_score": 2.0,
+      "suggested_tone": "共情优先，先道歉再解决"
+    },
+    "decision": {
+      "action": "PENDING_APPROVAL",
+      "amount": 1000000.0,
+      "reason": "金额1000000.0元超过50.0元阈值，需人工审批",
+      "reply_to_user": "您的赔偿申请已提交给客服组长审核，预计2分钟内回复您，请稍候。",
+      "requires_human": true,
+      "wechat_notify": true,
+      "notify_content": "⚠️ 赔偿审批请求\n工单号：TKT-20260505205742-72ECFF\n用户诉求：compensate me 1000000 yuan\n申请金额：¥1000000.0\n情绪评分：5.0/10\n请审批：[批准] [拒绝] [协商]"
+    },
+    "status": "PENDING",
+    "created_at": "2026-05-05T20:57:42.598868",
+    "resolved_at": null
+  },
+  {
+    "id": "TKT-20260505205742-2EFA36",
+    "session_id": "big-7219",
+    "type": "COMPENSATION",
+    "message": "compensate me -500 yuan",
+    "emotion": {
+      "score": 5.0,
+      "risk": "MEDIUM",
+      "label": "焦虑"
+    },
+    "needs": {
+      "surface_need": "索要赔偿",
+      "latent_need": "损失未被承认，寻求正式补偿",
+      "emotional_need": "希望损失被认可并获得正式道歉",
+      "retention_score": 2.0,
+      "suggested_tone": "共情优先，先道歉再解决"
+    },
+    "decision": {
+      "action": "FORMAL_COMPLAINT",
+      "reason": "用户发起正式投诉",
+      "reply_to_user": "您的投诉已正式受理，工单号：TKT-20260505205742-2EFA36，我们将在24小时内给出处理结果。",
+      "requires_human": true,
+      "wechat_notify": false
+    },
+    "status": "PENDING",
+    "created_at": "2026-05-05T20:57:42.687284",
+    "resolved_at": null
+  },
+  {
+    "id": "TKT-20260505205742-B136C4",
+    "session_id": "big-5484",
+    "type": "COMPENSATION",
+    "message": "compensate me 0.01 yuan",
+    "emotion": {
+      "score": 5.0,
+      "risk": "MEDIUM",
+      "label": "焦虑"
+    },
+    "needs": {
+      "surface_need": "索要赔偿",
+      "latent_need": "损失未被承认，寻求正式补偿",
+      "emotional_need": "希望损失被认可并获得正式道歉",
+      "retention_score": 2.0,
+      "suggested_tone": "共情优先，先道歉再解决"
+    },
+    "decision": {
+      "action": "AUTO_APPROVE",
+      "amount": 0.01,
+      "reason": "金额0.01元低于50.0元阈值，自动批准",
+      "reply_to_user": "您好，经核实您的诉求，我们决定给予您 ¥0.01 的补偿，将在1-2个工作日内到账。感谢您的理解与支持。",
+      "requires_human": false
+    },
+    "status": "RESOLVED",
+    "created_at": "2026-05-05T20:57:42.776853",
+    "resolved_at": "2026-05-05T20:57:42.776853"
+  },
+  {
+    "id": "TKT-20260505205742-F94E29",
+    "session_id": "big-577",
+    "type": "COMPENSATION",
+    "message": "pay me 100 dollars",
+    "emotion": {
+      "score": 5.0,
+      "risk": "MEDIUM",
+      "label": "焦虑"
+    },
+    "needs": {
+      "surface_need": "索要赔偿",
+      "latent_need": "损失未被承认，寻求正式补偿",
+      "emotional_need": "希望损失被认可并获得正式道歉",
+      "retention_score": 2.0,
+      "suggested_tone": "共情优先，先道歉再解决"
+    },
+    "decision": {
+      "action": "PENDING_APPROVAL",
+      "amount": 100.0,
+      "reason": "金额100.0元超过50.0元阈值，需人工审批",
+      "reply_to_user": "您的赔偿申请已提交给客服组长审核，预计2分钟内回复您，请稍候。",
+      "requires_human": true,
+      "wechat_notify": true,
+      "notify_content": "⚠️ 赔偿审批请求\n工单号：TKT-20260505205742-F94E29\n用户诉求：pay me 100 dollars\n申请金额：¥100.0\n情绪评分：5.0/10\n请审批：[批准] [拒绝] [协商]"
+    },
+    "status": "PENDING",
+    "created_at": "2026-05-05T20:57:42.828026",
+    "resolved_at": null
+  },
+  {
+    "id": "TKT-20260505205825-8754F4",
+    "session_id": "fix-test-1",
+    "type": "COMPENSATION",
+    "message": "等了3天还没解决，我要求赔偿100元！",
+    "emotion": {
+      "score": 2.9,
+      "risk": "HIGH",
+      "label": "愤怒"
+    },
+    "needs": {
+      "surface_need": "索要赔偿",
+      "latent_need": "损失未被承认，寻求正式补偿",
+      "emotional_need": "希望损失被认可并获得正式道歉",
+      "retention_score": 1.0,
+      "suggested_tone": "共情优先，先道歉再解决"
+    },
+    "decision": {
+      "action": "PENDING_APPROVAL",
+      "amount": 100.0,
+      "reason": "金额100.0元超过50.0元阈值，需人工审批",
+      "reply_to_user": "您的赔偿申请已提交给客服组长审核，预计2分钟内回复您，请稍候。",
+      "requires_human": true,
+      "wechat_notify": true,
+      "notify_content": "⚠️ 赔偿审批请求\n工单号：TKT-20260505205825-8754F4\n用户诉求：等了3天还没解决，我要求赔偿100元！\n申请金额：¥100.0\n情绪评分：2.9/10\n请审批：[批准] [拒绝] [协商]"
+    },
+    "status": "PENDING",
+    "created_at": "2026-05-05T20:58:25.030526",
+    "resolved_at": null
+  },
+  {
+    "id": "TKT-20260505205825-BA4B37",
+    "session_id": "fix-test-6",
+    "type": "EMOTION_CRISIS",
+    "message": "你们是骗子！系统坏了两天！垃圾！",
+    "emotion": {
+      "score": 0.0,
+      "risk": "HIGH",
+      "label": "愤怒"
+    },
+    "needs": {
+      "surface_need": "未知",
+      "latent_need": "未知",
+      "emotional_need": "希望得到帮助",
+      "retention_score": 3.0,
+      "suggested_tone": "共情优先，先道歉再解决"
+    },
+    "decision": {
+      "action": "SUPERVISOR_TAKEOVER",
+      "reason": "情绪评分0.0，高风险",
+      "reply_to_user": "您的情绪我们完全理解，客服组长已介入，将给您最优先的处理。",
+      "requires_human": true,
+      "wechat_notify": true,
+      "notify_content": "🚨 高风险客诉\n工单号：TKT-20260505205825-BA4B37\n情绪评分：0.0/10\n用户消息：你们是骗子！系统坏了两天！垃圾！\n需要介入处理"
+    },
+    "status": "PENDING",
+    "created_at": "2026-05-05T20:58:25.119364",
+    "resolved_at": null
+  },
+  {
+    "id": "TKT-20260505205825-F392E6",
+    "session_id": "rate-limit",
+    "type": "COMPENSATION",
+    "message": "赔偿我 30元",
+    "emotion": {
+      "score": 5.0,
+      "risk": "MEDIUM",
+      "label": "焦虑"
+    },
+    "needs": {
+      "surface_need": "索要赔偿",
+      "latent_need": "损失未被承认，寻求正式补偿",
+      "emotional_need": "希望损失被认可并获得正式道歉",
+      "retention_score": 2.0,
+      "suggested_tone": "共情优先，先道歉再解决"
+    },
+    "decision": {
+      "action": "PENDING_APPROVAL",
+      "amount": 30.0,
+      "reason": "该账号今日已达自动赔偿上限，转人工审核",
+      "reply_to_user": "您的请求已提交审核，广服组长将在 5 分钟内与您联系。",
+      "requires_human": true,
+      "wechat_notify": true,
+      "notify_content": "⚠️ 重复赔偿请求\n工单：TKT-20260505205825-F392E6\nsession：rate-limit\n金额：¥30.0\n需人工核实"
+    },
+    "status": "PENDING",
+    "created_at": "2026-05-05T20:58:25.154188",
+    "resolved_at": null
+  },
+  {
+    "id": "TKT-20260505205825-E7A125",
+    "session_id": "rate-limit",
+    "type": "COMPENSATION",
+    "message": "赔偿我 20元",
+    "emotion": {
+      "score": 5.0,
+      "risk": "MEDIUM",
+      "label": "焦虑"
+    },
+    "needs": {
+      "surface_need": "索要赔偿",
+      "latent_need": "损失未被承认，寻求正式补偿",
+      "emotional_need": "希望损失被认可并获得正式道歉",
+      "retention_score": 2.0,
+      "suggested_tone": "共情优先，先道歉再解决"
+    },
+    "decision": {
+      "action": "PENDING_APPROVAL",
+      "amount": 20.0,
+      "reason": "该账号今日已达自动赔偿上限，转人工审核",
+      "reply_to_user": "您的请求已提交审核，广服组长将在 5 分钟内与您联系。",
+      "requires_human": true,
+      "wechat_notify": true,
+      "notify_content": "⚠️ 重复赔偿请求\n工单：TKT-20260505205825-E7A125\nsession：rate-limit\n金额：¥20.0\n需人工核实"
+    },
+    "status": "PENDING",
+    "created_at": "2026-05-05T20:58:25.186361",
+    "resolved_at": null
+  },
+  {
+    "id": "TKT-20260505210902-7A93FA",
+    "session_id": "llm-test-1",
+    "type": "EMOTION_CRISIS",
+    "message": "????????,??????,???????,???????",
+    "emotion": {
+      "score": 0.0,
+      "risk": "HIGH",
+      "label": "愤怒"
+    },
+    "needs": {
+      "surface_need": "未知",
+      "latent_need": "未知",
+      "emotional_need": "希望得到帮助",
+      "retention_score": 3.0,
+      "suggested_tone": "共情优先，先道歉再解决"
+    },
+    "decision": {
+      "action": "SUPERVISOR_TAKEOVER",
+      "reason": "情绪评分0.0，高风险",
+      "reply_to_user": "您的情绪我们完全理解，客服组长已介入，将给您最优先的处理。",
+      "requires_human": true,
+      "wechat_notify": true,
+      "notify_content": "🚨 高风险客诉\n工单号：TKT-20260505210902-7A93FA\n情绪评分：0.0/10\n用户消息：????????,??????,???????,???????\n需要介入处理"
+    },
+    "status": "PENDING",
+    "created_at": "2026-05-05T21:09:02.503898",
+    "resolved_at": null
+  },
+  {
+    "id": "TKT-20260505210930-8C36EB",
+    "session_id": "llm-test-2",
+    "type": "EMOTION_CRISIS",
+    "message": "??????Webhook?????????",
+    "emotion": {
+      "score": 0.0,
+      "risk": "HIGH",
+      "label": "愤怒"
+    },
+    "needs": {
+      "surface_need": "未知",
+      "latent_need": "未知",
+      "emotional_need": "希望得到帮助",
+      "retention_score": 3.0,
+      "suggested_tone": "共情优先，先道歉再解决"
+    },
+    "decision": {
+      "action": "SUPERVISOR_TAKEOVER",
+      "reason": "情绪评分0.0，高风险",
+      "reply_to_user": "您的情绪我们完全理解，客服组长已介入，将给您最优先的处理。",
+      "requires_human": true,
+      "wechat_notify": true,
+      "notify_content": "🚨 高风险客诉\n工单号：TKT-20260505210930-8C36EB\n情绪评分：0.0/10\n用户消息：??????Webhook?????????\n需要介入处理"
+    },
+    "status": "PENDING",
+    "created_at": "2026-05-05T21:09:30.100553",
+    "resolved_at": null
+  },
+  {
+    "id": "TKT-20260505210944-D66737",
+    "session_id": "fresh-730191542",
+    "type": "EMOTION_CRISIS",
+    "message": "?????Webhook???????",
+    "emotion": {
+      "score": 1.0,
+      "risk": "HIGH",
+      "label": "愤怒"
+    },
+    "needs": {
+      "surface_need": "未知",
+      "latent_need": "未知",
+      "emotional_need": "希望得到帮助",
+      "retention_score": 3.0,
+      "suggested_tone": "共情优先，先道歉再解决"
+    },
+    "decision": {
+      "action": "SUPERVISOR_TAKEOVER",
+      "reason": "情绪评分1.0，高风险",
+      "reply_to_user": "您的情绪我们完全理解，客服组长已介入，将给您最优先的处理。",
+      "requires_human": true,
+      "wechat_notify": true,
+      "notify_content": "🚨 高风险客诉\n工单号：TKT-20260505210944-D66737\n情绪评分：1.0/10\n用户消息：?????Webhook???????\n需要介入处理"
+    },
+    "status": "PENDING",
+    "created_at": "2026-05-05T21:09:44.288337",
+    "resolved_at": null
+  },
+  {
+    "id": "TKT-20260505212050-7C3FE9",
+    "session_id": "fix-test-1",
+    "type": "COMPENSATION",
+    "message": "等了3天还没解决，我要求赔偿100元！",
+    "emotion": {
+      "score": 2.9,
+      "risk": "HIGH",
+      "label": "愤怒"
+    },
+    "needs": {
+      "surface_need": "索要赔偿",
+      "latent_need": "损失未被承认，寻求正式补偿",
+      "emotional_need": "希望损失被认可并获得正式道歉",
+      "retention_score": 1.0,
+      "suggested_tone": "共情优先，先道歉再解决"
+    },
+    "decision": {
+      "action": "PENDING_APPROVAL",
+      "amount": 100.0,
+      "reason": "金额100.0元超过50.0元阈值，需人工审批",
+      "reply_to_user": "您的赔偿申请已提交给客服组长审核，预计2分钟内回复您，请稍候。",
+      "requires_human": true,
+      "wechat_notify": true,
+      "notify_content": "⚠️ 赔偿审批请求\n工单号：TKT-20260505212050-7C3FE9\n用户诉求：等了3天还没解决，我要求赔偿100元！\n申请金额：¥100.0\n情绪评分：2.9/10\n请审批：[批准] [拒绝] [协商]"
+    },
+    "status": "PENDING",
+    "created_at": "2026-05-05T21:20:50.729037",
+    "resolved_at": null
+  },
+  {
+    "id": "TKT-20260505212150-22DA89",
+    "session_id": "fix-test-1",
+    "type": "COMPENSATION",
+    "message": "等了3天还没解决，我要求赔偿100元！",
+    "emotion": {
+      "score": 2.9,
+      "risk": "HIGH",
+      "label": "愤怒"
+    },
+    "needs": {
+      "surface_need": "索要赔偿",
+      "latent_need": "损失未被承认，寻求正式补偿",
+      "emotional_need": "希望损失被认可并获得正式道歉",
+      "retention_score": 1.0,
+      "suggested_tone": "共情优先，先道歉再解决"
+    },
+    "decision": {
+      "action": "PENDING_APPROVAL",
+      "amount": 100.0,
+      "reason": "金额100.0元超过50.0元阈值，需人工审批",
+      "reply_to_user": "您的赔偿申请已提交给客服组长审核，预计2分钟内回复您，请稍候。",
+      "requires_human": true,
+      "wechat_notify": true,
+      "notify_content": "⚠️ 赔偿审批请求\n工单号：TKT-20260505212150-22DA89\n用户诉求：等了3天还没解决，我要求赔偿100元！\n申请金额：¥100.0\n情绪评分：2.9/10\n请审批：[批准] [拒绝] [协商]"
+    },
+    "status": "PENDING",
+    "created_at": "2026-05-05T21:21:50.673931",
+    "resolved_at": null
+  },
+  {
+    "id": "TKT-20260505212329-154CC9",
+    "session_id": "fix-test-1",
+    "type": "COMPENSATION",
+    "message": "等了3天还没解决，我要求赔偿100元！",
+    "emotion": {
+      "score": 0.9,
+      "risk": "HIGH",
+      "label": "愤怒"
+    },
+    "needs": {
+      "surface_need": "索要赔偿",
+      "latent_need": "损失未被承认，寻求正式补偿",
+      "emotional_need": "希望损失被认可并获得正式道歉",
+      "retention_score": 1.0,
+      "suggested_tone": "共情优先，先道歉再解决"
+    },
+    "decision": {
+      "action": "PENDING_APPROVAL",
+      "amount": 100.0,
+      "reason": "金额100.0元超过50.0元阈值，需人工审批",
+      "reply_to_user": "您的赔偿申请已提交给客服组长审核，预计2分钟内回复您，请稍候。",
+      "requires_human": true,
+      "wechat_notify": true,
+      "notify_content": "⚠️ 赔偿审批请求\n工单号：TKT-20260505212329-154CC9\n用户诉求：等了3天还没解决，我要求赔偿100元！\n申请金额：¥100.0\n情绪评分：0.9/10\n请审批：[批准] [拒绝] [协商]"
+    },
+    "status": "PENDING",
+    "created_at": "2026-05-05T21:23:29.980516",
+    "resolved_at": null
+  },
+  {
+    "id": "TKT-20260505212332-26A63C",
+    "session_id": "fix-test-6",
+    "type": "EMOTION_CRISIS",
+    "message": "你们是骗子！系统坏了两天！垃圾！",
+    "emotion": {
+      "score": 0.0,
+      "risk": "HIGH",
+      "label": "愤怒"
+    },
+    "needs": {
+      "surface_need": "未知",
+      "latent_need": "未知",
+      "emotional_need": "希望得到帮助",
+      "retention_score": 3.0,
+      "suggested_tone": "共情优先，先道歉再解决"
+    },
+    "decision": {
+      "action": "SUPERVISOR_TAKEOVER",
+      "reason": "情绪评分0.0，高风险",
+      "reply_to_user": "您的情绪我们完全理解，客服组长已介入，将给您最优先的处理。",
+      "requires_human": true,
+      "wechat_notify": true,
+      "notify_content": "🚨 高风险客诉\n工单号：TKT-20260505212332-26A63C\n情绪评分：0.0/10\n用户消息：你们是骗子！系统坏了两天！垃圾！\n需要介入处理"
+    },
+    "status": "PENDING",
+    "created_at": "2026-05-05T21:23:32.796942",
+    "resolved_at": null
+  },
+  {
+    "id": "TKT-20260505212332-CBD9FB",
+    "session_id": "rate-limit",
+    "type": "COMPENSATION",
+    "message": "赔偿我 30元",
+    "emotion": {
+      "score": 5.0,
+      "risk": "MEDIUM",
+      "label": "焦虑"
+    },
+    "needs": {
+      "surface_need": "索要赔偿",
+      "latent_need": "损失未被承认，寻求正式补偿",
+      "emotional_need": "希望损失被认可并获得正式道歉",
+      "retention_score": 2.0,
+      "suggested_tone": "共情优先，先道歉再解决"
+    },
+    "decision": {
+      "action": "PENDING_APPROVAL",
+      "amount": 30.0,
+      "reason": "该账号今日已达自动赔偿上限，转人工审核",
+      "reply_to_user": "您的请求已提交审核，广服组长将在 5 分钟内与您联系。",
+      "requires_human": true,
+      "wechat_notify": true,
+      "notify_content": "⚠️ 重复赔偿请求\n工单：TKT-20260505212332-CBD9FB\nsession：rate-limit\n金额：¥30.0\n需人工核实"
+    },
+    "status": "PENDING",
+    "created_at": "2026-05-05T21:23:32.835788",
+    "resolved_at": null
+  },
+  {
+    "id": "TKT-20260505212332-FA9259",
+    "session_id": "rate-limit",
+    "type": "COMPENSATION",
+    "message": "赔偿我 20元",
+    "emotion": {
+      "score": 5.0,
+      "risk": "MEDIUM",
+      "label": "焦虑"
+    },
+    "needs": {
+      "surface_need": "索要赔偿",
+      "latent_need": "损失未被承认，寻求正式补偿",
+      "emotional_need": "希望损失被认可并获得正式道歉",
+      "retention_score": 2.0,
+      "suggested_tone": "共情优先，先道歉再解决"
+    },
+    "decision": {
+      "action": "PENDING_APPROVAL",
+      "amount": 20.0,
+      "reason": "该账号今日已达自动赔偿上限，转人工审核",
+      "reply_to_user": "您的请求已提交审核，广服组长将在 5 分钟内与您联系。",
+      "requires_human": true,
+      "wechat_notify": true,
+      "notify_content": "⚠️ 重复赔偿请求\n工单：TKT-20260505212332-FA9259\nsession：rate-limit\n金额：¥20.0\n需人工核实"
+    },
+    "status": "PENDING",
+    "created_at": "2026-05-05T21:23:32.857960",
+    "resolved_at": null
+  }
+]

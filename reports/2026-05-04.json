@@ -1,0 +1,60 @@
+{
+  "date": "2026-05-04",
+  "generated_at": "2026-05-04T03:33:09.217058",
+  "summary": {
+    "total_conversations": 12,
+    "today_tickets": 2,
+    "resolved_tickets": 0,
+    "escalated_tickets": 2,
+    "avg_satisfaction": 4.0
+  },
+  "health_status": {
+    "conversation_engine": {
+      "status": "🟡 注意",
+      "kb_hit_rate": "75.0%",
+      "total_conversations": 12
+    },
+    "knowledge_pipeline": {
+      "status": "🟡 注意",
+      "total_entries": 8,
+      "pending_gaps": 3
+    },
+    "escalation_engine": {
+      "status": "🔴 告警",
+      "escalation_rate": "58.3%",
+      "pending_tickets": 4
+    },
+    "satisfaction": {
+      "status": "🟢 健康",
+      "avg_score": "4.0/5.0",
+      "total_ratings": 1
+    }
+  },
+  "knowledge_gaps": [
+    {
+      "query": "你们太垃圾了！！！骗子！！！滚！！！",
+      "session_id": "t003",
+      "timestamp": "2026-05-03T23:21:28.999056"
+    },
+    {
+      "query": "我想订个上海婚宴，预算6000，黄浦区，10桌，10.25号，有哪些推荐",
+      "session_id": "sess-0yvnvc",
+      "timestamp": "2026-05-04T03:31:47.268988"
+    },
+    {
+      "query": "你们这个系统太垃圾了！！已经出问题三次了！！！客服一直在敷衍我！你们是骗子吗！！",
+      "session_id": "sess-0yvnvc",
+      "timestamp": "2026-05-04T03:32:41.087493"
+    }
+  ],
+  "poor_rating_comments": [],
+  "coach_suggestions": [
+    "未命中问题TOP3，建议补充知识库条目"
+  ],
+  "action_items": [
+    {
+      "priority": "HIGH",
+      "item": "未命中问题TOP3，建议补充知识库条目"
+    }
+  ]
+}

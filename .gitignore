@@ -1,0 +1,29 @@
+data/.credentials/
+*.bin
+__pycache__/
+*.pyc
+
+.gstack/
+
+# Secrets — never commit
+.env
+.env.local
+.env.*.local
+
+# Local dev
+.venv/
+.venv*/
+venv/
+*.log
+data/uploads/
+
+# OS
+.DS_Store
+
+# Editor
+.vscode/
+.idea/
+
+# Test artifacts
+.pytest_cache/
+.coverage

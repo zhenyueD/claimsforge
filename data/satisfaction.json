@@ -1,0 +1,23 @@
+[
+  {
+    "session_id": "t001",
+    "ticket_id": "",
+    "score": 4,
+    "comment": "处理还算及时",
+    "timestamp": "2026-05-03T23:21:35.170432"
+  },
+  {
+    "session_id": "sess-wp7hai",
+    "ticket_id": "",
+    "score": 4,
+    "comment": "",
+    "timestamp": "2026-05-04T03:36:44.770908"
+  },
+  {
+    "session_id": "hacked",
+    "ticket_id": "",
+    "score": 1,
+    "comment": "csrf test",
+    "timestamp": "2026-05-05T20:33:21.243021"
+  }
+]

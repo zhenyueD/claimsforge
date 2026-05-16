@@ -1,0 +1,11 @@
+{
+  "tickets": [],
+  "stats": {
+    "total_conversations": 532,
+    "escalations": 111,
+    "avg_satisfaction": 3.0,
+    "kb_hits": 331,
+    "kb_misses": 201
+  },
+  "daily_reports": []
+}

@@ -1,0 +1,146 @@
+{
+  "version": "2026-05-16",
+  "currency": "CNY",
+  "thresholds": {
+    "auto_approve_max_cents": 5000,
+    "manager_approve_max_cents": 50000,
+    "escalate_above_cents": 50000
+  },
+  "policies": [
+    {
+      "id": "P-RET-01",
+      "title": "破损商品全额退款（severity >= 7）",
+      "category": "damage",
+      "applies_when": {
+        "damage_severity_min": 7,
+        "days_since_delivery_max": 30
+      },
+      "offer_type": "full_refund",
+      "amount_basis": "order_value",
+      "max_cents": 50000,
+      "requires_return": false,
+      "rationale": "严重损坏不必寄回，节省物流成本，提升 CSAT。"
+    },
+    {
+      "id": "P-RET-02",
+      "title": "中度损坏部分退款（severity 4-6）",
+      "category": "damage",
+      "applies_when": {
+        "damage_severity_min": 4,
+        "damage_severity_max": 6,
+        "days_since_delivery_max": 30
+      },
+      "offer_type": "partial_refund",
+      "amount_basis": "percentage",
+      "amount_percent": 50,
+      "max_cents": 30000,
+      "requires_return": false,
+      "rationale": "可继续使用但有瑕疵，按 50% 折扣补偿。"
+    },
+    {
+      "id": "P-RET-03",
+      "title": "轻微损坏店铺积分（severity 1-3）",
+      "category": "damage",
+      "applies_when": {
+        "damage_severity_min": 1,
+        "damage_severity_max": 3,
+        "days_since_delivery_max": 30
+      },
+      "offer_type": "store_credit",
+      "amount_basis": "fixed",
+      "amount_cents": 1000,
+      "requires_return": false,
+      "rationale": "外包装/轻微划痕赠送 10 元店铺积分，留客优先。"
+    },
+    {
+      "id": "P-RET-04",
+      "title": "易碎品破裂换新",
+      "category": "damage",
+      "applies_when": {
+        "product_categories": ["mug", "glassware", "ceramics", "ornament"],
+        "damage_types": ["crack", "tear"],
+        "damage_severity_min": 5
+      },
+      "offer_type": "replacement",
+      "amount_basis": "order_value",
+      "max_cents": 30000,
+      "requires_return": false,
+      "rationale": "易碎品破裂直接换新，无需寄回。"
+    },
+    {
+      "id": "P-RET-05",
+      "title": "电子产品进水/水损升级人工",
+      "category": "damage",
+      "applies_when": {
+        "product_categories": ["laptop", "phone", "tablet", "electronics"],
+        "damage_types": ["water_damage"]
+      },
+      "offer_type": "store_credit",
+      "amount_basis": "manual",
+      "rationale": "水损情况复杂，需要人工核验保修条款。",
+      "force_escalate": true
+    },
+    {
+      "id": "P-RET-06",
+      "title": "配件缺失补发",
+      "category": "missing_part",
+      "applies_when": {
+        "damage_types": ["missing_part"]
+      },
+      "offer_type": "replacement",
+      "amount_basis": "fixed",
+      "amount_cents": 0,
+      "requires_return": false,
+      "rationale": "配件缺失补发即可，不需要退款。"
+    },
+    {
+      "id": "P-RET-07",
+      "title": "制造缺陷全额退款",
+      "category": "defect",
+      "applies_when": {
+        "damage_types": ["defect"],
+        "days_since_delivery_max": 365
+      },
+      "offer_type": "full_refund",
+      "amount_basis": "order_value",
+      "max_cents": 100000,
+      "requires_return": true,
+      "rationale": "制造缺陷在保修期内全额退款，需要寄回作质检。"
+    },
+    {
+      "id": "P-EMO-01",
+      "title": "高情绪客户上浮 20%",
+      "category": "emotion_adjustment",
+      "applies_when": {
+        "emotion_score_min": 8
+      },
+      "adjustment": {
+        "amount_multiplier": 1.2,
+        "offer_type_override": null
+      },
+      "rationale": "客户情绪 >= 8 时上浮 20%（封顶不变），降低投诉/差评/退店风险。"
+    },
+    {
+      "id": "P-EMO-02",
+      "title": "极端情绪强制升级",
+      "category": "emotion_adjustment",
+      "applies_when": {
+        "emotion_score_min": 9,
+        "keywords": ["起诉", "律师", "12315", "曝光", "媒体", "sue", "lawyer"]
+      },
+      "force_escalate": true,
+      "rationale": "出现法律/舆情威胁时立刻升级到人工，不让 agent 自动决策。"
+    },
+    {
+      "id": "P-LMT-01",
+      "title": "无图无证拒绝自动赔付",
+      "category": "evidence_required",
+      "applies_when": {
+        "has_image": false,
+        "claim_amount_min_cents": 5000
+      },
+      "force_escalate": true,
+      "rationale": "无照片证据且金额 >= 50 元的赔付请求需要人工介入。"
+    }
+  ]
+}
