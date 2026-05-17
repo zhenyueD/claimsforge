@@ -258,10 +258,16 @@ async function loadAll() {
         SET($('meth-list'), '<div style="color:var(--dim);font-size:12px">No methodologies synthesized yet. Resolve more claims, or click "Run synthesis now" with min_cluster_size=2.</div>');
       } else {
         SET($('meth-list'), d.methodologies.recent.map(function(m) {
+          // Prefer English when present (added by translate_kb_to_english.py)
+          const title = m.title_en || m.title || '';
+          const scen  = m.scenario_en || m.scenario || '';
+          const dec   = m.decision_en || m.decision || '';
+          const enTag = (m.title_en && m.title_en !== m.title)
+            ? ' <span style="font-size:9px;padding:1px 6px;border-radius:4px;background:rgba(167,139,250,.18);color:#c4b5fd;font-family:JetBrains Mono,monospace;vertical-align:middle;">🌐 EN</span>' : '';
           return '<div style="background:var(--bg-3);border:1px solid var(--line);border-left:3px solid #a78bfa;border-radius:10px;padding:14px 16px;margin-bottom:10px;">' +
-            '<div style="font-size:14px;font-weight:700;color:#c4b5fd;margin-bottom:6px;">' + escHtml(m.title) + ' <span style="color:var(--dim);font-size:10px;font-family:JetBrains Mono,monospace;font-weight:400;">· quality ' + (m.quality_score*100).toFixed(0) + '%</span></div>' +
-            '<div style="font-size:12px;color:var(--muted);margin-bottom:8px;">PATTERN: ' + escHtml(m.scenario) + '</div>' +
-            '<div style="font-size:12px;color:#e5e7eb;margin-bottom:8px;"><strong style="color:#34d399;">RUBRIC:</strong> ' + escHtml(m.decision) + '</div>' +
+            '<div style="font-size:14px;font-weight:700;color:#c4b5fd;margin-bottom:6px;">' + escHtml(title) + enTag + ' <span style="color:var(--dim);font-size:10px;font-family:JetBrains Mono,monospace;font-weight:400;">· quality ' + (m.quality_score*100).toFixed(0) + '%</span></div>' +
+            '<div style="font-size:12px;color:var(--muted);margin-bottom:8px;">PATTERN: ' + escHtml(scen) + '</div>' +
+            '<div style="font-size:12px;color:#e5e7eb;margin-bottom:8px;"><strong style="color:#34d399;">RUBRIC:</strong> ' + escHtml(dec) + '</div>' +
             '<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:8px;">' +
               (m.tags || []).slice(0,6).map(function(t){ return '<span style="font-size:10px;padding:2px 8px;background:rgba(167,139,250,.1);border:1px solid rgba(167,139,250,.2);border-radius:6px;color:#c4b5fd;font-family:JetBrains Mono,monospace;">' + escHtml(t) + '</span>'; }).join('') +
             '</div>' +

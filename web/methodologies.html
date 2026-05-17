@@ -94,6 +94,12 @@
     font-size: 14px; font-weight: 700; color: #c4b5fd;
     line-height: 1.4;
   }
+  .lang-tag {
+    display: inline-block; margin-left: 8px;
+    font-size: 9px; padding: 1px 6px; border-radius: 4px;
+    background: rgba(167,139,250,.18); color: #c4b5fd;
+    font-family: var(--mono); vertical-align: middle;
+  }
   .meth .domain-pill {
     display: inline-block; font-size: 10px; padding: 2px 8px; border-radius: 999px;
     background: rgba(167,139,250,.12); color: #c4b5fd; font-family: var(--mono);
@@ -229,6 +235,15 @@ async function load() {
   }
 }
 
+// Prefer English translation when present (added by translate_kb_to_english.py).
+// Returns the English version if available; otherwise the original (likely zh).
+function pickLang(m, field) {
+  return m[field + '_en'] || m[field] || '';
+}
+function isTranslated(m) {
+  return !!(m.title_en || m.scenario_en || m.decision_en);
+}
+
 function render() {
   const q = (document.getElementById('q').value || '').toLowerCase().trim();
   const dom = document.getElementById('domainFilter').value;
@@ -238,9 +253,10 @@ function render() {
   if (src === 'case') list = list.filter(isFromCases);
   if (src === 'sop') list = list.filter(m => !isFromCases(m));
   if (q) list = list.filter(m =>
-    (m.title || '').toLowerCase().includes(q) ||
-    (m.scenario || '').toLowerCase().includes(q) ||
-    (m.decision || '').toLowerCase().includes(q)
+    (pickLang(m, 'title')).toLowerCase().includes(q) ||
+    (pickLang(m, 'scenario')).toLowerCase().includes(q) ||
+    (pickLang(m, 'decision')).toLowerCase().includes(q) ||
+    (m.title || '').toLowerCase().includes(q)     // also keep zh-search
   );
   list.sort((a, b) => (b.quality_score || 0) - (a.quality_score || 0));
 
@@ -253,11 +269,14 @@ function render() {
     const fromCases = isFromCases(m);
     const n = caseCount(m);
     const qPct = Math.round((m.quality_score || 0) * 100);
+    const translatedTag = (isTranslated(m) && m.title !== m.title_en)
+      ? '<span class="lang-tag" title="translated from Chinese by Gemini">🌐 EN</span>'
+      : '';
     return '<div class="meth">' +
       (m.domain ? '<span class="domain-pill">' + escHtml(m.domain) + '</span>' : '') +
-      '<div class="title">' + escHtml(m.title || '(untitled)') + '</div>' +
-      (m.scenario ? '<div class="scenario"><b>WHEN:</b>' + escHtml(m.scenario) + '</div>' : '') +
-      (m.decision ? '<div class="decision"><b>DO:</b>' + escHtml(m.decision) + '</div>' : '') +
+      '<div class="title">' + escHtml(pickLang(m, 'title') || '(untitled)') + translatedTag + '</div>' +
+      (pickLang(m, 'scenario') ? '<div class="scenario"><b>WHEN:</b>' + escHtml(pickLang(m, 'scenario')) + '</div>' : '') +
+      (pickLang(m, 'decision') ? '<div class="decision"><b>DO:</b>' + escHtml(pickLang(m, 'decision')) + '</div>' : '') +
       '<div class="footer">' +
         '<span class="source-tag ' + (fromCases ? 'case' : 'sop') + '">' +
           (fromCases ? '🤖 from ' + (n || '?') + ' cases' : '📄 from SOP') +

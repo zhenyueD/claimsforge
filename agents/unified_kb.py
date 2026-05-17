@@ -70,6 +70,11 @@ class KBEntry(BaseModel):
     rationale: str = Field(description="Why. The model + a human can audit this.")
     tags: list[str] = Field(default_factory=list)
     customer_facing_name: Optional[str] = Field(default=None, description="Human-friendly name to cite to customers")
+    # Optional English translation (populated by scripts/translate_kb_to_english.py).
+    # Frontend prefers these when present so judges see English even for zh entries.
+    title_en: Optional[str] = Field(default=None)
+    scenario_en: Optional[str] = Field(default=None)
+    decision_en: Optional[str] = Field(default=None)
     # Provenance
     created_at: str = Field(default_factory=lambda: datetime.now().isoformat())
     updated_at: str = Field(default_factory=lambda: datetime.now().isoformat())
