@@ -252,7 +252,7 @@
       </div>
     </div>
   </div>
-  <div class="footer"><div class="brand">CLAIMSFORGE</div><div>01 / 14</div></div>
+  <div class="footer"><div class="brand">CLAIMSFORGE</div><div>01 / 15</div></div>
 </section>
 
 <!-- SLIDE 2 — PROBLEM -->
@@ -291,7 +291,7 @@
     But finance, compliance, and merchant ops teams keep asking the same question: <b>"How do I know the AI just paid the right amount to the right claim?"</b>
   </p>
 
-  <div class="footer"><div class="brand">CLAIMSFORGE · PROBLEM</div><div>02 / 14</div></div>
+  <div class="footer"><div class="brand">CLAIMSFORGE · PROBLEM</div><div>02 / 15</div></div>
 </section>
 
 <!-- SLIDE 3 — POSITIONING vs SIERRA -->
@@ -332,7 +332,7 @@
       <tr>
         <td><b>Authoring SOPs</b></td>
         <td class="no">Customer must author AOP upfront</td>
-        <td class="ok">✓ Cases → auto-distill methodology (47 today)</td>
+        <td class="ok">✓ Cases → auto-distill methodology (89 today)</td>
       </tr>
       <tr>
         <td><b>Hot-editable rules (no deploy)</b></td>
@@ -352,7 +352,7 @@
     </tbody>
   </table>
 
-  <div class="footer"><div class="brand">CLAIMSFORGE · POSITIONING</div><div>03 / 14</div></div>
+  <div class="footer"><div class="brand">CLAIMSFORGE · POSITIONING</div><div>03 / 15</div></div>
 </section>
 
 <!-- SLIDE 4 — ARCHITECTURE -->
@@ -360,12 +360,110 @@
   <span class="eyebrow">Architecture · v6</span>
   <h2 style="font-size: 56px;">7 Gemini agents · 3-layer supervisor · self-evolving knowledge</h2>
   <div style="display: flex; justify-content: center; margin-top: 8px;">
-    <img src="architecture_v6.svg" class="arch-img" alt="ClaimsForge v6 architecture" />
+    <img src="architecture_v6.png" class="arch-img" alt="ClaimsForge v6 architecture" />
   </div>
-  <div class="footer"><div class="brand">CLAIMSFORGE · ARCHITECTURE</div><div>04 / 14</div></div>
+  <div class="footer"><div class="brand">CLAIMSFORGE · ARCHITECTURE</div><div>04 / 15</div></div>
 </section>
 
-<!-- SLIDE 5 — 7 SPECIALIST AGENTS -->
+<!-- SLIDE 5 — SEQUENCE / TIMELINE (NEW) -->
+<section class="slide">
+  <span class="eyebrow">Sequence · How 8 seconds breaks down</span>
+  <h2>One claim · <span class="gradient">7 agents · 6 Gemini calls · async parallel</span></h2>
+
+  <div style="margin-top: 36px; padding: 28px 32px; background: var(--bg-2); border: 1px solid var(--line); border-radius: 16px;">
+    <div style="display: grid; grid-template-columns: 80px 1fr; gap: 14px; align-items: center; font-size: 18px; line-height: 1.5;">
+
+      <span style="color: var(--sky); font-weight: 800; font-family: 'JetBrains Mono', monospace;">0.0s</span>
+      <div style="padding: 8px 14px; background: rgba(99,102,241,.06); border-radius: 8px;">
+        <b style="color:#e5e7eb;">Customer text + image upload</b>
+        <span style="color: var(--muted); margin-left: 12px; font-size: 15px;">· pHash computed · EXIF preserved</span>
+      </div>
+
+      <span style="color: var(--sky); font-weight: 800; font-family: 'JetBrains Mono', monospace;">0.4s</span>
+      <div style="padding: 8px 14px; background: rgba(99,102,241,.10); border-left: 3px solid #818cf8; border-radius: 8px;">
+        <b style="color:#818cf8;">🎯 IntentAgent</b>
+        <span style="color: var(--muted); margin-left: 12px; font-size: 15px;">→ claim_with_image · order_id extracted</span>
+      </div>
+
+      <span style="color: var(--violet); font-weight: 800; font-family: 'JetBrains Mono', monospace; align-self: start; padding-top: 8px;">2.1s</span>
+      <div style="padding: 14px 16px; background: rgba(168,85,247,.10); border: 1px dashed rgba(168,85,247,.4); border-radius: 8px;">
+        <div style="font-size: 13px; color: #c4b5fd; font-family: 'JetBrains Mono', monospace; font-weight: 700; margin-bottom: 8px;">
+          ⚡ asyncio.gather() · 3 Gemini calls in parallel · 1.7s wall-clock
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;">
+          <div style="padding: 6px 10px; background: rgba(236,72,153,.10); border-left: 2px solid #ec4899; border-radius: 6px;">
+            <b style="color:#f9a8d4;">💗 EmotionAgent</b><br>
+            <span style="font-size: 13px; color: var(--muted);">score 0-10, risk band</span>
+          </div>
+          <div style="padding: 6px 10px; background: rgba(168,85,247,.10); border-left: 2px solid #a78bfa; border-radius: 6px;">
+            <b style="color:#c4b5fd;">🧭 NeedsAgent</b><br>
+            <span style="font-size: 13px; color: var(--muted);">latent + retention</span>
+          </div>
+          <div style="padding: 6px 10px; background: rgba(245,158,11,.10); border-left: 2px solid #f59e0b; border-radius: 6px;">
+            <b style="color:#fbbf24;">📸 DamageAgent</b><br>
+            <span style="font-size: 13px; color: var(--muted);">Vision bbox + severity</span>
+          </div>
+        </div>
+      </div>
+
+      <span style="color: var(--sky); font-weight: 800; font-family: 'JetBrains Mono', monospace;">4.5s</span>
+      <div style="padding: 8px 14px; background: rgba(16,185,129,.08); border-left: 3px solid #10b981; border-radius: 8px;">
+        <b style="color:#34d399;">💰 CompensationAgent</b>
+        <span style="color: var(--muted); margin-left: 12px; font-size: 15px;">→ P-RET-01 · amount_sandbox() clamps to <b style="color:#34d399;">$24</b></span>
+      </div>
+
+      <span style="color: var(--sky); font-weight: 800; font-family: 'JetBrains Mono', monospace;">6.0s</span>
+      <div style="padding: 8px 14px; background: rgba(249,115,22,.10); border-left: 3px solid #f97316; border-radius: 8px;">
+        <b style="color:#fb923c;">🛡 SupervisorAgent</b>
+        <span style="color: var(--muted); margin-left: 12px; font-size: 15px;">
+          → <span style="color:#fca5a5;">L1 DENY</span> · <span style="color:#fcd34d;">L2 EXEMPT</span> · <span style="color:#6ee7b7;">L3 CAP</span> → <b style="color:#34d399;">APPROVE</b>
+        </span>
+      </div>
+
+      <span style="color: var(--sky); font-weight: 800; font-family: 'JetBrains Mono', monospace;">7.5s</span>
+      <div style="padding: 8px 14px; background: rgba(56,189,248,.08); border-left: 3px solid #38bdf8; border-radius: 8px;">
+        <b style="color:#7dd3fc;">✅ VerifierAgent</b>
+        <span style="color: var(--muted); margin-left: 12px; font-size: 15px;">→ tone OK · approve</span>
+      </div>
+
+      <span style="color: var(--emerald); font-weight: 800; font-family: 'JetBrains Mono', monospace;">8.2s</span>
+      <div style="padding: 10px 14px; background: rgba(16,185,129,.10); border: 1px solid rgba(16,185,129,.35); border-radius: 8px;">
+        <b style="color:#e5e7eb;">Customer reply</b>
+        <span style="color: var(--muted); margin-left: 8px; font-size: 15px;">(bilingual)</span>
+        <span style="margin-left: 14px; padding: 3px 10px; background: rgba(168,85,247,.18); color: #c4b5fd; border-radius: 6px; font-size: 14px; font-weight: 700;">🛡 Trust Score 100/100</span>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="grid-3" style="margin-top: 36px; gap: 22px;">
+    <div class="card" style="padding: 18px 22px;">
+      <h4 style="color: var(--sky); margin-bottom: 6px; font-size: 18px;">⚡ Parallel fan-out</h4>
+      <p style="font-size: 16px; color: #d1d5db; line-height: 1.5;">
+        Emotion + Needs + Damage run in <b>one</b> <code style="font-family: 'JetBrains Mono', monospace; color: #6ee7b7; font-size: 14px;">asyncio.gather()</code>
+        — three Gemini calls × ~1.5s = <b>1.7s wall-clock</b> instead of 5s sequential.
+      </p>
+    </div>
+    <div class="card" style="padding: 18px 22px;">
+      <h4 style="color: var(--violet); margin-bottom: 6px; font-size: 18px;">🔒 Deterministic in the middle</h4>
+      <p style="font-size: 16px; color: #d1d5db; line-height: 1.5;">
+        Supervisor + amount_sandbox are <b>pure Python</b> — sub-millisecond.
+        LLM cannot talk its way past a hard rule.
+      </p>
+    </div>
+    <div class="card" style="padding: 18px 22px;">
+      <h4 style="color: var(--emerald); margin-bottom: 6px; font-size: 18px;">📊 SSE-streamed to UI</h4>
+      <p style="font-size: 16px; color: #d1d5db; line-height: 1.5;">
+        Each agent's trace ships the instant it completes —
+        the customer watches the pipeline live, no "thinking…" spinner anxiety.
+      </p>
+    </div>
+  </div>
+
+  <div class="footer"><div class="brand">CLAIMSFORGE · SEQUENCE</div><div>05 / 15</div></div>
+</section>
+
+<!-- SLIDE 6 — 7 SPECIALIST AGENTS -->
 <section class="slide">
   <span class="eyebrow">Multi-Agent Pipeline</span>
   <h2>7 Gemini 2.5 specialists<br><span style="font-size: 40px; font-weight: 500; color: var(--muted);">
@@ -427,7 +525,7 @@
     </p>
   </div>
 
-  <div class="footer"><div class="brand">CLAIMSFORGE · AGENTS</div><div>05 / 14</div></div>
+  <div class="footer"><div class="brand">CLAIMSFORGE · AGENTS</div><div>06 / 15</div></div>
 </section>
 
 <!-- SLIDE 6 — SUPERVISOR IAM 3 LAYERS -->
@@ -494,7 +592,7 @@
     </div>
   </div>
 
-  <div class="footer"><div class="brand">CLAIMSFORGE · SUPERVISOR</div><div>06 / 14</div></div>
+  <div class="footer"><div class="brand">CLAIMSFORGE · SUPERVISOR</div><div>07 / 15</div></div>
 </section>
 
 <!-- SLIDE 7 — TRUST SCORE -->
@@ -569,7 +667,7 @@
     </div>
   </div>
 
-  <div class="footer"><div class="brand">CLAIMSFORGE · TRUST SCORE</div><div>07 / 14</div></div>
+  <div class="footer"><div class="brand">CLAIMSFORGE · TRUST SCORE</div><div>08 / 15</div></div>
 </section>
 
 <!-- SLIDE 8 — DEMO A: CLEAN CLAIM -->
@@ -640,7 +738,7 @@
     </div>
   </div>
 
-  <div class="footer"><div class="brand">CLAIMSFORGE · DEMO A</div><div>08 / 14</div></div>
+  <div class="footer"><div class="brand">CLAIMSFORGE · DEMO A</div><div>09 / 15</div></div>
 </section>
 
 <!-- SLIDE 9 — DEMO B: FRAUD GATE -->
@@ -710,7 +808,7 @@
     </p>
   </div>
 
-  <div class="footer"><div class="brand">CLAIMSFORGE · DEMO B</div><div>09 / 14</div></div>
+  <div class="footer"><div class="brand">CLAIMSFORGE · DEMO B</div><div>10 / 15</div></div>
 </section>
 
 <!-- SLIDE 10 — DEMO C: DUPLICATE + TIER-2 TOGGLE -->
@@ -785,7 +883,7 @@
     </div>
   </div>
 
-  <div class="footer"><div class="brand">CLAIMSFORGE · DEMO C</div><div>10 / 14</div></div>
+  <div class="footer"><div class="brand">CLAIMSFORGE · DEMO C</div><div>11 / 15</div></div>
 </section>
 
 <!-- SLIDE 11 — SELF-EVOLVING METHODOLOGY LOOP -->
@@ -846,7 +944,7 @@
 
       <div style="margin-top: 28px; display: flex; gap: 18px; flex-wrap: wrap;">
         <div class="card" style="flex: 1; min-width: 170px; padding: 18px;">
-          <div style="font-size: 42px; font-weight: 800; color: var(--violet);">47</div>
+          <div style="font-size: 42px; font-weight: 800; color: var(--violet);">89</div>
           <div style="font-size: 12px; color: var(--muted); margin-top: 4px;">methodologies<br>auto-synthesized</div>
         </div>
         <div class="card" style="flex: 1; min-width: 170px; padding: 18px;">
@@ -865,7 +963,7 @@
     </div>
   </div>
 
-  <div class="footer"><div class="brand">CLAIMSFORGE · METHODOLOGY LOOP</div><div>11 / 14</div></div>
+  <div class="footer"><div class="brand">CLAIMSFORGE · METHODOLOGY LOOP</div><div>12 / 15</div></div>
 </section>
 
 <!-- SLIDE 12 — DATA FLYWHEEL -->
@@ -948,7 +1046,7 @@ GET /api/admin/finetune-dataset?
     </div>
   </div>
 
-  <div class="footer"><div class="brand">CLAIMSFORGE · DATA FLYWHEEL</div><div>12 / 14</div></div>
+  <div class="footer"><div class="brand">CLAIMSFORGE · DATA FLYWHEEL</div><div>13 / 15</div></div>
 </section>
 
 <!-- SLIDE 13 — BUSINESS VALUE -->
@@ -983,7 +1081,7 @@ GET /api/admin/finetune-dataset?
     <div>
       <h4 style="margin-bottom: 14px;">What the merchant gets day 1</h4>
       <ul class="bullets">
-        <li>26-policy DSL · 1,329 KB entries · 47 auto-synthesized methodologies</li>
+        <li>26-policy DSL · 1,329 KB entries · 89 auto-synthesized methodologies</li>
         <li>Customer-facing Trust Score on every offer — built-in compliance artifact</li>
         <li>P0-P3 handoff queue with structured briefing (Reason · Action · Bot proposal)</li>
         <li>Admin dashboard · Operations metrics · KB browser · Methodology showcase</li>
@@ -1002,7 +1100,7 @@ GET /api/admin/finetune-dataset?
     </div>
   </div>
 
-  <div class="footer"><div class="brand">CLAIMSFORGE · BUSINESS VALUE</div><div>13 / 14</div></div>
+  <div class="footer"><div class="brand">CLAIMSFORGE · BUSINESS VALUE</div><div>14 / 15</div></div>
 </section>
 
 <!-- SLIDE 14 — CTA -->
@@ -1037,7 +1135,17 @@ GET /api/admin/finetune-dataset?
       </div>
     </div>
 
-    <div style="margin-top: 80px; display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; max-width: 1500px;">
+    <div style="margin-top: 48px; padding: 24px 32px; background: linear-gradient(135deg, rgba(168,85,247,.12), rgba(56,189,248,.08)); border: 2px solid rgba(168,85,247,.35); border-radius: 16px; max-width: 1500px; text-align: left;">
+      <div style="font-size: 14px; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; color: #c4b5fd; margin-bottom: 10px;">
+        👉 30-second judge test
+      </div>
+      <div style="font-size: 22px; line-height: 1.55; color: #e5e7eb;">
+        Open the demo · click <code style="background: rgba(244,63,94,.15); color: #fca5a5; padding: 2px 8px; border-radius: 4px; font-family: 'JetBrains Mono', monospace; font-size: 18px;">😡 Angry customer + legal threat</code> scenario · watch <code style="background: rgba(249,115,22,.15); color: #fdba74; padding: 2px 8px; border-radius: 4px; font-family: 'JetBrains Mono', monospace; font-size: 18px;">RULE-LEGAL-THREAT</code> fire in the Supervisor trace and Trust Score drop to <b style="color: var(--amber);">50</b>.
+        That's the whole pitch — go check.
+      </div>
+    </div>
+
+    <div style="margin-top: 36px; display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; max-width: 1500px;">
       <span class="chip">Gemini 2.5 Flash + Vision + Embedding</span>
       <span class="chip emerald">FastAPI · Pydantic · asyncio</span>
       <span class="chip orange">AWS-IAM Supervisor</span>
@@ -1047,12 +1155,15 @@ GET /api/admin/finetune-dataset?
       <span class="chip">SFT Export · Vertex/OpenAI/Anthropic</span>
     </div>
 
-    <div style="margin-top: 100px; font-size: 18px; color: var(--muted);">
+    <div style="margin-top: 44px; font-size: 18px; color: var(--muted);">
       Built by <b style="color: var(--fg);">zhenyueD</b> · Milan AI Week 2026 / AI Agent Olympics
       · Powered by <b style="color: var(--sky);">Google Gemini</b> + <b style="color: #38bdf8;">Vultr Cloud Compute (Frankfurt)</b>
     </div>
+    <div style="margin-top: 10px; font-size: 13px; color: var(--dim); font-family: 'JetBrains Mono', monospace;">
+      Numbers as of 2026-05-17 build · live demo counts may exceed (KB grows on every claim)
+    </div>
   </div>
-  <div class="footer"><div class="brand">CLAIMSFORGE</div><div>14 / 14 · END</div></div>
+  <div class="footer"><div class="brand">CLAIMSFORGE</div><div>15 / 15 · END</div></div>
 </section>
 
 </body>
