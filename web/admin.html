@@ -172,6 +172,33 @@
   </div>
 
   <div class="panel section">
+    <h2>📥 SFT Dataset Export
+      <span class="pill" id="sft-pill">data flywheel</span>
+    </h2>
+    <p style="font-size:12px;color:var(--muted);margin-bottom:14px;">
+      Every auto-resolved claim becomes a labeled training pair. Gold cases (supervisor approved + customer accepted) export to a one-click fine-tuning dataset for Vertex AI Gemini, OpenAI, or Anthropic. After ~2000 gold pairs, the merchant fine-tunes a smaller, faster ClaimsForge-shaped model — typically ~30-50% token + latency reduction.
+    </p>
+    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+      <label style="font-size:11px;color:var(--muted);">Format
+        <select id="sft-format" style="background:var(--bg-2);border:1px solid var(--line);color:var(--fg);border-radius:6px;padding:5px 8px;font-size:12px;margin-left:6px;">
+          <option value="vertex">vertex (Gemini)</option>
+          <option value="openai">openai</option>
+          <option value="anthropic">anthropic</option>
+        </select>
+      </label>
+      <label style="font-size:11px;color:var(--muted);">Quality
+        <select id="sft-quality" style="background:var(--bg-2);border:1px solid var(--line);color:var(--fg);border-radius:6px;padding:5px 8px;font-size:12px;margin-left:6px;">
+          <option value="gold">gold (recommended)</option>
+          <option value="normal">normal</option>
+          <option value="all">all</option>
+        </select>
+      </label>
+      <a id="sft-download-btn" class="refresh-btn" style="text-decoration:none;color:inherit;cursor:pointer;" onclick="downloadSft()">📥 Download .jsonl</a>
+      <span id="sft-status" style="font-size:11px;color:var(--dim);"></span>
+    </div>
+  </div>
+
+  <div class="panel section">
     <h2>🔒 Tier-2 Hard Rules <span class="pill" id="hr-pill">—</span><button class="refresh-btn" onclick="loadHardRules()">↻ Refresh</button></h2>
     <p style="font-size:12px;color:var(--muted);margin-bottom:14px;">
       Business-editable supervisor rules from <code>data/hard_rules.json</code>.
@@ -284,6 +311,31 @@ async function loadAll() {
   } catch (e) { console.error(e); alert('Failed to load admin data: ' + e.message); }
   loadHandoffQueue();
   loadHardRules();
+}
+
+function downloadSft() {
+  const fmt = document.getElementById('sft-format').value;
+  const q = document.getElementById('sft-quality').value;
+  const status = document.getElementById('sft-status');
+  status.textContent = 'preparing…';
+  // Use fetch so we can read the row-count header before triggering download
+  fetch('/api/admin/finetune-dataset?format=' + fmt + '&quality=' + q + '&limit=10000')
+    .then(r => {
+      const rows = r.headers.get('X-Sft-Rows') || '?';
+      status.textContent = 'exported ' + rows + ' rows';
+      return r.blob().then(blob => ({ blob, rows, r }));
+    })
+    .then(({ blob, r }) => {
+      const cd = r.headers.get('Content-Disposition') || '';
+      const m = cd.match(/filename="([^"]+)"/);
+      const filename = m ? m[1] : ('claimsforge-sft-' + fmt + '-' + q + '.jsonl');
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = filename;
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    })
+    .catch(e => { status.textContent = '⚠ ' + e.message; });
 }
 
 async function loadHardRules() {

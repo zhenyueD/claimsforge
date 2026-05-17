@@ -55,6 +55,96 @@ def compute_phash(image_bytes: bytes) -> Optional[str]:
         return None
 
 
+# ─────────────────────────────────────────────────────────
+#  EXIF age check — deepfake-era provenance signal
+# ─────────────────────────────────────────────────────────
+# Why this matters (Verisk 2026 State of Insurance Fraud):
+#   99% of insurers have encountered AI-tampered evidence; only 32% feel
+#   confident detecting deepfakes. EXIF timestamps are the cheapest
+#   provenance signal that catches the most common fraud patterns:
+#     - "I just received this damaged item" + photo dated 18 months ago
+#     - Stock photo of broken X submitted as own evidence (no EXIF at all)
+#     - Heavily edited / re-saved photos (EXIF often stripped)
+#
+# Returns a dict that compute_trust_score folds into the evidence_quality
+# factor — NOT an escalation trigger by itself (too many false positives:
+# customer might photograph an old-but-still-undelivered item). It's a
+# trust-score downward pressure, not a deny rule.
+
+# Thresholds calibrated for e-commerce returns (item should be < 90 days old)
+EXIF_AGE_WARN_DAYS = 30
+EXIF_AGE_FAIL_DAYS = 365
+
+
+def check_exif_age(image_bytes: bytes) -> dict:
+    """Inspect EXIF DateTimeOriginal and return a provenance assessment.
+
+    Returns:
+      {
+        "has_exif":  bool,
+        "taken_at":  ISO string or None,
+        "age_days":  int or None,
+        "status":    "pass" | "warn" | "fail",
+        "detail":    one-line human explanation
+      }
+
+    Semantics:
+      - no image / no EXIF / unparseable date  → warn (not fail — stripping
+        EXIF on upload is common with iPhone screenshots and some apps)
+      - photo ≥ 365 days old                    → fail
+      - photo ≥ 30 days old                     → warn
+      - photo < 30 days                         → pass
+    """
+    if not image_bytes:
+        return {"has_exif": False, "taken_at": None, "age_days": None,
+                "status": "warn", "detail": "no image to inspect"}
+    try:
+        from PIL import Image
+        img = Image.open(io.BytesIO(image_bytes))
+        exif = getattr(img, "_getexif", lambda: None)()
+        if not exif:
+            return {"has_exif": False, "taken_at": None, "age_days": None,
+                    "status": "warn",
+                    "detail": "no EXIF metadata (screenshot, stock photo, or re-saved)"}
+        # 36867 = DateTimeOriginal (camera shutter)
+        # 36868 = DateTimeDigitized
+        # 306   = DateTime (file modification)
+        taken_raw = exif.get(36867) or exif.get(36868) or exif.get(306)
+        if not taken_raw:
+            return {"has_exif": True, "taken_at": None, "age_days": None,
+                    "status": "warn",
+                    "detail": "EXIF present but no DateTimeOriginal tag"}
+        try:
+            # EXIF format: "YYYY:MM:DD HH:MM:SS"
+            taken_at = datetime.strptime(str(taken_raw).strip(),
+                                          "%Y:%m:%d %H:%M:%S")
+        except (ValueError, TypeError):
+            return {"has_exif": True, "taken_at": str(taken_raw)[:32],
+                    "age_days": None, "status": "warn",
+                    "detail": f"unparseable EXIF date: {str(taken_raw)[:32]}"}
+        age_days = max(0, (datetime.now() - taken_at).days)
+        if age_days >= EXIF_AGE_FAIL_DAYS:
+            status = "fail"
+            detail = f"photo taken {age_days} days ago — suspect for current-order claim"
+        elif age_days >= EXIF_AGE_WARN_DAYS:
+            status = "warn"
+            detail = f"photo taken {age_days} days ago — older than typical shipping window"
+        else:
+            status = "pass"
+            detail = f"photo taken {age_days} days ago — consistent with recent delivery"
+        return {
+            "has_exif": True,
+            "taken_at": taken_at.isoformat(),
+            "age_days": age_days,
+            "status": status,
+            "detail": detail,
+        }
+    except Exception as e:
+        logger.warning("check_exif_age failed: %s", e)
+        return {"has_exif": False, "taken_at": None, "age_days": None,
+                "status": "warn", "detail": f"EXIF inspection failed: {str(e)[:60]}"}
+
+
 def _hex_to_bits(h: str) -> int:
     """Treat the 16-hex pHash as a 64-bit integer for fast xor/popcount."""
     return int(h, 16)

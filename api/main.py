@@ -451,14 +451,19 @@ async def upload_image(request: Request, file: UploadFile = File(...)):
     raw = await file.read()
     if len(raw) > MAX_IMAGE_BYTES:
         raise HTTPException(status_code=400, detail=f"image too large: {len(raw)} bytes > 5MB")
-    # resize to max 1024px for cost + speed (Pillow)
+    # resize to max 1024px for cost + speed (Pillow). Preserve EXIF so the
+    # provenance gate (fraud.check_exif_age) can read DateTimeOriginal.
     try:
         from PIL import Image
         img = Image.open(io.BytesIO(raw))
+        original_exif = img.info.get("exif", b"")
         img.thumbnail((1024, 1024))
         out = io.BytesIO()
         fmt = "JPEG" if file.content_type == "image/jpeg" else "PNG"
-        img.convert("RGB").save(out, format=fmt, quality=85)
+        save_kwargs = {"format": fmt, "quality": 85}
+        if fmt == "JPEG" and original_exif:
+            save_kwargs["exif"] = original_exif
+        img.convert("RGB").save(out, **save_kwargs)
         raw = out.getvalue()
         width, height = img.size
     except Exception as e:
@@ -1230,61 +1235,101 @@ async def admin_fraud_stats():
 
 
 @app.get("/api/admin/finetune-dataset")
-async def admin_finetune_dataset(quality: str = "gold", limit: int = 10000):
-    """Export gold-standard cases as a fine-tuning dataset (JSONL).
+async def admin_finetune_dataset(
+    quality: str = "gold",
+    format: str = "vertex",
+    limit: int = 10000,
+):
+    """Export labelled cases as a Supervised Fine-Tuning (SFT) dataset.
 
-    Format follows Vertex AI Gemini supervised tuning convention:
-      {"contents": [{"role":"user","parts":[{"text":"..."}]},
-                    {"role":"model","parts":[{"text":"..."}]}]}
+    Format selector (matches each vendor's tuning ingestion contract):
+      vertex     → Google Vertex AI Gemini tuning
+                   {"contents":[{"role":"user","parts":[{"text":...}]},
+                                {"role":"model","parts":[{"text":...}]}]}
+      openai     → OpenAI fine-tuning v2
+                   {"messages":[{"role":"user","content":...},
+                                {"role":"assistant","content":...}]}
+      anthropic  → Anthropic prompt/completion (legacy)
+                   {"prompt":"Human: ...\\n\\nAssistant:","completion":" ..."}
+
+    Quality filter:
+      gold      — supervisor approved + customer accepted (best signal)
+      normal    — supervisor approved, no explicit accept yet
+      red_flag  — escalated / blocked (anti-examples)
+      all       — everything
 
     Why this exists (data flywheel):
-      Every auto-resolved claim that passes Supervisor + Verifier without
-      a safety net firing becomes a training example. Once we have ~2000
-      gold examples we can fine-tune gemini-2.5-flash on them to cut both
-      prompt length (no need for 26-policy system prompt) and latency
-      (smaller prompts → faster). This endpoint is the export end of
-      that loop.
+      Every auto-resolved claim is a labeled training example. Once we cross
+      ~2000 gold cases, the merchant can run a single Vertex/OpenAI tuning
+      job that produces a smaller, faster, ClaimsForge-shaped model — cuts
+      prompt length AND per-call latency by 30-50%. This endpoint is the
+      'one-click export' end of that loop.
 
-    Filter:
-      ?quality=gold (default) | normal | red_flag | all
+      Brief §3.3: term is SFT, NOT RLAIF (RLAIF needs reward model + RL
+      trainer; this is straight supervised pairs).
     """
-    from knowledge import _load_learned  # internal helper
+    if format not in {"vertex", "openai", "anthropic"}:
+        raise HTTPException(status_code=400,
+            detail=f"unknown format '{format}' (allowed: vertex, openai, anthropic)")
+
+    from knowledge import _load_learned
     cases = _load_learned()
     if quality != "all":
         cases = [c for c in cases if c.get("quality_label") == quality]
     cases = cases[-limit:]
 
-    def _to_finetune_row(c: dict) -> Optional[dict]:
+    def _to_row(c: dict) -> Optional[dict]:
         user_text = c.get("user_message_preview", "")
         offer = c.get("final_offer") or {}
         if not user_text or not offer:
             return None
-        # Compact assistant turn — the offer + justification the LLM produced
         assistant_text = (
             f"OFFER: {offer.get('offer_type')} {offer.get('currency','')}"
             f"{(offer.get('amount_cents') or 0)/100:.2f}\n"
             f"POLICIES: {','.join(offer.get('policy_ids') or [])}\n"
             f"REPLY: {offer.get('justification', '')}"
         )
+        meta = {
+            "session_id": c.get("session_id"),
+            "quality": c.get("quality_label"),
+            "damage_type": (c.get("damage") or {}).get("damage_type"),
+        }
+        if format == "vertex":
+            return {
+                "contents": [
+                    {"role": "user", "parts": [{"text": user_text}]},
+                    {"role": "model", "parts": [{"text": assistant_text}]},
+                ],
+                "_meta": meta,
+            }
+        if format == "openai":
+            return {
+                "messages": [
+                    {"role": "user", "content": user_text},
+                    {"role": "assistant", "content": assistant_text},
+                ],
+                "_meta": meta,
+            }
+        # anthropic
         return {
-            "contents": [
-                {"role": "user", "parts": [{"text": user_text}]},
-                {"role": "model", "parts": [{"text": assistant_text}]},
-            ],
-            "_meta": {
-                "session_id": c.get("session_id"),
-                "quality": c.get("quality_label"),
-                "damage_type": (c.get("damage") or {}).get("damage_type"),
-            },
+            "prompt": f"Human: {user_text}\n\nAssistant:",
+            "completion": f" {assistant_text}",
+            "_meta": meta,
         }
 
-    rows = [r for r in (_to_finetune_row(c) for c in cases) if r]
+    rows = [r for r in (_to_row(c) for c in cases) if r]
     body = "\n".join(json.dumps(r, ensure_ascii=False) for r in rows)
     from fastapi.responses import PlainTextResponse
+    fname = f"claimsforge-sft-{format}-{quality}-{datetime.now().strftime('%Y%m%d')}.jsonl"
     return PlainTextResponse(
         body,
         media_type="application/x-ndjson",
-        headers={"Content-Disposition": f'attachment; filename="finetune-{quality}.jsonl"'},
+        headers={
+            "Content-Disposition": f'attachment; filename="{fname}"',
+            "X-Sft-Format": format,
+            "X-Sft-Quality": quality,
+            "X-Sft-Rows": str(len(rows)),
+        },
     )
 
 

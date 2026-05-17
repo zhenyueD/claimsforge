@@ -211,6 +211,7 @@ class SupervisorDecision(BaseModel):
 # ─────────────────────────────────────────────────────────────
 class TrustFactorName(str, Enum):
     IMAGE_UNIQUENESS = "image_uniqueness"
+    IMAGE_PROVENANCE = "image_provenance"   # EXIF age / metadata authenticity
     AMOUNT_SANDBOX = "amount_sandbox"
     HISTORY_COHERENCE = "history_coherence"
     EMOTION_GATING = "emotion_gating"

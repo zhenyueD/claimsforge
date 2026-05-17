@@ -607,11 +607,12 @@ def evaluate(ctx: ClaimContext, estimated_value_cents: int = 5000) -> Supervisor
 # Factor weights — must sum to 1.0. Tuning these is the closest thing
 # we have to "fraud model calibration"; changes should be reviewed.
 TRUST_FACTOR_WEIGHTS = {
-    TrustFactorName.IMAGE_UNIQUENESS:  0.25,
+    TrustFactorName.IMAGE_UNIQUENESS:  0.20,  # pHash fraud-replay gate
+    TrustFactorName.IMAGE_PROVENANCE:  0.15,  # EXIF age / metadata authenticity
     TrustFactorName.AMOUNT_SANDBOX:    0.20,
     TrustFactorName.HISTORY_COHERENCE: 0.20,
-    TrustFactorName.EMOTION_GATING:    0.15,
-    TrustFactorName.EVIDENCE_QUALITY:  0.20,
+    TrustFactorName.EMOTION_GATING:    0.10,
+    TrustFactorName.EVIDENCE_QUALITY:  0.15,
 }
 
 
@@ -752,6 +753,38 @@ def compute_trust_score(ctx: ClaimContext) -> tuple[int, list[TrustFactor]]:
             status="warn", score=0.5,
             weight=TRUST_FACTOR_WEIGHTS[TrustFactorName.EMOTION_GATING],
             detail="emotion agent did not run",
+        ))
+
+    # ── F6: image_provenance (EXIF age — Verisk 2026 deepfake-era signal)
+    # Folds the standalone fraud.check_exif_age() result into the trust
+    # breakdown so the UI shows it as a first-class factor alongside pHash.
+    if ctx.image_bytes:
+        try:
+            import fraud as _fraud
+            exif = _fraud.check_exif_age(ctx.image_bytes)
+            status = exif.get("status", "warn")
+            score_map = {"pass": 1.0, "warn": 0.5, "fail": 0.0}
+            factors.append(TrustFactor(
+                name=TrustFactorName.IMAGE_PROVENANCE,
+                status=status,
+                score=score_map.get(status, 0.5),
+                weight=TRUST_FACTOR_WEIGHTS[TrustFactorName.IMAGE_PROVENANCE],
+                detail=exif.get("detail", "EXIF check inconclusive"),
+            ))
+        except Exception as e:
+            logger.warning("trust F6 (image_provenance) failed: %s", e)
+            factors.append(TrustFactor(
+                name=TrustFactorName.IMAGE_PROVENANCE,
+                status="warn", score=0.5,
+                weight=TRUST_FACTOR_WEIGHTS[TrustFactorName.IMAGE_PROVENANCE],
+                detail="EXIF inspection degraded",
+            ))
+    else:
+        factors.append(TrustFactor(
+            name=TrustFactorName.IMAGE_PROVENANCE,
+            status="warn", score=0.5,
+            weight=TRUST_FACTOR_WEIGHTS[TrustFactorName.IMAGE_PROVENANCE],
+            detail="no image — provenance undetermined",
         ))
 
     # ── F5: evidence_quality (DamageAgent confidence + multimodal mismatch)
