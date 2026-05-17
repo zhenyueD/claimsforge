@@ -105,6 +105,91 @@ class CapRule:
     reason_fn: Callable[[ClaimContext], str]
 
 
+# ─────────────────────────────────────────────────────────
+#  Tier-2 hard rules (data-driven, mtime+TTL cached)
+# ─────────────────────────────────────────────────────────
+_HARD_RULES_PATH = Path(__file__).resolve().parent.parent / "data" / "hard_rules.json"
+_hard_rules_cache: Optional[tuple[float, list[dict]]] = None
+_RULES_CACHE_TTL_SEC = 60.0
+
+
+def _load_hard_rules(force: bool = False) -> list[dict]:
+    """Read Tier-2 rules from data/hard_rules.json with mtime+TTL caching.
+
+    Cache invalidation:
+      - mtime changed since cached → reread
+      - cached age > TTL → reread
+      - any read/parse error → return [] (degrade gracefully; Tier-1 still runs)
+
+    Only `active: true` rules are returned. Inactive rules are kept in
+    the JSON so admin can toggle them without losing config.
+    """
+    global _hard_rules_cache
+    try:
+        if not _HARD_RULES_PATH.exists():
+            return []
+        mtime = _HARD_RULES_PATH.stat().st_mtime
+        now = time.time()
+        if not force and _hard_rules_cache is not None:
+            cached_mtime, cached_rules = _hard_rules_cache
+            if cached_mtime == mtime and (now - cached_mtime) < (_RULES_CACHE_TTL_SEC * 100):
+                return cached_rules
+        data = json.loads(_HARD_RULES_PATH.read_text(encoding="utf-8"))
+        rules = [r for r in data.get("rules", []) if r.get("active", True)]
+        _hard_rules_cache = (mtime, rules)
+        return rules
+    except Exception as e:
+        logger.warning("hard_rules load failed (degraded — Tier-1 only): %s", e)
+        return []
+
+
+def _matches(ctx: ClaimContext, when: dict) -> bool:
+    """Evaluate a `when` clause from JSON against ctx.
+
+    STRICT WHITELIST design: only the operator names listed below are
+    handled; anything else returns False (safe-by-default). Pure dict
+    lookup + comparison — no dynamic code execution. The supported set
+    is the Tier-2 safety boundary; extending it requires a code PR.
+
+    Each clause is AND-ed: all operators must match for the rule to fire.
+    """
+    for op, expected in when.items():
+        try:
+            if op == "damage_type":
+                if not (ctx.damage and ctx.damage.damage_type.value == expected):
+                    return False
+
+            elif op == "product_hint_in":
+                hint = ((ctx.intent.product_hint if ctx.intent else "") or "").lower()
+                if not any(p.lower() in hint for p in expected):
+                    return False
+
+            elif op == "emotion_signals_contain_any":
+                signals = ctx.emotion.escalation_signals if ctx.emotion else []
+                blob = " ".join(s.lower() for s in signals)
+                if not any(needle.lower() in blob for needle in expected):
+                    return False
+
+            elif op == "amount_cents_gt":
+                amt = ctx.offer.amount_cents if ctx.offer else 0
+                if not (amt > int(expected)):
+                    return False
+
+            elif op == "history_contains_order_id_resolved":
+                # Reserved for future use; Tier-1 RULE-DUPLICATE-ORDER already
+                # owns this semantic. Safe-default False so Tier-2 rules using
+                # this operator never fire (Tier-1 handles them).
+                return False
+
+            else:
+                logger.warning("unknown Tier-2 operator '%s' — skipping rule", op)
+                return False
+        except Exception as e:
+            logger.warning("Tier-2 predicate failed (op=%s): %s", op, e)
+            return False
+    return True
+
+
 # Session-level claim counter. Persisted to JSON so the frequency cap (the
 # safety net against the same customer flooding claims) survives restarts.
 # Plain dict + threading.Lock is fine here: claims-per-second is low, and a
@@ -267,28 +352,9 @@ def _reason_duplicate_order(ctx: ClaimContext) -> str:
     return f"Duplicate claim on order {ctx.intent.order_id.upper()} — prior refund already accepted"
 
 
-def _deny_water_on_electronics(ctx: ClaimContext) -> bool:
-    return bool(
-        ctx.damage and ctx.damage.damage_type == DamageType.WATER_DAMAGE
-        and ctx.intent and (ctx.intent.product_hint or "").lower() in
-        {"laptop", "phone", "tablet", "electronics", "monitor", "headphones", "camera"}
-    )
-
-
-def _deny_legal_threat(ctx: ClaimContext) -> bool:
-    if not (ctx.emotion and ctx.emotion.escalation_signals):
-        return False
-    return any(
-        "lawyer" in s.lower() or "court" in s.lower() or "consumer protection" in s.lower()
-        or "12315" in s.lower() or "消协" in s
-        for s in ctx.emotion.escalation_signals
-    )
-
-
-def _deny_luxury(ctx: ClaimContext) -> bool:
-    return bool(
-        ctx.intent and (ctx.intent.product_hint or "").lower() in {"luxury", "jewelry", "watch", "designer"}
-    )
+# _deny_water_on_electronics / _deny_legal_threat / _deny_luxury are now in
+# data/hard_rules.json (Tier-2 — business-editable). See HR-LIQUID-ELECTRONICS,
+# HR-LEGAL-THREAT, HR-LUXURY.
 
 
 def _deny_session_frequency(ctx: ClaimContext) -> bool:
@@ -301,10 +367,10 @@ def _reason_session_frequency(ctx: ClaimContext) -> str:
     return reason or f"Session has exceeded {LIFETIME_CLAIM_LIMIT_PER_SESSION} claims"
 
 
-# DENY layer — IAM-style: any match short-circuits the whole supervisor.
-# Order matters only for which rule_id ends up in the audit log first;
-# the verdict is the same.
-DENY_RULES: list[DenyRule] = [
+# Tier-1 DENY rules — coded constitution, can't be toggled at runtime.
+# These rules deal with semantics the DSL can't express cleanly
+# (multimodal mismatch, history scans, pHash, frequency counter).
+TIER1_DENY_RULES: list[DenyRule] = [
     DenyRule(
         id="RULE-MULTIMODAL-MISMATCH",
         matcher=_deny_multimodal_mismatch,
@@ -321,26 +387,33 @@ DENY_RULES: list[DenyRule] = [
         reason_fn=_reason_duplicate_order,
     ),
     DenyRule(
-        id="RULE-LIQUID-ELECTRONICS",
-        matcher=_deny_water_on_electronics,
-        reason_fn=lambda ctx: "Liquid damage on electronics requires manual warranty interpretation",
-    ),
-    DenyRule(
-        id="RULE-LEGAL-THREAT",
-        matcher=_deny_legal_threat,
-        reason_fn=lambda ctx: "Legal / regulator threat detected — human must respond",
-    ),
-    DenyRule(
-        id="RULE-LUXURY",
-        matcher=_deny_luxury,
-        reason_fn=lambda ctx: "Luxury category requires manual handling regardless of policy",
-    ),
-    DenyRule(
         id="RULE-SESSION-FREQ",
         matcher=_deny_session_frequency,
         reason_fn=_reason_session_frequency,
     ),
 ]
+
+
+def _tier2_to_deny_rule(json_rule: dict) -> DenyRule:
+    """Adapt a single JSON Tier-2 rule into the same DenyRule contract
+    that Tier-1 uses, so evaluate() doesn't need two loops. Captures the
+    rule dict in the closures so each instance carries its own `when`.
+    """
+    rule_id = json_rule.get("id", "HR-UNKNOWN")
+    reason = json_rule.get("reason", "matched hard rule")
+    when = json_rule.get("when", {})
+    return DenyRule(
+        id=rule_id,
+        matcher=lambda ctx, _when=when: _matches(ctx, _when),
+        reason_fn=lambda ctx, _reason=reason: _reason,
+    )
+
+
+def _all_deny_rules() -> list[DenyRule]:
+    """Tier-1 (code) + Tier-2 (JSON) merged into one evaluation list.
+    Tier-1 runs first so the most expensive / context-rich rules
+    short-circuit before the generic Tier-2 DSL checks."""
+    return TIER1_DENY_RULES + [_tier2_to_deny_rule(r) for r in _load_hard_rules()]
 
 
 # ─────────────────────────────────────────────────────────
@@ -456,7 +529,8 @@ def evaluate(ctx: ClaimContext, estimated_value_cents: int = 5000) -> Supervisor
     reasons: list[str] = []
 
     # ── LAYER 1: DENY (explicit deny wins, IAM-style)
-    for rule in DENY_RULES:
+    # _all_deny_rules() merges Tier-1 (code) + Tier-2 (data/hard_rules.json).
+    for rule in _all_deny_rules():
         try:
             if rule.matcher(ctx):
                 reason = rule.reason_fn(ctx)
@@ -642,13 +716,14 @@ def compute_trust_score(ctx: ClaimContext) -> tuple[int, list[TrustFactor]]:
 
     # ── F4: emotion_gating (escalation signals + score)
     if ctx.emotion:
-        if "RULE-LEGAL-THREAT" in matched:
+        legal_rule = next((r for r in matched if "LEGAL" in r.upper() or "THREAT" in r.upper()), None)
+        if legal_rule:
             factors.append(TrustFactor(
                 name=TrustFactorName.EMOTION_GATING,
                 status="fail", score=0.0,
                 weight=TRUST_FACTOR_WEIGHTS[TrustFactorName.EMOTION_GATING],
                 detail="legal / regulator threat detected in emotion signals",
-                rule_id="RULE-LEGAL-THREAT",
+                rule_id=legal_rule,
             ))
         elif ctx.emotion.escalation_signals:
             factors.append(TrustFactor(

@@ -1,0 +1,56 @@
+{
+  "version": "v1-2026-05-17",
+  "description": "Tier-2 supervisor rules — business-editable, code stays put. The DSL is a strict whitelist of operators; see supervisor._matches() for the allowed set. Adding a new operator requires a PR + code review (that's the Tier-2 safety boundary).",
+  "operators_allowed": [
+    "damage_type",
+    "product_hint_in",
+    "emotion_signals_contain_any",
+    "amount_cents_gt",
+    "history_contains_order_id_resolved"
+  ],
+  "rules": [
+    {
+      "id": "HR-LIQUID-ELECTRONICS",
+      "title": "Liquid damage on electronics requires manual warranty",
+      "when": {
+        "damage_type": "water_damage",
+        "product_hint_in": ["laptop", "phone", "tablet", "electronics", "monitor", "headphones", "camera"]
+      },
+      "verdict": "force_escalate",
+      "reason": "Liquid damage on electronics requires manual warranty interpretation",
+      "owner": "claims-ops@company.com",
+      "active": true,
+      "created_at": "2026-05-17T00:00:00Z",
+      "version": 1
+    },
+    {
+      "id": "HR-LEGAL-THREAT",
+      "title": "Legal / regulator signals require human response",
+      "when": {
+        "emotion_signals_contain_any": [
+          "lawyer", "court", "consumer protection",
+          "12315", "消协", "media", "媒体", "律师"
+        ]
+      },
+      "verdict": "force_escalate",
+      "reason": "Legal / regulator threat detected — human must respond",
+      "owner": "compliance@company.com",
+      "active": true,
+      "created_at": "2026-05-17T00:00:00Z",
+      "version": 1
+    },
+    {
+      "id": "HR-LUXURY",
+      "title": "Luxury category manual handling",
+      "when": {
+        "product_hint_in": ["luxury", "jewelry", "watch", "designer"]
+      },
+      "verdict": "force_escalate",
+      "reason": "Luxury category requires manual handling regardless of policy",
+      "owner": "claims-ops@company.com",
+      "active": true,
+      "created_at": "2026-05-17T00:00:00Z",
+      "version": 1
+    }
+  ]
+}

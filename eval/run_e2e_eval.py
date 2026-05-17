@@ -156,6 +156,28 @@ def evaluate_case(case: dict) -> dict:
         text = ctx.final_reply or ""
         checks["has_question"] = ("?" in text or "？" in text)
 
+    # --- Trust Score min / max / required factors ---
+    if "trust_score_min" in expected:
+        ts = ctx.trust_score if ctx.trust_score is not None else -1
+        checks["trust_min"] = (ts >= expected["trust_score_min"])
+        if not checks["trust_min"]:
+            notes.append(f"trust_score={ts} < expected_min={expected['trust_score_min']}")
+    if "trust_score_max" in expected:
+        ts = ctx.trust_score if ctx.trust_score is not None else 999
+        checks["trust_max"] = (ts <= expected["trust_score_max"])
+        if not checks["trust_max"]:
+            notes.append(f"trust_score={ts} > expected_max={expected['trust_score_max']}")
+    if "trust_factors_must_include" in expected:
+        want = set(expected["trust_factors_must_include"])
+        got = {f.name.value for f in (ctx.trust_factors or [])}
+        # Compare against both raw enum value and human-readable form
+        got_human = {n.replace("_", " ").title() for n in got}
+        matched = sum(1 for w in want if w in got or w in got_human
+                      or w.lower().replace(" ", "_") in got)
+        checks["trust_factors_present"] = (matched == len(want))
+        if not checks["trust_factors_present"]:
+            notes.append(f"trust_factors got={got} expected_includes={want}")
+
     all_ok = all(checks.values()) if checks else False
     return {
         "id": case["id"],
@@ -171,6 +193,10 @@ def evaluate_case(case: dict) -> dict:
         "needs_bias_actual": ctx.needs.suggested_offer_bias if ctx.needs else None,
         "offer_actual": (ctx.final_offer.offer_type.value, ctx.final_offer.amount_cents) if ctx.final_offer else None,
         "escalated_actual": ctx.escalated_to_human,
+        "trust_score_actual": ctx.trust_score,
+        "trust_factor_summary": [
+            f"{f.name.value}={f.status}" for f in (ctx.trust_factors or [])
+        ],
         "reply_excerpt": (ctx.final_reply or "")[:160],
     }
 

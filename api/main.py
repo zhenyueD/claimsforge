@@ -1307,6 +1307,69 @@ async def admin_handoff_resolve(handoff_id: str, resolved_by: str = "human-agent
     return {"ok": True, "handoff": result.model_dump()}
 
 
+# ── Tier-2 hard rules admin ────────────────────────────────
+# Lets the ops team toggle / inspect rules in data/hard_rules.json without
+# a deploy. The supervisor caches with mtime invalidation, so changes take
+# effect on the next claim within a few seconds.
+
+_HARD_RULES_JSON_PATH = BASE / "data" / "hard_rules.json"
+
+
+@app.get("/api/admin/hard-rules")
+async def admin_list_hard_rules():
+    """List all Tier-2 hard rules. Includes inactive rules so the UI can
+    show toggle state. Order = JSON file order."""
+    try:
+        if not _HARD_RULES_JSON_PATH.exists():
+            return {"version": None, "rules": [], "error": "hard_rules.json not found"}
+        data = json.loads(_HARD_RULES_JSON_PATH.read_text(encoding="utf-8"))
+        return {
+            "version": data.get("version"),
+            "description": data.get("description"),
+            "operators_allowed": data.get("operators_allowed", []),
+            "rules": data.get("rules", []),
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"hard_rules read failed: {e}")
+
+
+class RuleToggleRequest(BaseModel):
+    rule_id: str = Field(..., min_length=1, max_length=64)
+    active: bool
+
+
+@app.post("/api/admin/hard-rules/toggle")
+async def admin_toggle_hard_rule(req: RuleToggleRequest):
+    """Toggle a rule's active flag. Atomic temp-rename so a crash mid-write
+    can't corrupt hard_rules.json. Bumps `updated_at` for audit trail.
+    Production note: gate this behind admin auth — for the demo it's open."""
+    if not _HARD_RULES_JSON_PATH.exists():
+        raise HTTPException(status_code=404, detail="hard_rules.json not found")
+    try:
+        data = json.loads(_HARD_RULES_JSON_PATH.read_text(encoding="utf-8"))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"hard_rules parse failed: {e}")
+
+    matched = False
+    for r in data.get("rules", []):
+        if r.get("id") == req.rule_id:
+            r["active"] = req.active
+            r["updated_at"] = datetime.now().isoformat()
+            matched = True
+            break
+    if not matched:
+        raise HTTPException(status_code=404, detail=f"rule '{req.rule_id}' not found")
+
+    tmp = _HARD_RULES_JSON_PATH.with_suffix(".json.tmp")
+    tmp.write_text(json.dumps(data, indent=2, ensure_ascii=False), encoding="utf-8")
+    tmp.replace(_HARD_RULES_JSON_PATH)
+
+    # Force the supervisor cache to drop on next read (mtime changed,
+    # cache invalidates automatically — but a hint here makes the test
+    # path obvious to maintainers).
+    return {"ok": True, "rule_id": req.rule_id, "active": req.active}
+
+
 # ── Static page routes ──────────────────────────────────────
 
 @app.get("/kb")

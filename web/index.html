@@ -466,6 +466,34 @@
   .result-card.escalated { border-left: 3px solid #ef4444; }
   .result-card.escalated .rc-header { color: #fca5a5; }
 
+  /* Trust Score card — Stripe Radar style */
+  .result-card.trust { border-left: 3px solid #a78bfa; }
+  .result-card.trust .rc-header { color: #c4b5fd; }
+  .result-card.trust.trust-good { border-left-color: #10b981; }
+  .result-card.trust.trust-good .rc-header { color: #6ee7b7; }
+  .result-card.trust.trust-warn { border-left-color: #f59e0b; }
+  .result-card.trust.trust-warn .rc-header { color: #fcd34d; }
+  .result-card.trust.trust-bad { border-left-color: #ef4444; }
+  .result-card.trust.trust-bad .rc-header { color: #fca5a5; }
+  .trust-row { display: grid; grid-template-columns: 120px 1fr; gap: 16px; align-items: start; padding-top: 8px; }
+  .trust-score-big { font-size: 52px; font-weight: 800; line-height: 1; letter-spacing: -.02em; }
+  .trust-score-big.trust-good { color: #10b981; }
+  .trust-score-big.trust-warn { color: #f59e0b; }
+  .trust-score-big.trust-bad  { color: #ef4444; }
+  .trust-score-max { font-size: 14px; color: var(--muted); font-weight: 400; margin-left: 4px; }
+  .trust-factors { display: flex; flex-direction: column; gap: 6px; }
+  .trust-factor { display: grid; grid-template-columns: 22px 130px 1fr auto; gap: 8px; align-items: baseline; font-size: 12px; padding: 4px 0; }
+  .trust-factor-icon { font-size: 13px; }
+  .trust-factor-name { font-weight: 600; color: var(--fg); text-transform: capitalize; }
+  .trust-factor-detail { color: var(--muted); line-height: 1.5; }
+  .trust-rule-id {
+    font-family: var(--mono); font-size: 10px; color: var(--dim);
+    background: rgba(255,255,255,0.04); padding: 1px 6px; border-radius: 4px;
+  }
+  .trust-factor.trust-pass .trust-factor-name { color: #6ee7b7; }
+  .trust-factor.trust-warn .trust-factor-name { color: #fcd34d; }
+  .trust-factor.trust-fail .trust-factor-name { color: #fca5a5; }
+
   .emotion-grid { display: grid; grid-template-columns: 1fr 2fr; gap: 14px; }
   .emo-score-display {
     text-align: center;
@@ -1545,6 +1573,32 @@ function renderResult(d) {
     body += '<div class="result-card escalated"><div class="rc-header">🚨 Escalated to human</div>' +
       '<div style="font-size:13px;line-height:1.55;color:#e5e7eb;">' + escapeHtml(d.final_reply || '') + '</div>' +
       '</div>';
+  }
+
+  // Trust Score card (Stripe-Radar style — present whenever supervisor ran)
+  if (d.trust_score != null && Array.isArray(d.trust_factors) && d.trust_factors.length) {
+    const score = d.trust_score;
+    const tier = score >= 80 ? 'good' : (score >= 50 ? 'warn' : 'bad');
+    const sup = d.supervisor || {};
+    const layer = sup.layer || '—';
+    body += '<div class="result-card trust trust-' + tier + '">' +
+      '<div class="rc-header">🛡 Trust Score · IAM ' + escapeHtml(layer) + '</div>' +
+      '<div class="trust-row">' +
+        '<div class="trust-score-big trust-' + tier + '">' + score + '<span class="trust-score-max">/100</span></div>' +
+        '<div class="trust-factors">' +
+          d.trust_factors.map(function(f) {
+            const icon = f.status === 'pass' ? '✅' : (f.status === 'warn' ? '⚠️' : '❌');
+            const rid = f.rule_id ? '<span class="trust-rule-id">' + escapeHtml(f.rule_id) + '</span>' : '';
+            return '<div class="trust-factor trust-' + escapeHtml(f.status) + '">' +
+              '<span class="trust-factor-icon">' + icon + '</span>' +
+              '<span class="trust-factor-name">' + escapeHtml((f.name || '').replace(/_/g, ' ')) + '</span>' +
+              '<span class="trust-factor-detail">' + escapeHtml(f.detail || '') + '</span>' +
+              rid +
+            '</div>';
+          }).join('') +
+        '</div>' +
+      '</div>' +
+    '</div>';
   }
 
   // Final reply box (the customer-facing message) — with resolution + feedback buttons

@@ -172,6 +172,17 @@
   </div>
 
   <div class="panel section">
+    <h2>🔒 Tier-2 Hard Rules <span class="pill" id="hr-pill">—</span><button class="refresh-btn" onclick="loadHardRules()">↻ Refresh</button></h2>
+    <p style="font-size:12px;color:var(--muted);margin-bottom:14px;">
+      Business-editable supervisor rules from <code>data/hard_rules.json</code>.
+      Toggle a rule off here to disable it without a code deploy — cache picks up the change within 60s.
+      Tier-1 rules (pHash collision, duplicate-order, multimodal mismatch, frequency cap) stay in
+      code and cannot be toggled — they're the constitution.
+    </p>
+    <div id="hr-list" style="display:flex;flex-direction:column;gap:10px;">—</div>
+  </div>
+
+  <div class="panel section">
     <h2>📋 Human handoff queue <span class="pill" id="ho-pill">—</span><button class="refresh-btn" onclick="loadHandoffQueue()">↻ Refresh</button></h2>
     <p style="font-size:12px;color:var(--muted);margin-bottom:14px;">When the supervisor or verifier escalates, the structured briefing lands here so agents can act without re-reading the transcript. P0 = legal/regulator (act in &lt;5 min) · P1 = high emotion (&lt;30 min) · P2 = normal (same day).</p>
     <div id="ho-list" style="display:flex;flex-direction:column;gap:10px;">—</div>
@@ -272,7 +283,56 @@ async function loadAll() {
     }
   } catch (e) { console.error(e); alert('Failed to load admin data: ' + e.message); }
   loadHandoffQueue();
+  loadHardRules();
 }
+
+async function loadHardRules() {
+  try {
+    const r = await fetch('/api/admin/hard-rules');
+    const d = await r.json();
+    const rules = d.rules || [];
+    const active = rules.filter(x => x.active !== false).length;
+    $('hr-pill').textContent = active + ' active · ' + rules.length + ' total';
+    if (!rules.length) {
+      SET($('hr-list'), '<div style="color:var(--dim);font-size:12px">No Tier-2 rules in data/hard_rules.json.</div>');
+      return;
+    }
+    SET($('hr-list'), rules.map(rule => {
+      const active = rule.active !== false;
+      const whenJson = JSON.stringify(rule.when || {}, null, 0);
+      return '<div style="background:var(--bg-3);border:1px solid var(--line);border-left:3px solid ' + (active ? '#a78bfa' : 'var(--line)') + ';border-radius:10px;padding:14px 18px;">' +
+        '<div style="display:flex;align-items:center;gap:12px;">' +
+          '<code style="color:' + (active ? '#c4b5fd' : 'var(--dim)') + ';font-family:JetBrains Mono,monospace;font-weight:700;font-size:12px;">' + escHtml(rule.id) + '</code>' +
+          '<span style="font-size:13px;color:' + (active ? 'var(--fg)' : 'var(--dim)') + ';">' + escHtml(rule.title || '') + '</span>' +
+          '<span style="font-size:10px;color:var(--dim);font-family:JetBrains Mono,monospace;margin-left:auto;">' + escHtml(rule.owner || '') + '</span>' +
+          '<label style="display:inline-flex;align-items:center;gap:6px;cursor:pointer;font-size:11px;color:var(--muted);">' +
+            '<input type="checkbox" ' + (active ? 'checked' : '') + ' onchange="toggleHardRule(\'' + escHtml(rule.id) + '\', this.checked)" style="cursor:pointer;width:16px;height:16px;">' +
+            (active ? 'ENABLED' : 'DISABLED') +
+          '</label>' +
+        '</div>' +
+        '<div style="font-size:11px;color:var(--muted);margin-top:8px;font-family:JetBrains Mono,monospace;">' +
+          '<b style="color:var(--fg);">WHEN:</b> ' + escHtml(whenJson) +
+        '</div>' +
+        '<div style="font-size:11px;color:var(--muted);margin-top:4px;">' +
+          '<b style="color:var(--fg);">REASON:</b> ' + escHtml(rule.reason || '') +
+        '</div>' +
+      '</div>';
+    }).join(''));
+  } catch (e) { console.error('hard-rules load failed', e); }
+}
+
+async function toggleHardRule(ruleId, active) {
+  try {
+    const r = await fetch('/api/admin/hard-rules/toggle', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ rule_id: ruleId, active }),
+    });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    loadHardRules();
+  } catch (e) { alert('Toggle failed: ' + e.message); }
+}
+
 
 async function loadHandoffQueue() {
   try {
