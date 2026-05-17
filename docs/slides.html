@@ -193,6 +193,25 @@
   @media print {
     @page { size: 1920px 1080px; margin: 0; }
     body { background: var(--bg); }
+    /* Chrome's PDF rasterizer mangles -webkit-background-clip:text — the
+       gradient text turns into an opaque block over the underlying letters.
+       Force a solid color fallback for print so the headline + .card .num
+       stay readable. The browser preview still gets the pretty gradient. */
+    .gradient,
+    h1 .gradient,
+    h2 .gradient,
+    .card .num,
+    .big-num {
+      background: none !important;
+      -webkit-background-clip: initial !important;
+      background-clip: initial !important;
+      -webkit-text-fill-color: initial !important;
+      color: #c4b5fd !important;
+    }
+    /* the red-tinted "99% / 32%" cards on slide 2 use a different gradient */
+    .card[style*="rgba(239,68,68"] .num {
+      color: #fca5a5 !important;
+    }
   }
 </style>
 </head>
@@ -341,7 +360,7 @@
   <span class="eyebrow">Architecture · v6</span>
   <h2 style="font-size: 56px;">7 Gemini agents · 3-layer supervisor · self-evolving knowledge</h2>
   <div style="display: flex; justify-content: center; margin-top: 8px;">
-    <img src="architecture_v6.png" class="arch-img" alt="ClaimsForge v6 architecture" />
+    <img src="architecture_v6.svg" class="arch-img" alt="ClaimsForge v6 architecture" />
   </div>
   <div class="footer"><div class="brand">CLAIMSFORGE · ARCHITECTURE</div><div>04 / 14</div></div>
 </section>
