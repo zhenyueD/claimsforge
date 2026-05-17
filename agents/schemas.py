@@ -10,7 +10,7 @@ from __future__ import annotations
 
 from datetime import datetime
 from enum import Enum
-from typing import Any, Optional
+from typing import Any, Literal, Optional
 
 from pydantic import BaseModel, Field
 
@@ -170,6 +170,67 @@ class AgentTrace(BaseModel):
 
 
 # ─────────────────────────────────────────────────────────────
+#  SupervisorDecision —— AWS-IAM-style explicit layered decision
+# ─────────────────────────────────────────────────────────────
+class SupervisorLayer(str, Enum):
+    """Which layer of the supervisor produced this decision. Mirrors the
+    AWS IAM evaluation model: an explicit DENY at any layer is final, then
+    EXEMPT can reverse a downstream-set escalation, then CAP clamps
+    numerical fields. APPROVE is the default-allow terminal."""
+    DENY = "deny"        # FORCE_ESCALATE — short-circuits everything below
+    EXEMPT = "exempt"    # UN_ESCALATE — reverses an earlier escalation (e.g. perishables)
+    CAP = "cap"          # CAP_AMOUNT — clamp amount_cents without escalating
+    APPROVE = "approve"  # passed all layers
+
+
+class SupervisorVerdict(str, Enum):
+    APPROVE = "approve"
+    CAP_AMOUNT = "cap_amount"
+    UN_ESCALATE = "un_escalate"
+    FORCE_ESCALATE = "force_escalate"
+
+
+class SupervisorDecision(BaseModel):
+    """Typed decision record produced by SupervisorAgent. Replaces the
+    untyped dict that used to live on ctx.supervisor_decision (v5 had it
+    as `dict` to dodge a circular import; that's no longer needed)."""
+    layer: SupervisorLayer
+    verdict: SupervisorVerdict
+    matched_rules: list[str] = Field(default_factory=list,
+        description="Rule IDs that fired. Audit-grade — every rule that participated.")
+    reasons: list[str] = Field(default_factory=list,
+        description="One human-readable reason per matched rule.")
+    blocked_rules: list[str] = Field(default_factory=list,
+        description="Backwards-compat alias of matched_rules for v5 callers.")
+    original_amount_cents: Optional[int] = None
+    capped_amount_cents: Optional[int] = None
+
+
+# ─────────────────────────────────────────────────────────────
+#  TrustScore —— Stripe-Radar-style weighted factor breakdown
+# ─────────────────────────────────────────────────────────────
+class TrustFactorName(str, Enum):
+    IMAGE_UNIQUENESS = "image_uniqueness"
+    AMOUNT_SANDBOX = "amount_sandbox"
+    HISTORY_COHERENCE = "history_coherence"
+    EMOTION_GATING = "emotion_gating"
+    EVIDENCE_QUALITY = "evidence_quality"
+
+
+class TrustFactor(BaseModel):
+    """One factor in the trust score breakdown. UI renders these in the
+    Trust Score card next to the final offer — the 'proof we weren't fooled'
+    surface that Sierra/Decagon don't expose."""
+    name: TrustFactorName
+    status: Literal["pass", "warn", "fail"]
+    score: float = Field(ge=0, le=1, description="Factor score, weighted into trust_score")
+    weight: float = Field(ge=0, le=1, description="Factor weight; weights across all factors sum to 1.0")
+    detail: str = Field(description="One-line human explanation (e.g. 'no pHash collision in 1247 anchors')")
+    rule_id: Optional[str] = Field(default=None,
+        description="Supervisor rule that drove this factor (audit-grade backlink)")
+
+
+# ─────────────────────────────────────────────────────────────
 #  ClaimContext —— 流水线上的核心工件
 # ─────────────────────────────────────────────────────────────
 class TurnRecord(BaseModel):
@@ -207,13 +268,23 @@ class ClaimContext(BaseModel):
     awaiting_clarification: bool = False
     clarification_question: Optional[str] = None
 
-    # SupervisorAgent decision (set between CompensationAgent and VerifierAgent)
-    # Typed as Any to avoid circular import; the actual model is SupervisorDecision.
+    # SupervisorAgent decision (set between CompensationAgent and VerifierAgent).
+    # v6: kept as dict on the wire for callers that already read .model_dump(),
+    # but supervisor.py now produces a typed SupervisorDecision and dumps it
+    # here. New code should construct SupervisorDecision and call .model_dump().
     supervisor_decision: Optional[dict] = None
 
     # HandoffSummary populated when escalated_to_human=True (dict not Pydantic to
     # avoid circular import; the actual model is handoff.HandoffSummary).
     handoff_summary: Optional[dict] = None
+
+    # Trust Score (Stripe-Radar-style). Populated by supervisor.compute_trust_score
+    # after the IAM-style evaluate() finishes. None on pipelines that short-circuit
+    # before Supervisor runs (e.g. low-confidence damage early-exit).
+    trust_score: Optional[int] = Field(default=None, ge=0, le=100,
+        description="0-100 weighted trust score across 5 factors")
+    trust_factors: list[TrustFactor] = Field(default_factory=list,
+        description="Per-factor breakdown rendered in the UI's Trust Score card")
 
     # 最终结果（orchestrator 决定）
     final_offer: Optional[CompensationOffer] = None  # 经过 verifier 后的最终方案

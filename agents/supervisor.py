@@ -30,11 +30,9 @@ import json
 import logging
 import threading
 import time
-from enum import Enum
+from dataclasses import dataclass
 from pathlib import Path
-from typing import Optional
-
-from pydantic import BaseModel, Field
+from typing import Callable, Optional
 
 from schemas import (
     AgentName,
@@ -42,6 +40,11 @@ from schemas import (
     CompensationOffer,
     DamageType,
     OfferType,
+    SupervisorDecision,
+    SupervisorLayer,
+    SupervisorVerdict,
+    TrustFactor,
+    TrustFactorName,
 )
 
 logger = logging.getLogger(__name__)
@@ -60,48 +63,46 @@ LIFETIME_CLAIM_LIMIT_PER_SESSION = 3    # within a session, escalate the 4th+ cl
 # arrives 3h late, and asking them to is the worst-of-both-worlds CS UX.)
 NOIMAGE_EXEMPT_DOMAINS = {"perishables", "perishable", "food", "beverage", "cosmetics", "skincare", "supplements"}
 
-# Patterns that ALWAYS escalate — even if the model thinks otherwise.
-# Each rule: (predicate fn, human-readable reason)
-NEVER_AUTO_PAY_RULES = [
-    (
-        lambda ctx: bool(
-            ctx.damage and ctx.damage.damage_type == DamageType.WATER_DAMAGE
-            and ctx.intent and (ctx.intent.product_hint or "").lower() in
-            {"laptop", "phone", "tablet", "electronics", "monitor", "headphones", "camera"}
-        ),
-        "Liquid damage on electronics requires manual warranty interpretation"
-    ),
-    (
-        lambda ctx: bool(
-            ctx.emotion and ctx.emotion.escalation_signals
-            and any("lawyer" in s.lower() or "court" in s.lower() or "consumer protection" in s.lower()
-                    or "12315" in s.lower() or "消协" in s for s in ctx.emotion.escalation_signals)
-        ),
-        "Legal / regulator threat detected — human must respond"
-    ),
-    (
-        lambda ctx: bool(
-            ctx.intent and (ctx.intent.product_hint or "").lower() in {"luxury", "jewelry", "watch", "designer"}
-        ),
-        "Luxury category requires manual handling regardless of policy"
-    ),
-]
+# NEVER_AUTO_PAY_RULES — v5 lambda list, replaced in v6 by DENY_RULES below.
+# (Brief Task B Phase 2 will move 3 of these into data/hard_rules.json.)
 
 
-class SupervisorVerdict(str, Enum):
-    APPROVE = "approve"             # offer passes all hard rules — verifier may still soft-revise
-    CAP_AMOUNT = "cap_amount"       # offer was over a hard cap — supervisor reduces it
-    UN_ESCALATE = "un_escalate"     # compensation_agent escalated, but supervisor overrides
-                                    # (e.g. perishable case that triggered P-LMT-01 wrongly)
-    FORCE_ESCALATE = "force_escalate"  # hard rule says human only, no LLM can override
+# SupervisorVerdict / SupervisorDecision / SupervisorLayer are now in
+# schemas.py (Brief §0.2: Pydantic is the contract, types live there).
 
 
-class SupervisorDecision(BaseModel):
-    verdict: SupervisorVerdict
-    reasons: list[str] = Field(default_factory=list, description="Why this verdict")
-    blocked_rules: list[str] = Field(default_factory=list, description="Which hard rules / NEVER_AUTO_PAY triggered")
-    original_amount_cents: Optional[int] = Field(default=None, description="If verdict=cap_amount, what it was before")
-    capped_amount_cents: Optional[int] = Field(default=None, description="If verdict=cap_amount, what we capped it to")
+# ─────────────────────────────────────────────────────────
+#  AWS-IAM-style rule definitions
+# ─────────────────────────────────────────────────────────
+@dataclass
+class DenyRule:
+    """Explicit-deny rule. If matcher(ctx) is True, force-escalate and
+    short-circuit the rest of the supervisor. id is stable + human-readable
+    for audit logs and Trust Score backlinks."""
+    id: str
+    matcher: Callable[[ClaimContext], bool]
+    reason_fn: Callable[[ClaimContext], str]
+
+
+@dataclass
+class ExemptRule:
+    """Explicit-exempt rule. Only consulted if a downstream agent already
+    set ctx.escalated_to_human = True. If matcher fires, apply() un-escalates
+    (and may synthesize a default offer)."""
+    id: str
+    matcher: Callable[[ClaimContext], bool]
+    apply: Callable[[ClaimContext, int], None]
+    reason_fn: Callable[[ClaimContext], str]
+
+
+@dataclass
+class CapRule:
+    """Numerical clamp rule. apply() returns (original, capped) when a clamp
+    happens, None when the rule didn't apply. Caps stack — running multiple
+    in order keeps the strictest."""
+    id: str
+    apply: Callable[[ClaimContext, int], Optional[tuple[int, int]]]
+    reason_fn: Callable[[ClaimContext], str]
 
 
 # Session-level claim counter. Persisted to JSON so the frequency cap (the
@@ -209,191 +210,518 @@ def _record_session_claim(session_id: str) -> None:
         _save_counts()
 
 
-def evaluate(ctx: ClaimContext, estimated_value_cents: int = 5000) -> SupervisorDecision:
-    """Run the supervisor over the current ctx. Mutates ctx in three ways:
-      - May set ctx.escalated_to_human = True (FORCE_ESCALATE)
-      - May clear ctx.escalated_to_human (UN_ESCALATE for category exemptions)
-      - May replace ctx.offer.amount_cents with a capped value (CAP_AMOUNT)
+# ─────────────────────────────────────────────────────────
+#  Layer 1: DENY matchers — pure predicates over ctx
+# ─────────────────────────────────────────────────────────
+def _deny_multimodal_mismatch(ctx: ClaimContext) -> bool:
+    if not (ctx.intent and ctx.intent.product_hint and ctx.damage and ctx.damage.detected_subject):
+        return False
+    hinted = _normalize_subject(ctx.intent.product_hint)
+    detected = _normalize_subject(ctx.damage.detected_subject)
+    return bool(hinted and detected and not _subjects_compatible(hinted, detected))
 
-    Returns the decision so orchestrator/UI can show what happened.
-    """
-    reasons: list[str] = []
-    blocked: list[str] = []
-    verdict = SupervisorVerdict.APPROVE
 
-    # ── Rule 0.3: multimodal consistency — text vs image subject mismatch
-    # Customer says "my ceramic mug arrived cracked" but the image shows a
-    # smartphone. The LLM correctly assessed the smartphone, but the claim
-    # context is incoherent — either confused customer or active fraud.
-    # Either way: human must adjudicate. This is Sierra-impossible (they
-    # have no vision channel to cross-check against).
-    if ctx.intent and ctx.intent.product_hint and ctx.damage and ctx.damage.detected_subject:
-        hinted = _normalize_subject(ctx.intent.product_hint)
-        detected = _normalize_subject(ctx.damage.detected_subject)
-        if hinted and detected and not _subjects_compatible(hinted, detected):
-            msg = (
-                f"Text/image mismatch — customer described '{ctx.intent.product_hint}' "
-                f"but image shows '{ctx.damage.detected_subject}'"
-            )
-            blocked.append(msg)
-            reasons.append(f"MULTIMODAL_MISMATCH: {msg}")
-            verdict = SupervisorVerdict.FORCE_ESCALATE
-            ctx.escalated_to_human = True
-            ctx.final_offer = None
-            return SupervisorDecision(verdict=verdict, reasons=reasons, blocked_rules=blocked)
+def _reason_multimodal_mismatch(ctx: ClaimContext) -> str:
+    return (f"Text/image mismatch — customer described '{ctx.intent.product_hint}' "
+            f"but image shows '{ctx.damage.detected_subject}'")
 
-    # ── Rule 0: visual fraud replay (pHash collision against approved set)
-    # Only CROSS-session collisions escalate. Same-session is the customer
-    # accidentally re-uploading the same photo on a follow-up turn (or
-    # re-running a demo) — not fraud.
-    if ctx.image_phash:
-        try:
-            import fraud as _fraud
-            hit = _fraud.find_collision(ctx.image_phash, current_session_id=ctx.session_id)
-            if hit and hit.get("_cross_session"):
-                dist = hit.get("_hamming_distance", "?")
-                prior_id = (hit.get("image_id") or "")[:16]
-                msg = (
-                    f"Image pHash collision (cross-session, Hamming={dist} bits) with "
-                    f"previously-approved claim image {prior_id}…"
-                )
-                blocked.append(msg)
-                reasons.append(f"FRAUD_REPLAY: {msg}")
-                verdict = SupervisorVerdict.FORCE_ESCALATE
-                ctx.escalated_to_human = True
-                ctx.final_offer = None
-                return SupervisorDecision(verdict=verdict, reasons=reasons, blocked_rules=blocked)
-        except Exception as e:
-            logger.warning("fraud gate scan failed (non-fatal): %s", e)
 
-    # ── Rule 0.5: duplicate-claim on already-resolved order
-    # Customer accepts a refund, then re-opens the same order_id hoping the
-    # bot's amnesia will double-pay. Pure-Python history scan — if any prior
-    # user turn mentioned this order_id AND was followed by a 'resolve:accept'
-    # marker, force-escalate.
-    if ctx.intent and ctx.intent.order_id and ctx.history:
-        oid = ctx.intent.order_id.upper()
-        h = ctx.history
-        accept_idx = next(
-            (i for i, t in enumerate(h)
-             if t.role == "user" and (t.decision_summary or "") == "resolve:accept"),
-            -1,
+def _deny_fraud_replay(ctx: ClaimContext) -> bool:
+    if not ctx.image_phash:
+        return False
+    try:
+        import fraud as _fraud
+        hit = _fraud.find_collision(ctx.image_phash, current_session_id=ctx.session_id)
+        ctx.__dict__["_fraud_hit"] = hit if hit and hit.get("_cross_session") else None
+        return bool(hit and hit.get("_cross_session"))
+    except Exception as e:
+        logger.warning("fraud gate scan failed (non-fatal): %s", e)
+        return False
+
+
+def _reason_fraud_replay(ctx: ClaimContext) -> str:
+    hit = ctx.__dict__.get("_fraud_hit") or {}
+    dist = hit.get("_hamming_distance", "?")
+    prior_id = (hit.get("image_id") or "")[:16]
+    return (f"Image pHash collision (cross-session, Hamming={dist} bits) with "
+            f"previously-approved claim image {prior_id}…")
+
+
+def _deny_duplicate_order(ctx: ClaimContext) -> bool:
+    if not (ctx.intent and ctx.intent.order_id and ctx.history):
+        return False
+    oid = ctx.intent.order_id.upper()
+    h = ctx.history
+    accept_idx = next(
+        (i for i, t in enumerate(h)
+         if t.role == "user" and (t.decision_summary or "") == "resolve:accept"),
+        -1,
+    )
+    if accept_idx <= 0:
+        return False
+    return any(t.role == "user" and oid in (t.content or "").upper()
+               for t in h[:accept_idx])
+
+
+def _reason_duplicate_order(ctx: ClaimContext) -> str:
+    return f"Duplicate claim on order {ctx.intent.order_id.upper()} — prior refund already accepted"
+
+
+def _deny_water_on_electronics(ctx: ClaimContext) -> bool:
+    return bool(
+        ctx.damage and ctx.damage.damage_type == DamageType.WATER_DAMAGE
+        and ctx.intent and (ctx.intent.product_hint or "").lower() in
+        {"laptop", "phone", "tablet", "electronics", "monitor", "headphones", "camera"}
+    )
+
+
+def _deny_legal_threat(ctx: ClaimContext) -> bool:
+    if not (ctx.emotion and ctx.emotion.escalation_signals):
+        return False
+    return any(
+        "lawyer" in s.lower() or "court" in s.lower() or "consumer protection" in s.lower()
+        or "12315" in s.lower() or "消协" in s
+        for s in ctx.emotion.escalation_signals
+    )
+
+
+def _deny_luxury(ctx: ClaimContext) -> bool:
+    return bool(
+        ctx.intent and (ctx.intent.product_hint or "").lower() in {"luxury", "jewelry", "watch", "designer"}
+    )
+
+
+def _deny_session_frequency(ctx: ClaimContext) -> bool:
+    within, _ = _check_session_frequency(ctx.session_id)
+    return not within
+
+
+def _reason_session_frequency(ctx: ClaimContext) -> str:
+    _, reason = _check_session_frequency(ctx.session_id)
+    return reason or f"Session has exceeded {LIFETIME_CLAIM_LIMIT_PER_SESSION} claims"
+
+
+# DENY layer — IAM-style: any match short-circuits the whole supervisor.
+# Order matters only for which rule_id ends up in the audit log first;
+# the verdict is the same.
+DENY_RULES: list[DenyRule] = [
+    DenyRule(
+        id="RULE-MULTIMODAL-MISMATCH",
+        matcher=_deny_multimodal_mismatch,
+        reason_fn=_reason_multimodal_mismatch,
+    ),
+    DenyRule(
+        id="RULE-FRAUD-REPLAY",
+        matcher=_deny_fraud_replay,
+        reason_fn=_reason_fraud_replay,
+    ),
+    DenyRule(
+        id="RULE-DUPLICATE-ORDER",
+        matcher=_deny_duplicate_order,
+        reason_fn=_reason_duplicate_order,
+    ),
+    DenyRule(
+        id="RULE-LIQUID-ELECTRONICS",
+        matcher=_deny_water_on_electronics,
+        reason_fn=lambda ctx: "Liquid damage on electronics requires manual warranty interpretation",
+    ),
+    DenyRule(
+        id="RULE-LEGAL-THREAT",
+        matcher=_deny_legal_threat,
+        reason_fn=lambda ctx: "Legal / regulator threat detected — human must respond",
+    ),
+    DenyRule(
+        id="RULE-LUXURY",
+        matcher=_deny_luxury,
+        reason_fn=lambda ctx: "Luxury category requires manual handling regardless of policy",
+    ),
+    DenyRule(
+        id="RULE-SESSION-FREQ",
+        matcher=_deny_session_frequency,
+        reason_fn=_reason_session_frequency,
+    ),
+]
+
+
+# ─────────────────────────────────────────────────────────
+#  Layer 2: EXEMPT — un-escalate when category overrides P-LMT-01
+# ─────────────────────────────────────────────────────────
+def _exempt_perishable_match(ctx: ClaimContext) -> bool:
+    if not (ctx.escalated_to_human and ctx.damage):
+        return False
+    product = (ctx.intent.product_hint or "").lower() if ctx.intent else ""
+    msg_lower = (ctx.user_message or "").lower()
+    return (
+        any(d in product for d in NOIMAGE_EXEMPT_DOMAINS)
+        or any(d in msg_lower for d in ["food", "drink", "beverage", "cosmetic", "skincare",
+                                        "蛋糕", "食物", "饮料", "化妆品", "护肤"])
+    )
+
+
+def _exempt_perishable_apply(ctx: ClaimContext, estimated_value_cents: int) -> None:
+    is_zh = any('一' <= c <= '鿿' for c in (ctx.user_message or ""))
+    if ctx.offer is None:
+        cap = min(estimated_value_cents, 15000)
+        ctx.offer = CompensationOffer(
+            offer_type=OfferType.FULL_REFUND,
+            amount_cents=cap,
+            currency="¥" if is_zh else "USD",
+            justification=(
+                f"按生鲜/即食类商品惯例，已为您发起全额退款 ¥{cap/100:.2f}，"
+                "无需照片证据也无需寄回。我们会同步把这次的物流问题反馈给承运方。"
+            ) if is_zh else (
+                "Per perishables policy: you'll receive a full refund of "
+                f"${cap/100:.2f}, no photo or return required. Sorry for the trouble — "
+                "we'll also flag this with the carrier."
+            ),
+            policy_ids=["P-PER-01-supervisor-exempt"],
+            requires_return=False,
         )
-        if accept_idx > 0:
-            mentioned_before = any(
-                t.role == "user" and oid in (t.content or "").upper()
-                for t in h[:accept_idx]
-            )
-            if mentioned_before:
-                msg = f"Duplicate claim on order {oid} — prior refund already accepted"
-                blocked.append(msg)
-                reasons.append(f"DUPLICATE_CLAIM: {msg}")
-                verdict = SupervisorVerdict.FORCE_ESCALATE
-                ctx.escalated_to_human = True
-                ctx.final_offer = None
-                return SupervisorDecision(verdict=verdict, reasons=reasons, blocked_rules=blocked)
+    elif "P-PER-01-supervisor-exempt" not in ctx.offer.policy_ids:
+        ctx.offer.policy_ids = list(ctx.offer.policy_ids) + ["P-PER-01-supervisor-exempt"]
+    ctx.escalated_to_human = False
 
-    # ── Rule 1: NEVER_AUTO_PAY patterns
-    for predicate, msg in NEVER_AUTO_PAY_RULES:
-        try:
-            if predicate(ctx):
-                blocked.append(msg)
-                reasons.append(f"NEVER_AUTO_PAY: {msg}")
-                verdict = SupervisorVerdict.FORCE_ESCALATE
-        except Exception as e:
-            logger.warning("supervisor predicate raised: %s", e)
 
-    if verdict == SupervisorVerdict.FORCE_ESCALATE:
-        ctx.escalated_to_human = True
-        ctx.final_offer = None
-        return SupervisorDecision(verdict=verdict, reasons=reasons, blocked_rules=blocked)
+def _reason_perishable(ctx: ClaimContext) -> str:
+    product = (ctx.intent.product_hint or "").lower() if ctx.intent else ""
+    damage_domain = ctx.damage.damage_type.value if ctx.damage else ""
+    return (f"Category exemption: {product or damage_domain} is no-image-exempt; "
+            "P-LMT-01 escalation overridden, instant refund applied")
 
-    # ── Rule 2: session frequency cap
-    within, freq_reason = _check_session_frequency(ctx.session_id)
-    if not within:
-        blocked.append(freq_reason or "Session frequency limit")
-        reasons.append(freq_reason or "")
-        ctx.escalated_to_human = True
-        ctx.final_offer = None
-        return SupervisorDecision(
-            verdict=SupervisorVerdict.FORCE_ESCALATE,
-            reasons=reasons, blocked_rules=blocked
-        )
 
-    # ── Rule 3: category exemption — un-escalate perishables that hit P-LMT-01
-    # Compensation_agent may have escalated because of no-image rule. If the
-    # damage type or domain is no-image-exempt, supervisor reverses that
-    # decision. If compensation already produced an offer, keep it; otherwise
-    # synthesize a default full_refund using estimated_value_cents.
-    if ctx.escalated_to_human and ctx.damage:
-        product = (ctx.intent.product_hint or "").lower() if ctx.intent else ""
-        damage_domain = (ctx.damage.damage_type.value or "").lower()
-        msg_lower = (ctx.user_message or "").lower()
-        is_exempt = (
-            any(d in product for d in NOIMAGE_EXEMPT_DOMAINS)
-            or any(d in msg_lower for d in ["food", "drink", "beverage", "cosmetic", "skincare",
-                                            "蛋糕", "食物", "饮料", "化妆品", "护肤"])
-        )
-        if is_exempt:
-            is_zh = any('一' <= c <= '鿿' for c in (ctx.user_message or ""))
-            if ctx.offer is None:
-                cap = min(estimated_value_cents, 15000)
-                ctx.offer = CompensationOffer(
-                    offer_type=OfferType.FULL_REFUND,
-                    amount_cents=cap,
-                    currency="¥" if is_zh else "USD",
-                    justification=(
-                        f"按生鲜/即食类商品惯例，已为您发起全额退款 ¥{cap/100:.2f}，"
-                        "无需照片证据也无需寄回。我们会同步把这次的物流问题反馈给承运方。"
-                    ) if is_zh else (
-                        "Per perishables policy: you'll receive a full refund of "
-                        f"${cap/100:.2f}, no photo or return required. Sorry for the trouble — "
-                        "we'll also flag this with the carrier."
-                    ),
-                    policy_ids=["P-PER-01-supervisor-exempt"],
-                    requires_return=False,
-                )
-            else:
-                # Keep compensation_agent's offer, just add supervisor exemption tag
-                if "P-PER-01-supervisor-exempt" not in ctx.offer.policy_ids:
-                    ctx.offer.policy_ids = list(ctx.offer.policy_ids) + ["P-PER-01-supervisor-exempt"]
-            ctx.escalated_to_human = False
-            verdict = SupervisorVerdict.UN_ESCALATE
-            reasons.append(
-                f"Category exemption: {product or damage_domain} is no-image-exempt; "
-                "P-LMT-01 escalation overridden, instant refund applied"
-            )
+EXEMPT_RULES: list[ExemptRule] = [
+    ExemptRule(
+        id="RULE-PERISHABLE-EXEMPT",
+        matcher=_exempt_perishable_match,
+        apply=_exempt_perishable_apply,
+        reason_fn=_reason_perishable,
+    ),
+]
 
-    # ── Rule 4: hard cap on cash amount
+
+# ─────────────────────────────────────────────────────────
+#  Layer 3: CAP — clamp numerical fields, stack-safe
+# ─────────────────────────────────────────────────────────
+def _cap_max_cash(ctx: ClaimContext, estimated_value_cents: int) -> Optional[tuple[int, int]]:
     if ctx.offer and ctx.offer.amount_cents > MAX_CASH_PAYMENT_CENTS:
         original = ctx.offer.amount_cents
         ctx.offer.amount_cents = MAX_CASH_PAYMENT_CENTS
-        verdict = SupervisorVerdict.CAP_AMOUNT
-        reasons.append(f"Hard cap: amount {original/100:.2f} > MAX ${MAX_CASH_PAYMENT_CENTS/100:.0f}; capped")
-        return SupervisorDecision(
-            verdict=verdict, reasons=reasons, blocked_rules=blocked,
-            original_amount_cents=original, capped_amount_cents=MAX_CASH_PAYMENT_CENTS,
-        )
+        return (original, MAX_CASH_PAYMENT_CENTS)
+    return None
 
-    # ── Rule 5: amount can't exceed 100% of order value
-    if (
-        ctx.offer
-        and ctx.offer.offer_type in {OfferType.FULL_REFUND, OfferType.PARTIAL_REFUND}
-        and ctx.offer.amount_cents > int(estimated_value_cents * MAX_PERCENT_OF_ORDER)
-    ):
+
+def _cap_pct_of_order(ctx: ClaimContext, estimated_value_cents: int) -> Optional[tuple[int, int]]:
+    if not (ctx.offer and ctx.offer.offer_type in {OfferType.FULL_REFUND, OfferType.PARTIAL_REFUND}):
+        return None
+    ceiling = int(estimated_value_cents * MAX_PERCENT_OF_ORDER)
+    if ctx.offer.amount_cents > ceiling:
         original = ctx.offer.amount_cents
-        capped = int(estimated_value_cents * MAX_PERCENT_OF_ORDER)
-        ctx.offer.amount_cents = capped
-        verdict = SupervisorVerdict.CAP_AMOUNT
-        reasons.append(
-            f"Hard cap: refund {original/100:.2f} > order value {estimated_value_cents/100:.2f}; capped to 100%"
-        )
+        ctx.offer.amount_cents = ceiling
+        return (original, ceiling)
+    return None
+
+
+CAP_RULES: list[CapRule] = [
+    CapRule(
+        id="RULE-MAX-CASH-PAYMENT",
+        apply=_cap_max_cash,
+        reason_fn=lambda ctx: (f"Hard cap: amount > MAX ${MAX_CASH_PAYMENT_CENTS/100:.0f}; "
+                               f"capped to ${MAX_CASH_PAYMENT_CENTS/100:.0f}"),
+    ),
+    CapRule(
+        id="RULE-MAX-PCT-ORDER",
+        apply=_cap_pct_of_order,
+        reason_fn=lambda ctx: ("Hard cap: refund exceeded 100% of order value; "
+                               "capped to order value"),
+    ),
+]
+
+
+# ─────────────────────────────────────────────────────────
+#  IAM-style decision flow
+# ─────────────────────────────────────────────────────────
+def evaluate(ctx: ClaimContext, estimated_value_cents: int = 5000) -> SupervisorDecision:
+    """AWS-IAM-style three-layer decision:
+
+      1. DENY — any explicit-deny rule short-circuits to FORCE_ESCALATE
+      2. EXEMPT — only if downstream agent escalated, an exempt rule can un-escalate
+      3. CAP — clamp numerical fields (stacks: strictest wins)
+      4. APPROVE — default-allow terminal
+
+    Mutates ctx (escalated_to_human / offer.amount_cents) per rule application.
+    Returns a typed SupervisorDecision the orchestrator records on
+    ctx.supervisor_decision (as dict, for backwards compat).
+    """
+    matched_rules: list[str] = []
+    reasons: list[str] = []
+
+    # ── LAYER 1: DENY (explicit deny wins, IAM-style)
+    for rule in DENY_RULES:
+        try:
+            if rule.matcher(ctx):
+                reason = rule.reason_fn(ctx)
+                matched_rules.append(rule.id)
+                reasons.append(f"{rule.id}: {reason}")
+                ctx.escalated_to_human = True
+                ctx.final_offer = None
+                return SupervisorDecision(
+                    layer=SupervisorLayer.DENY,
+                    verdict=SupervisorVerdict.FORCE_ESCALATE,
+                    matched_rules=matched_rules,
+                    reasons=reasons,
+                    blocked_rules=list(matched_rules),  # backwards-compat
+                )
+        except Exception as e:
+            logger.warning("DENY rule %s raised: %s", rule.id, e)
+
+    # ── LAYER 2: EXEMPT (only if escalated; reverses prior escalation)
+    if ctx.escalated_to_human:
+        for rule in EXEMPT_RULES:
+            try:
+                if rule.matcher(ctx):
+                    rule.apply(ctx, estimated_value_cents)
+                    matched_rules.append(rule.id)
+                    reasons.append(f"{rule.id}: {rule.reason_fn(ctx)}")
+                    return SupervisorDecision(
+                        layer=SupervisorLayer.EXEMPT,
+                        verdict=SupervisorVerdict.UN_ESCALATE,
+                        matched_rules=matched_rules,
+                        reasons=reasons,
+                        blocked_rules=list(matched_rules),
+                    )
+            except Exception as e:
+                logger.warning("EXEMPT rule %s raised: %s", rule.id, e)
+
+    # ── LAYER 3: CAP (stack — first cap wins on amount field per rule order)
+    first_cap: Optional[tuple[int, int]] = None
+    for rule in CAP_RULES:
+        try:
+            result = rule.apply(ctx, estimated_value_cents)
+            if result:
+                original, capped = result
+                matched_rules.append(rule.id)
+                reasons.append(f"{rule.id}: {rule.reason_fn(ctx)}")
+                if first_cap is None:
+                    first_cap = (original, capped)
+        except Exception as e:
+            logger.warning("CAP rule %s raised: %s", rule.id, e)
+
+    if first_cap is not None:
+        original, capped = first_cap
         return SupervisorDecision(
-            verdict=verdict, reasons=reasons, blocked_rules=blocked,
-            original_amount_cents=original, capped_amount_cents=capped,
+            layer=SupervisorLayer.CAP,
+            verdict=SupervisorVerdict.CAP_AMOUNT,
+            matched_rules=matched_rules,
+            reasons=reasons,
+            blocked_rules=list(matched_rules),
+            original_amount_cents=original,
+            capped_amount_cents=capped,
         )
 
-    return SupervisorDecision(verdict=verdict, reasons=reasons or ["all hard rules passed"])
+    # ── DEFAULT: APPROVE (passed all layers)
+    return SupervisorDecision(
+        layer=SupervisorLayer.APPROVE,
+        verdict=SupervisorVerdict.APPROVE,
+        matched_rules=matched_rules,
+        reasons=reasons or ["all hard rules passed"],
+    )
+
+
+# ─────────────────────────────────────────────────────────
+#  Stripe-Radar-style trust score
+# ─────────────────────────────────────────────────────────
+# Factor weights — must sum to 1.0. Tuning these is the closest thing
+# we have to "fraud model calibration"; changes should be reviewed.
+TRUST_FACTOR_WEIGHTS = {
+    TrustFactorName.IMAGE_UNIQUENESS:  0.25,
+    TrustFactorName.AMOUNT_SANDBOX:    0.20,
+    TrustFactorName.HISTORY_COHERENCE: 0.20,
+    TrustFactorName.EMOTION_GATING:    0.15,
+    TrustFactorName.EVIDENCE_QUALITY:  0.20,
+}
+
+
+def compute_trust_score(ctx: ClaimContext) -> tuple[int, list[TrustFactor]]:
+    """Compute a 0-100 trust score + per-factor breakdown.
+
+    Design:
+      - Each factor 0-1, weighted by TRUST_FACTOR_WEIGHTS, sum * 100.
+      - Any `fail` factor caps the total at 50 — UI signals "do not trust".
+      - rule_id back-links a factor to the supervisor rule that drove it,
+        so the audit log can show "Trust 32 because RULE-DUPLICATE-ORDER fired".
+      - Pure read-only: never mutates ctx. Safe to call multiple times.
+    """
+    sup = ctx.supervisor_decision or {}
+    matched = set(sup.get("matched_rules") or [])
+    factors: list[TrustFactor] = []
+
+    # ── F1: image_uniqueness (pHash fraud gate)
+    if "RULE-FRAUD-REPLAY" in matched:
+        factors.append(TrustFactor(
+            name=TrustFactorName.IMAGE_UNIQUENESS,
+            status="fail", score=0.0,
+            weight=TRUST_FACTOR_WEIGHTS[TrustFactorName.IMAGE_UNIQUENESS],
+            detail="pHash collision detected — cross-session image replay",
+            rule_id="RULE-FRAUD-REPLAY",
+        ))
+    elif ctx.image_phash:
+        try:
+            import fraud as _fraud
+            stats = _fraud.stats()
+            factors.append(TrustFactor(
+                name=TrustFactorName.IMAGE_UNIQUENESS,
+                status="pass", score=1.0,
+                weight=TRUST_FACTOR_WEIGHTS[TrustFactorName.IMAGE_UNIQUENESS],
+                detail=f"no pHash collision in {stats.get('approved', 0)} approved anchors",
+                rule_id=None,
+            ))
+        except Exception as e:
+            logger.warning("trust F1 fraud stats failed: %s", e)
+            factors.append(TrustFactor(
+                name=TrustFactorName.IMAGE_UNIQUENESS,
+                status="warn", score=0.5,
+                weight=TRUST_FACTOR_WEIGHTS[TrustFactorName.IMAGE_UNIQUENESS],
+                detail="fraud-gate check degraded",
+            ))
+    else:
+        factors.append(TrustFactor(
+            name=TrustFactorName.IMAGE_UNIQUENESS,
+            status="warn", score=0.5,
+            weight=TRUST_FACTOR_WEIGHTS[TrustFactorName.IMAGE_UNIQUENESS],
+            detail="no image provided — uniqueness undetermined",
+        ))
+
+    # ── F2: amount_sandbox (Python clamp on LLM-emitted amount)
+    if sup.get("verdict") == "cap_amount":
+        original = sup.get("original_amount_cents") or 0
+        capped = sup.get("capped_amount_cents") or 0
+        ratio = (original - capped) / original if original > 0 else 0
+        score = max(0.0, 1.0 - ratio)
+        # Any cap is at least a `warn`; if LLM overshot >50% it's `fail`
+        status = "fail" if ratio > 0.5 else "warn"
+        rule_id = (sup.get("matched_rules") or [None])[0] if sup.get("matched_rules") else None
+        factors.append(TrustFactor(
+            name=TrustFactorName.AMOUNT_SANDBOX,
+            status=status, score=score,
+            weight=TRUST_FACTOR_WEIGHTS[TrustFactorName.AMOUNT_SANDBOX],
+            detail=f"LLM proposed ${original/100:.2f}, sandbox capped to ${capped/100:.2f}",
+            rule_id=rule_id,
+        ))
+    else:
+        factors.append(TrustFactor(
+            name=TrustFactorName.AMOUNT_SANDBOX,
+            status="pass", score=1.0,
+            weight=TRUST_FACTOR_WEIGHTS[TrustFactorName.AMOUNT_SANDBOX],
+            detail="LLM amount within policy bounds, no clamp needed",
+        ))
+
+    # ── F3: history_coherence (duplicate-order check)
+    if "RULE-DUPLICATE-ORDER" in matched:
+        factors.append(TrustFactor(
+            name=TrustFactorName.HISTORY_COHERENCE,
+            status="fail", score=0.0,
+            weight=TRUST_FACTOR_WEIGHTS[TrustFactorName.HISTORY_COHERENCE],
+            detail="duplicate claim on already-resolved order",
+            rule_id="RULE-DUPLICATE-ORDER",
+        ))
+    elif "RULE-SESSION-FREQ" in matched:
+        factors.append(TrustFactor(
+            name=TrustFactorName.HISTORY_COHERENCE,
+            status="fail", score=0.0,
+            weight=TRUST_FACTOR_WEIGHTS[TrustFactorName.HISTORY_COHERENCE],
+            detail=f"session exceeded {LIFETIME_CLAIM_LIMIT_PER_SESSION}-claim limit",
+            rule_id="RULE-SESSION-FREQ",
+        ))
+    else:
+        factors.append(TrustFactor(
+            name=TrustFactorName.HISTORY_COHERENCE,
+            status="pass", score=1.0,
+            weight=TRUST_FACTOR_WEIGHTS[TrustFactorName.HISTORY_COHERENCE],
+            detail=f"no duplicate order ({len(ctx.history)} prior turns scanned)",
+        ))
+
+    # ── F4: emotion_gating (escalation signals + score)
+    if ctx.emotion:
+        if "RULE-LEGAL-THREAT" in matched:
+            factors.append(TrustFactor(
+                name=TrustFactorName.EMOTION_GATING,
+                status="fail", score=0.0,
+                weight=TRUST_FACTOR_WEIGHTS[TrustFactorName.EMOTION_GATING],
+                detail="legal / regulator threat detected in emotion signals",
+                rule_id="RULE-LEGAL-THREAT",
+            ))
+        elif ctx.emotion.escalation_signals:
+            factors.append(TrustFactor(
+                name=TrustFactorName.EMOTION_GATING,
+                status="warn", score=0.3,
+                weight=TRUST_FACTOR_WEIGHTS[TrustFactorName.EMOTION_GATING],
+                detail=f"escalation signals present: {', '.join(ctx.emotion.escalation_signals[:2])}",
+            ))
+        elif ctx.emotion.score >= 8:
+            factors.append(TrustFactor(
+                name=TrustFactorName.EMOTION_GATING,
+                status="warn", score=0.6,
+                weight=TRUST_FACTOR_WEIGHTS[TrustFactorName.EMOTION_GATING],
+                detail=f"high emotion score ({ctx.emotion.score:.1f}/10), within auto band",
+            ))
+        else:
+            factors.append(TrustFactor(
+                name=TrustFactorName.EMOTION_GATING,
+                status="pass", score=1.0,
+                weight=TRUST_FACTOR_WEIGHTS[TrustFactorName.EMOTION_GATING],
+                detail=f"emotion {ctx.emotion.score:.1f}/10, no critical signals",
+            ))
+    else:
+        factors.append(TrustFactor(
+            name=TrustFactorName.EMOTION_GATING,
+            status="warn", score=0.5,
+            weight=TRUST_FACTOR_WEIGHTS[TrustFactorName.EMOTION_GATING],
+            detail="emotion agent did not run",
+        ))
+
+    # ── F5: evidence_quality (DamageAgent confidence + multimodal mismatch)
+    if "RULE-MULTIMODAL-MISMATCH" in matched:
+        factors.append(TrustFactor(
+            name=TrustFactorName.EVIDENCE_QUALITY,
+            status="fail", score=0.0,
+            weight=TRUST_FACTOR_WEIGHTS[TrustFactorName.EVIDENCE_QUALITY],
+            detail="text/image subject mismatch — evidence incoherent",
+            rule_id="RULE-MULTIMODAL-MISMATCH",
+        ))
+    elif ctx.damage:
+        conf = ctx.damage.confidence
+        if conf >= 0.8:
+            status, score = "pass", 1.0
+            detail = f"damage confidence {conf:.0%}, type={ctx.damage.damage_type.value}"
+        elif conf >= 0.5:
+            status, score = "warn", 0.7
+            detail = f"damage confidence {conf:.0%} (moderate)"
+        else:
+            status, score = "fail", 0.3
+            detail = f"damage confidence {conf:.0%} (too low to auto-decide)"
+        factors.append(TrustFactor(
+            name=TrustFactorName.EVIDENCE_QUALITY,
+            status=status, score=score,
+            weight=TRUST_FACTOR_WEIGHTS[TrustFactorName.EVIDENCE_QUALITY],
+            detail=detail,
+        ))
+    else:
+        factors.append(TrustFactor(
+            name=TrustFactorName.EVIDENCE_QUALITY,
+            status="warn", score=0.5,
+            weight=TRUST_FACTOR_WEIGHTS[TrustFactorName.EVIDENCE_QUALITY],
+            detail="no damage assessment (text-only)",
+        ))
+
+    # Weighted sum → 0-100
+    weighted = sum(f.score * f.weight for f in factors)
+    score = int(round(weighted * 100))
+
+    # Any fail factor → cap at 50 (strong "don't trust" signal)
+    if any(f.status == "fail" for f in factors):
+        score = min(score, 50)
+
+    return score, factors
 
 
 def run(ctx: ClaimContext, estimated_value_cents: int = 5000) -> ClaimContext:

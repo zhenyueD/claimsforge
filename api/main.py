@@ -582,6 +582,8 @@ def _result_to_dict(result, session_id: str, image_id: Optional[str], history_le
         "damage": result.damage.model_dump() if result.damage else None,
         "offer": result.offer.model_dump() if result.offer else None,
         "supervisor": result.supervisor_decision,
+        "trust_score": result.trust_score,
+        "trust_factors": [f.model_dump() for f in result.trust_factors],
         "handoff": result.handoff_summary,
         "verification": result.verification.model_dump() if result.verification else None,
         "final_offer": result.final_offer.model_dump() if result.final_offer else None,

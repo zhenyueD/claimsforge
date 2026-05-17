@@ -292,6 +292,14 @@ def run(
     supervisor.run(ctx, estimated_value_cents=estimated_value_cents)
     emit(ctx.traces[-1])
 
+    # Stripe-Radar-style trust score — read-only over ctx.supervisor_decision
+    try:
+        score, factors = supervisor.compute_trust_score(ctx)
+        ctx.trust_score = score
+        ctx.trust_factors = factors
+    except Exception as e:
+        logger.warning("trust score computation failed (non-fatal): %s", e)
+
     if ctx.offer is None or ctx.escalated_to_human:
         # Supervisor or earlier stages decided this needs a human; skip Verifier.
         _finalize_reply(ctx)
@@ -469,6 +477,14 @@ async def run_async(
     # ─── Stage 5.5: Supervisor (pure-Python hard gate — see supervisor.py docstring)
     await asyncio.to_thread(supervisor.run, ctx, estimated_value_cents=estimated_value_cents)
     emit(ctx.traces[-1])
+
+    # Stripe-Radar-style trust score (read-only over supervisor_decision)
+    try:
+        score, factors = supervisor.compute_trust_score(ctx)
+        ctx.trust_score = score
+        ctx.trust_factors = factors
+    except Exception as e:
+        logger.warning("trust score computation failed (non-fatal): %s", e)
 
     if ctx.offer is None or ctx.escalated_to_human:
         _finalize_reply(ctx)

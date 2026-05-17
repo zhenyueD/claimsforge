@@ -1,10 +1,10 @@
-# E2E Eval · 2026-05-17 12:11
+# E2E Eval · 2026-05-17 12:39
 
 ## Summary
 - Cases: **17**
 - Joint accuracy: **100.0%** (17/17)
-- p50 latency: **10746ms**
-- Elapsed: 58.4s
+- p50 latency: **8889ms**
+- Elapsed: 49.7s
 
 ## By category
 - language: 2/2
