@@ -1,0 +1,145 @@
+// ClaimsForge v6 architecture — generated 2026-05-17
+// Render: dot -Tpng architecture_v6.dot -o architecture_v6.png
+
+digraph ClaimsForgeV6 {
+    rankdir=TB;
+    bgcolor="#0a0a0f";
+    fontname="Helvetica";
+    fontcolor="#e5e7eb";
+    label=<<font face="Helvetica-Bold" point-size="22" color="#e5e7eb">ClaimsForge v6 · Trust Layer for AI Claims Resolution</font><br/><font point-size="11" color="#94a3b8">Multi-agent Gemini pipeline · AWS-IAM-style Supervisor · Stripe-Radar Trust Score · MIT · http://45.32.154.255</font>>;
+    labelloc=t;
+    pad=0.4;
+    nodesep=0.45;
+    ranksep=0.55;
+    splines=spline;
+
+    // ──────── default node style
+    node [
+        shape=box, style="rounded,filled",
+        fontname="Helvetica",
+        fontsize=11, fontcolor="#e5e7eb",
+        color="#334155", penwidth=1.2,
+        margin="0.15,0.08"
+    ];
+    edge [
+        color="#475569", penwidth=1.2,
+        fontname="Helvetica", fontsize=9, fontcolor="#94a3b8",
+        arrowsize=0.7
+    ];
+
+    // ──────── INPUT ──────────────────────────────────────
+    subgraph cluster_input {
+        label=<<font color="#94a3b8" point-size="11">CUSTOMER INPUT</font>>;
+        style="rounded,dashed";
+        color="#334155";
+        fontname="Helvetica";
+
+        customer [label="👤 Customer\ntext + image", fillcolor="#1e293b", color="#64748b"];
+        upload   [label="📷 /api/upload-image\n• Pillow resize\n• EXIF preserved\n• pHash computed", fillcolor="#1e293b", color="#64748b"];
+    }
+    customer -> upload [style=dashed];
+
+    // ──────── 7-AGENT PIPELINE ──────────────────────────
+    subgraph cluster_agents {
+        label=<<font color="#a78bfa" point-size="13"><b>7 GEMINI 2.5 SPECIALIST AGENTS</b></font>   <font color="#94a3b8" point-size="10">(async pipeline · structured output · GeminiError fallback)</font>>;
+        style="rounded,filled";
+        fillcolor="#11111a";
+        color="#a78bfa";
+        fontname="Helvetica";
+
+        intent     [label="🎯 IntentAgent\nclaim_with_image | text_only |\nfollowup | clarify | inquiry", fillcolor="#1e1b3a", color="#a78bfa"];
+        emotion    [label="💗 EmotionAgent\nscore 0-10 · LOW/MED/HIGH/CRITICAL\nescalation_signals", fillcolor="#1e1b3a", color="#a78bfa"];
+        needs      [label="🧭 NeedsAgent\nlatent_need · retention_risk\nsuggested_offer_bias", fillcolor="#1e1b3a", color="#a78bfa"];
+        damage     [label="📸 DamageAgent · Vision\ndamage_type · severity 0-10 ·\nbounding_boxes · detected_subject", fillcolor="#1e1b3a", color="#a78bfa"];
+        compensation [label="💰 CompensationAgent\nhybrid-RAG · 26 policies\n_enforce_amount_sandbox", fillcolor="#1e1b3a", color="#a78bfa"];
+        supervisor [label=<<b>🛡 SupervisorAgent</b><br/><font point-size="9">AWS-IAM 3-layer · pure Python</font>>, fillcolor="#5b1d1d", color="#f97316", penwidth=2.2];
+        verifier   [label="✅ VerifierAgent\ntone review · soft revise loop\n2nd-revise → ESCALATE", fillcolor="#1e1b3a", color="#a78bfa"];
+
+        intent -> emotion [style=invis];
+        intent -> needs [style=invis];
+        intent -> damage [style=invis];
+        {rank=same; emotion; needs; damage;}
+    }
+
+    upload -> intent [label="ClaimContext"];
+    intent -> emotion [label="∥ parallel"];
+    intent -> needs;
+    intent -> damage;
+    {emotion, needs, damage} -> compensation [label="merge"];
+    compensation -> supervisor;
+    supervisor -> verifier [label="if APPROVE/CAP"];
+
+    // ──────── SUPERVISOR LAYERS (IAM) ───────────────────
+    subgraph cluster_supervisor_detail {
+        label=<<font color="#f97316" point-size="12"><b>Supervisor · AWS-IAM-style Layers</b></font>>;
+        style="rounded,filled";
+        fillcolor="#1a0e0e";
+        color="#f97316";
+        fontname="Helvetica";
+
+        deny_layer [label=<<b>L1 · DENY</b><br/><font point-size="9">force_escalate · short-circuit</font><br/>RULE-FRAUD-REPLAY (pHash)<br/>RULE-MULTIMODAL-MISMATCH<br/>RULE-DUPLICATE-ORDER<br/>RULE-SESSION-FREQ<br/>HR-LIQUID-ELECTRONICS (Tier-2)<br/>HR-LEGAL-THREAT (Tier-2)<br/>HR-LUXURY (Tier-2)>, fillcolor="#3a0f0f", color="#ef4444", fontcolor="#fecaca"];
+        exempt_layer [label=<<b>L2 · EXEMPT</b><br/><font point-size="9">un-escalate prior block</font><br/>RULE-PERISHABLE-EXEMPT>, fillcolor="#3a2c0f", color="#f59e0b", fontcolor="#fde68a"];
+        cap_layer  [label=<<b>L3 · CAP</b><br/><font point-size="9">clamp amount</font><br/>RULE-MAX-CASH-PAYMENT ($500)<br/>RULE-MAX-PCT-ORDER (100%)>, fillcolor="#0f3a2c", color="#10b981", fontcolor="#a7f3d0"];
+
+        supervisor -> deny_layer [style=invis];
+        deny_layer -> exempt_layer [style=invis];
+        exempt_layer -> cap_layer [style=invis];
+    }
+    supervisor -> deny_layer [arrowhead=none, color="#f97316", penwidth=1.6];
+
+    // ──────── TRUST SCORE ────────────────────────────────
+    subgraph cluster_trust {
+        label=<<font color="#c4b5fd" point-size="12"><b>Trust Score · Stripe-Radar style</b></font>>;
+        style="rounded,filled";
+        fillcolor="#1a1830";
+        color="#a78bfa";
+        fontname="Helvetica";
+
+        trust [label=<<b>compute_trust_score(ctx)</b><br/><font point-size="9">0-100 · 6 weighted factors · fail → cap 50</font><br/>• image_uniqueness (0.20) — pHash<br/>• image_provenance (0.15) — EXIF age<br/>• amount_sandbox (0.20)<br/>• history_coherence (0.20)<br/>• emotion_gating (0.10)<br/>• evidence_quality (0.15) — Vision conf>, fillcolor="#2a1f55", color="#c4b5fd"];
+    }
+    verifier -> trust [arrowhead=none, color="#a78bfa", penwidth=1.6];
+    cap_layer -> trust [arrowhead=none, color="#a78bfa", style=dotted];
+
+    // ──────── KNOWLEDGE + DATA FLYWHEEL ─────────────────
+    subgraph cluster_kb {
+        label=<<font color="#34d399" point-size="12"><b>Knowledge · Hybrid RAG · 1,329 entries</b></font>>;
+        style="rounded,filled";
+        fillcolor="#0f1f17";
+        color="#10b981";
+        fontname="Helvetica";
+
+        kb [label=<<b>unified_kb.jsonl</b><br/>26 policies · 1,204 SOP<br/>47 auto-synthesized methodologies<br/><font point-size="9">Gemini Embedding 001 · cosine + keyword</font>>, fillcolor="#163326", color="#34d399"];
+        synth [label=<<b>case_synthesizer</b><br/><font point-size="9">every 5 resolved cases →</font><br/>Gemini distills methodology<br/>back into KB>, fillcolor="#163326", color="#34d399"];
+        sft [label=<<b>SFT Export</b><br/><font point-size="9">gold/normal/red_flag labels</font><br/>vertex · openai · anthropic>, fillcolor="#163326", color="#34d399"];
+    }
+    kb -> compensation [label="top_k=6", color="#10b981", style=dashed];
+    compensation -> synth [color="#10b981", style=dashed];
+    synth -> kb [color="#10b981", style=dashed];
+    trust -> sft [color="#10b981", style=dashed];
+
+    // ──────── OUTPUT ────────────────────────────────────
+    subgraph cluster_output {
+        label=<<font color="#94a3b8" point-size="11">CUSTOMER-FACING OUTPUT</font>>;
+        style="rounded,dashed";
+        color="#334155";
+        fontname="Helvetica";
+
+        reply [label=<<b>Final Reply</b><br/>offer · justification ·<br/>bilingual ZH/EN>, fillcolor="#1e293b", color="#64748b"];
+        trust_card [label=<<b>🛡 Trust Score Card</b><br/>0-100 + 6 factor rows<br/>rule_id backlinks>, fillcolor="#1e293b", color="#64748b"];
+        handoff [label=<<b>📋 Handoff Queue</b><br/>P0 (legal) / P1 (high-emotion)<br/>P2 (normal) / P3 (audit)<br/><font point-size="9">structured briefing → human</font>>, fillcolor="#1e293b", color="#f59e0b"];
+    }
+    trust -> reply;
+    trust -> trust_card;
+    deny_layer -> handoff [color="#ef4444", style=dashed, label="if DENY"];
+
+    // ──────── INFRASTRUCTURE FOOTER ─────────────────────
+    subgraph cluster_infra {
+        label=<<font color="#94a3b8" point-size="11">INFRASTRUCTURE</font>>;
+        style="rounded,dashed";
+        color="#334155";
+        fontname="Helvetica";
+
+        infra [label="Vultr Cloud Compute · Frankfurt   ·   nginx + systemd   ·   FastAPI + Pydantic   ·   SSE streaming   ·   slowapi 60/min/IP   ·   MIT", fillcolor="#1e293b", color="#64748b", fontsize=10];
+    }
+    {rank=sink; infra;}
+}

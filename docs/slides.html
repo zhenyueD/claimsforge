@@ -2,25 +2,18 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>ClaimsForge — Milan AI Week 2026</title>
+<title>ClaimsForge v6 — Trust Layer for AI Claims · Milan AI Week 2026</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #07080d;
-    --bg-2: #0d0f17;
-    --fg: #f3f4f6;
-    --muted: #9ca3af;
-    --dim: #6b7280;
+    --bg: #07080d; --bg-2: #0d0f17;
+    --fg: #f3f4f6; --muted: #9ca3af; --dim: #6b7280;
     --line: rgba(255,255,255,.08);
-    --indigo: #6366f1;
-    --violet: #a78bfa;
-    --pink: #ec4899;
-    --amber: #f59e0b;
-    --emerald: #10b981;
-    --sky: #38bdf8;
-    --rose: #f43f5e;
+    --indigo: #6366f1; --violet: #a78bfa; --pink: #ec4899;
+    --amber: #f59e0b; --emerald: #10b981; --sky: #38bdf8; --rose: #f43f5e;
+    --red: #ef4444; --orange: #f97316;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   html, body { background: var(--bg); }
@@ -31,20 +24,15 @@
   }
   code, pre { font-family: 'JetBrains Mono', 'SF Mono', Monaco, monospace; }
 
-  /* Slide canvas — 16:9 at 1920×1080 */
   .slide {
-    width: 1920px;
-    height: 1080px;
-    padding: 80px 96px;
-    position: relative;
-    overflow: hidden;
+    width: 1920px; height: 1080px;
+    padding: 72px 88px;
+    position: relative; overflow: hidden;
     page-break-after: always;
     background: var(--bg);
   }
   .slide::before {
-    content: '';
-    position: absolute;
-    inset: 0;
+    content: ''; position: absolute; inset: 0;
     background:
       radial-gradient(900px at 85% 12%, rgba(99,102,241,.18), transparent 60%),
       radial-gradient(800px at 10% 92%, rgba(168,85,247,.14), transparent 60%);
@@ -52,1088 +40,1001 @@
   }
   .slide > * { position: relative; z-index: 1; }
 
-  /* Eyebrow / pill */
   .eyebrow {
     display: inline-block;
-    font-size: 14px;
-    font-weight: 700;
-    letter-spacing: 0.18em;
-    text-transform: uppercase;
-    color: var(--violet);
+    font-size: 14px; font-weight: 700; letter-spacing: 0.18em;
+    text-transform: uppercase; color: var(--violet);
     padding: 6px 14px;
-    border: 1px solid rgba(168,85,247,.4);
-    border-radius: 999px;
-    margin-bottom: 32px;
+    border: 1px solid rgba(168,85,247,.4); border-radius: 999px;
+    margin-bottom: 28px;
   }
 
   h1 { font-size: 132px; font-weight: 900; line-height: .98; letter-spacing: -0.04em; }
-  h2 { font-size: 84px; font-weight: 800; line-height: 1.05; letter-spacing: -0.025em; margin-bottom: 40px; }
+  h2 { font-size: 76px; font-weight: 800; line-height: 1.05; letter-spacing: -0.025em; margin-bottom: 36px; }
   h3 { font-size: 36px; font-weight: 700; line-height: 1.2; color: var(--fg); }
-  h4 { font-size: 24px; font-weight: 700; color: var(--violet); letter-spacing: .02em; margin-bottom: 12px; }
-  p, li { font-size: 28px; line-height: 1.5; color: #d1d5db; }
-  .lead { font-size: 38px; line-height: 1.4; color: #e5e7eb; max-width: 1500px; }
+  h4 { font-size: 22px; font-weight: 700; color: var(--violet); letter-spacing: .02em; margin-bottom: 12px; }
+  p, li { font-size: 26px; line-height: 1.5; color: #d1d5db; }
+  .lead { font-size: 36px; line-height: 1.4; color: #e5e7eb; max-width: 1500px; }
 
   .gradient {
     background: linear-gradient(135deg, #a78bfa 0%, #38bdf8 50%, #ec4899 100%);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
+    -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
   }
   .accent { color: var(--violet); }
   .accent-2 { color: var(--sky); }
   .accent-3 { color: var(--emerald); }
+  .accent-warn { color: var(--amber); }
+  .accent-fail { color: var(--red); }
   .dim { color: var(--dim); }
 
-  /* Footer with page number */
   .footer {
-    position: absolute;
-    bottom: 36px;
-    left: 96px;
-    right: 96px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 14px;
-    color: var(--dim);
-    font-weight: 500;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
+    position: absolute; bottom: 32px; left: 88px; right: 88px;
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 13px; color: var(--dim);
+    font-weight: 500; letter-spacing: 0.05em; text-transform: uppercase;
   }
   .footer .brand { color: var(--violet); font-weight: 700; }
 
-  /* Code blocks */
   pre {
-    background: #0a0c14;
-    border: 1px solid var(--line);
-    border-radius: 16px;
-    padding: 28px 32px;
-    font-size: 19px;
-    line-height: 1.6;
-    color: #e5e7eb;
-    overflow: hidden;
-    box-shadow: 0 0 0 1px rgba(99,102,241,.08), 0 30px 80px rgba(0,0,0,.5);
+    background: #0a0c14; border: 1px solid var(--line);
+    border-radius: 14px; padding: 22px 26px;
+    font-size: 17px; line-height: 1.6; color: #e5e7eb; overflow: hidden;
   }
-  pre .k { color: #c084fc; }   /* keyword */
-  pre .s { color: #86efac; }   /* string */
-  pre .c { color: #6b7280; font-style: italic; }   /* comment */
-  pre .n { color: #fbbf24; }   /* number */
-  pre .f { color: #38bdf8; }   /* function */
-  pre .t { color: #f472b6; }   /* type */
+  pre .k { color: #c084fc; }
+  pre .s { color: #86efac; }
+  pre .c { color: #6b7280; font-style: italic; }
+  pre .n { color: #fbbf24; }
+  pre .f { color: #38bdf8; }
+  pre .t { color: #f472b6; }
 
-  /* Layout primitives */
-  .row { display: flex; align-items: center; gap: 56px; }
-  .col { display: flex; flex-direction: column; gap: 24px; }
-  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; }
-  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 32px; }
-  .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 28px; }
+  .row { display: flex; align-items: center; gap: 48px; }
+  .col { display: flex; flex-direction: column; gap: 22px; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 28px; }
+  .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; }
+  .grid-7 { display: grid; grid-template-columns: repeat(7, 1fr); gap: 14px; }
 
-  /* Cards */
   .card {
     background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.01));
-    border: 1px solid var(--line);
-    border-radius: 20px;
-    padding: 32px;
+    border: 1px solid var(--line); border-radius: 18px; padding: 28px;
   }
   .card .num {
-    font-size: 88px;
-    font-weight: 800;
-    line-height: 1;
-    letter-spacing: -0.03em;
+    font-size: 78px; font-weight: 800; line-height: 1; letter-spacing: -0.03em;
     background: linear-gradient(135deg, var(--violet), var(--sky));
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
+    -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
   }
-  .card .label {
-    font-size: 18px;
-    color: var(--muted);
-    margin-top: 12px;
-    line-height: 1.4;
-  }
-  .card .small { font-size: 15px; color: var(--dim); margin-top: 8px; }
+  .card .label { font-size: 17px; color: var(--muted); margin-top: 10px; line-height: 1.4; }
+  .card .small { font-size: 14px; color: var(--dim); margin-top: 6px; }
 
-  /* Agent boxes for architecture diagram */
-  .agent {
-    border-radius: 18px;
-    padding: 28px 28px 24px;
-    border: 1.5px solid;
-    background: linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.01));
-    min-height: 200px;
+  .agent-card {
+    border-radius: 14px; padding: 18px 14px;
+    border: 1.5px solid; background: linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.01));
+    min-height: 200px; text-align: left;
   }
-  .agent .ico { font-size: 36px; display: block; margin-bottom: 12px; }
-  .agent .name { font-size: 28px; font-weight: 800; margin-bottom: 8px; }
-  .agent .role { font-size: 16px; color: var(--muted); line-height: 1.4; }
-  .agent .meta { font-size: 14px; color: var(--dim); margin-top: 14px; font-family: 'JetBrains Mono', monospace; }
-  .agent.intent { border-color: #6366f1; }
-  .agent.intent .name { color: #818cf8; }
-  .agent.damage { border-color: #f59e0b; }
-  .agent.damage .name { color: #fbbf24; }
-  .agent.comp { border-color: #10b981; }
-  .agent.comp .name { color: #34d399; }
-  .agent.verify { border-color: #38bdf8; }
-  .agent.verify .name { color: #7dd3fc; }
-  .arrow {
-    color: var(--dim);
-    font-size: 28px;
-    align-self: center;
-    margin: 0 10px;
-  }
+  .agent-card .ico { font-size: 28px; display: block; margin-bottom: 8px; }
+  .agent-card .name { font-size: 17px; font-weight: 800; margin-bottom: 6px; }
+  .agent-card .role { font-size: 12px; color: var(--muted); line-height: 1.4; }
+  .agent-card .meta { font-size: 10px; color: var(--dim); margin-top: 12px; font-family: 'JetBrains Mono', monospace; }
+  .agent-card.intent { border-color: #6366f1; } .agent-card.intent .name { color: #818cf8; }
+  .agent-card.emotion { border-color: #ec4899; } .agent-card.emotion .name { color: #f9a8d4; }
+  .agent-card.needs { border-color: #a78bfa; } .agent-card.needs .name { color: #c4b5fd; }
+  .agent-card.damage { border-color: #f59e0b; } .agent-card.damage .name { color: #fbbf24; }
+  .agent-card.comp { border-color: #10b981; } .agent-card.comp .name { color: #34d399; }
+  .agent-card.supervisor { border-color: #f97316; border-width: 2.5px; background: linear-gradient(180deg, rgba(249,115,22,.10), rgba(249,115,22,.02)); }
+  .agent-card.supervisor .name { color: #fb923c; }
+  .agent-card.verify { border-color: #38bdf8; } .agent-card.verify .name { color: #7dd3fc; }
 
-  /* Tags / chips */
   .chip {
-    display: inline-block;
-    padding: 8px 16px;
-    margin: 4px;
-    background: rgba(99,102,241,.12);
-    border: 1px solid rgba(99,102,241,.3);
-    color: #c7d2fe;
-    border-radius: 8px;
-    font-size: 16px;
-    font-weight: 500;
+    display: inline-block; padding: 6px 12px; margin: 3px;
+    background: rgba(99,102,241,.12); border: 1px solid rgba(99,102,241,.3);
+    color: #c7d2fe; border-radius: 8px; font-size: 14px; font-weight: 500;
     font-family: 'JetBrains Mono', monospace;
   }
   .chip.emerald { background: rgba(16,185,129,.1); border-color: rgba(16,185,129,.3); color: #6ee7b7; }
   .chip.amber { background: rgba(245,158,11,.1); border-color: rgba(245,158,11,.3); color: #fcd34d; }
-
-  /* QR */
-  .qr {
-    width: 240px;
-    height: 240px;
-    border-radius: 16px;
-    background: #fff;
-    padding: 14px;
-  }
+  .chip.red { background: rgba(239,68,68,.12); border-color: rgba(239,68,68,.35); color: #fca5a5; }
+  .chip.orange { background: rgba(249,115,22,.12); border-color: rgba(249,115,22,.35); color: #fdba74; }
 
   ul.bullets { list-style: none; padding: 0; }
   ul.bullets li {
-    padding: 14px 0 14px 44px;
-    position: relative;
-    font-size: 24px;
-    line-height: 1.45;
+    padding: 12px 0 12px 38px; position: relative;
+    font-size: 22px; line-height: 1.45;
   }
   ul.bullets li::before {
-    content: '→';
-    position: absolute;
-    left: 0;
-    color: var(--violet);
-    font-weight: 800;
-    font-size: 24px;
+    content: '→'; position: absolute; left: 0;
+    color: var(--violet); font-weight: 800; font-size: 22px;
   }
-  ul.dashed li { padding-left: 32px; font-size: 20px; line-height: 1.5; color: var(--muted); padding-top: 6px; padding-bottom: 6px;}
-  ul.dashed li::before { content: '—'; color: var(--dim); }
 
-  /* Schema/table */
-  .schema-row {
-    display: grid;
-    grid-template-columns: 220px 200px 1fr;
-    padding: 16px 0;
-    border-bottom: 1px solid var(--line);
-    font-size: 19px;
-    align-items: center;
-  }
-  .schema-row .field { font-family: 'JetBrains Mono', monospace; color: var(--violet); font-weight: 600; }
-  .schema-row .type { font-family: 'JetBrains Mono', monospace; color: var(--sky); font-size: 17px; }
-  .schema-row .desc { color: var(--muted); font-size: 18px; }
-
-  /* For comparison table */
   table { border-collapse: collapse; width: 100%; font-size: 19px; }
-  th, td { padding: 18px 16px; text-align: left; border-bottom: 1px solid var(--line); }
-  th { color: var(--violet); font-weight: 700; font-size: 16px; text-transform: uppercase; letter-spacing: 0.05em; }
+  th, td { padding: 16px 14px; text-align: left; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { color: var(--violet); font-weight: 700; font-size: 14px; text-transform: uppercase; letter-spacing: 0.05em; }
   td.ok { color: #34d399; }
   td.no { color: var(--rose); }
+
+  .layer-box {
+    border-radius: 14px; padding: 22px 26px;
+    border: 2px solid; margin-bottom: 16px;
+  }
+  .layer-box.deny { border-color: var(--red); background: rgba(239,68,68,.06); }
+  .layer-box.exempt { border-color: var(--amber); background: rgba(245,158,11,.06); }
+  .layer-box.cap { border-color: var(--emerald); background: rgba(16,185,129,.06); }
+  .layer-box .head { font-size: 22px; font-weight: 800; margin-bottom: 12px; }
+  .layer-box.deny .head { color: #fca5a5; }
+  .layer-box.exempt .head { color: #fcd34d; }
+  .layer-box.cap .head { color: #6ee7b7; }
+  .layer-box .rules { display: flex; flex-wrap: wrap; gap: 8px; }
+
+  .factor-row {
+    display: grid; grid-template-columns: 240px 80px 1fr;
+    padding: 10px 0; align-items: center;
+    border-bottom: 1px solid var(--line); font-size: 18px;
+  }
+  .factor-row .fname { font-weight: 700; color: var(--fg); font-family: 'JetBrains Mono', monospace; }
+  .factor-row .fweight { color: var(--sky); font-family: 'JetBrains Mono', monospace; }
+  .factor-row .fdetail { color: var(--muted); font-size: 17px; }
+
+  .demo-step {
+    display: grid; grid-template-columns: 60px 1fr;
+    padding: 14px 0; gap: 18px; align-items: start;
+    border-bottom: 1px dashed var(--line);
+  }
+  .demo-step .step-num {
+    font-size: 28px; font-weight: 800; color: var(--violet);
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .demo-step .step-body { font-size: 19px; line-height: 1.5; color: #e5e7eb; }
+  .demo-step .step-body code { background: rgba(168,85,247,.12); padding: 1px 6px; border-radius: 4px; color: #c4b5fd; font-size: 16px; }
+
+  .arch-img {
+    width: 100%; max-height: 820px; object-fit: contain;
+    border-radius: 16px;
+  }
 
   @media print {
     @page { size: 1920px 1080px; margin: 0; }
     body { background: var(--bg); }
-    .slide { box-shadow: none; }
   }
 </style>
 </head>
 <body>
 
-<!-- ═══════════════════════════════════════════════════════════
-     SLIDE 1 — Hero
-     ═══════════════════════════════════════════════════════════ -->
+<!-- SLIDE 1 — HERO -->
 <section class="slide">
-  <span class="eyebrow">Milan AI Week 2026 · AI Agent Olympics</span>
-  <h1><span class="gradient">ClaimsForge</span></h1>
-  <p class="lead" style="margin-top: 48px;">
-    Multi-agent AI that auto-resolves e-commerce damage claims<br/>
-    in <span class="accent-3">8 seconds</span>, end-to-end.
-  </p>
-
-  <div class="row" style="position: absolute; bottom: 140px; left: 96px; right: 96px;">
-    <div class="col" style="gap: 20px; flex: 1;">
-      <div>
-        <h4>Live demo</h4>
-        <code style="font-size: 28px; color: var(--sky);">http://45.32.154.255</code>
-      </div>
-      <div>
-        <h4>Code</h4>
-        <code style="font-size: 22px; color: var(--muted);">github.com/zhenyueD/claimsforge · MIT</code>
-      </div>
-      <div style="margin-top: 16px;">
-        <span class="chip">Gemini 2.5 Flash + Vision</span>
-        <span class="chip emerald">Vultr Cloud Compute</span>
-        <span class="chip amber">4 specialist agents</span>
-      </div>
-    </div>
-    <img class="qr" id="qr-img" alt="Scan to try live" />
-  </div>
-
-  <div class="footer">
-    <span class="brand">CLAIMSFORGE</span>
-    <span>01 / 15</span>
-  </div>
-</section>
-
-
-<!-- ═══════════════════════════════════════════════════════════
-     SLIDE 2 — The Problem (with sharp framing)
-     ═══════════════════════════════════════════════════════════ -->
-<section class="slide">
-  <span class="eyebrow">The Problem</span>
-  <h2>E-commerce returns: a <span class="gradient">$743B</span> tax<br/>that nobody is automating.</h2>
-
-  <div class="grid-4" style="margin-top: 64px;">
-    <div class="card">
-      <div class="num">$743B</div>
-      <div class="label">Global e-commerce returns volume per year (NRF, 2025)</div>
-    </div>
-    <div class="card">
-      <div class="num">73%</div>
-      <div class="label">of damage claims are <span style="color: var(--violet);">under $50</span> — economically wasted to triage manually</div>
-    </div>
-    <div class="card">
-      <div class="num">2–4d</div>
-      <div class="label">Average claim resolution time. Customer churns by day 2.</div>
-    </div>
-    <div class="card">
-      <div class="num">$3.20</div>
-      <div class="label">Fully-loaded labor cost per low-value claim. Often <span class="accent-3">more than the refund</span>.</div>
-    </div>
-  </div>
-
-  <div class="card" style="margin-top: 52px; padding: 36px 40px; border-color: rgba(245,158,11,.3); background: rgba(245,158,11,.04);">
-    <p style="font-size: 28px; color: #fbbf24;">
-      <strong>Status quo:</strong> support agents stare at JPEGs and argue over $20 refunds.
-      Existing tools (Zendesk macros, Gorgias rules) match keywords — they don't <em>see</em> the damage.
+  <div style="height: 100%; display: flex; flex-direction: column; justify-content: center;">
+    <span class="eyebrow">Milan AI Week 2026 · AI Agent Olympics · v6</span>
+    <h1><span class="gradient">ClaimsForge</span></h1>
+    <h3 style="margin-top: 32px; font-size: 56px; font-weight: 600; color: #e5e7eb; max-width: 1500px; line-height: 1.15;">
+      The Trust Layer for AI Claims Resolution
+    </h3>
+    <p class="lead" style="margin-top: 28px; max-width: 1500px;">
+      Multi-agent Gemini AI that resolves e-commerce damage claims —
+      <span class="accent">and proves it wasn't fooled</span>.
     </p>
-  </div>
-
-  <div class="footer">
-    <span class="brand">CLAIMSFORGE</span>
-    <span>02 / 15</span>
-  </div>
-</section>
-
-
-<!-- ═══════════════════════════════════════════════════════════
-     SLIDE 3 — Why Now
-     ═══════════════════════════════════════════════════════════ -->
-<section class="slide">
-  <span class="eyebrow">Why now</span>
-  <h2>Three things shipped in <span class="gradient">2025</span><br/>that made this build viable.</h2>
-
-  <div class="grid-3" style="margin-top: 72px;">
-    <div class="card">
-      <div style="font-size: 56px; margin-bottom: 16px;">👁️</div>
-      <h3 style="color: var(--violet);">Reliable multimodal</h3>
-      <p style="font-size: 22px; margin-top: 16px;">
-        Gemini 2.5 Flash Vision reads damage photos with <strong style="color: var(--emerald);">~90% accuracy</strong>
-        on first-call structured JSON. No OCR pipelines. No CV models to fine-tune.
-      </p>
+    <div style="margin-top: 56px; display: flex; gap: 14px; flex-wrap: wrap;">
+      <span class="chip">Gemini 2.5 Flash + Vision + Embedding</span>
+      <span class="chip emerald">7 Specialist Agents</span>
+      <span class="chip orange">AWS-IAM-style Supervisor</span>
+      <span class="chip">Stripe-Radar Trust Score</span>
+      <span class="chip emerald">100% E2E (20/20)</span>
+      <span class="chip">MIT · Vultr</span>
     </div>
-    <div class="card">
-      <div style="font-size: 56px; margin-bottom: 16px;">🧱</div>
-      <h3 style="color: var(--violet);">Native structured output</h3>
-      <p style="font-size: 22px; margin-top: 16px;">
-        <code style="font-size: 18px; color: var(--sky);">response_schema</code> + Pydantic = zero parsing acrobatics.
-        Schema-validated outputs <strong>at the API boundary</strong>, not after-the-fact.
-      </p>
-    </div>
-    <div class="card">
-      <div style="font-size: 56px; margin-bottom: 16px;">⚙️</div>
-      <h3 style="color: var(--violet);">Cheap, fast, controllable</h3>
-      <p style="font-size: 22px; margin-top: 16px;">
-        <code style="font-size: 18px; color: var(--sky);">thinking_budget</code> per call lets us spend cycles where they matter
-        (verifier) and skip them where they don't (classifier). 4 agents, total cost <strong style="color: var(--emerald);">&lt; $0.01</strong>/claim.
-      </p>
-    </div>
-  </div>
-
-  <p class="lead" style="margin-top: 72px; font-size: 28px; color: var(--muted);">
-    In 2023 this required a CV team, a fine-tuned vision model, and brittle prompt scaffolding.<br/>
-    In 2026, four small Gemini agents collaborate in ~150 lines of orchestration code.
-  </p>
-
-  <div class="footer">
-    <span class="brand">CLAIMSFORGE</span>
-    <span>03 / 15</span>
-  </div>
-</section>
-
-
-<!-- ═══════════════════════════════════════════════════════════
-     SLIDE 4 — Architecture (data-flow heavy)
-     ═══════════════════════════════════════════════════════════ -->
-<section class="slide">
-  <span class="eyebrow">System architecture</span>
-  <h2>4 specialist agents · 1 typed context · <span class="gradient">8 seconds</span></h2>
-
-  <div style="display: flex; gap: 0; align-items: center; margin-top: 64px;">
-    <div class="agent intent" style="flex: 1;">
-      <span class="ico">🎯</span>
-      <div class="name">IntentAgent</div>
-      <div class="role">Classify request, extract <code style="font-size:14px;color:#86efac;">order_id</code>, route or short-circuit on general inquiry.</div>
-      <div class="meta">flash · 1.7s · 0.1 temp</div>
-    </div>
-    <span class="arrow">›</span>
-    <div class="agent damage" style="flex: 1;">
-      <span class="ico">📸</span>
-      <div class="name">DamageAgent</div>
-      <div class="role">Vision pass over image + text. Outputs typed <code style="font-size:14px;color:#86efac;">DamageAssessment</code>.</div>
-      <div class="meta">flash-vision · 2.8s · response_schema</div>
-    </div>
-    <span class="arrow">›</span>
-    <div class="agent comp" style="flex: 1;">
-      <span class="ico">💰</span>
-      <div class="name">CompensationAgent</div>
-      <div class="role">RAG over policy DSL. Function-calling tools propose typed <code style="font-size:14px;color:#86efac;">Offer</code>.</div>
-      <div class="meta">flash · 1.7s · function_calling</div>
-    </div>
-    <span class="arrow">›</span>
-    <div class="agent verify" style="flex: 1;">
-      <span class="ico">✅</span>
-      <div class="name">VerifierAgent</div>
-      <div class="role">Hard caps + tone review. <span class="accent">approve / revise / escalate.</span></div>
-      <div class="meta">flash · 1.4s · 1 revise loop</div>
-    </div>
-  </div>
-
-  <div class="grid-3" style="margin-top: 80px;">
-    <div>
-      <h4>State model</h4>
-      <p style="font-size: 22px;">A single <code style="color:var(--sky);">ClaimContext</code> Pydantic object flows through. Each agent reads the full state, writes its own typed delta. No serialization across hops.</p>
-    </div>
-    <div>
-      <h4>Failure modes</h4>
-      <p style="font-size: 22px;">Each agent catches Gemini errors → emits a neutral fallback (e.g. <code style="color:var(--sky);">DamageType.UNCLEAR</code>) and a low confidence → orchestrator routes to human queue.</p>
-    </div>
-    <div>
-      <h4>Observability</h4>
-      <p style="font-size: 22px;">Every agent emits an <code style="color:var(--sky);">AgentTrace</code> over WebSocket as it completes. Operators see live agent latency, decisions, and revisions per claim.</p>
-    </div>
-  </div>
-
-  <div class="footer">
-    <span class="brand">CLAIMSFORGE</span>
-    <span>04 / 15</span>
-  </div>
-</section>
-
-
-<!-- ═══════════════════════════════════════════════════════════
-     SLIDE 4.5 — EmotionAgent (the differentiator)
-     ═══════════════════════════════════════════════════════════ -->
-<section class="slide">
-  <span class="eyebrow">Differentiator · EmotionAgent</span>
-  <h2>The reason competitors <span class="gradient">can't ship this.</span></h2>
-
-  <p class="lead" style="margin-top: 24px;">
-    Most CS automation treats emotion as a binary flag triggered by profanity keywords.
-    We grade it on a calibrated 0–10 scale with structured signals — and we let it
-    actually <em>move money</em> downstream.
-  </p>
-
-  <div class="grid-2" style="margin-top: 56px; gap: 64px; align-items: start;">
-    <div>
-      <h4>Typed output · drives downstream policy</h4>
-<pre><span class="k">class</span> <span class="t">Emotion</span>(<span class="t">BaseModel</span>):
-    score: <span class="t">float</span> = <span class="f">Field</span>(ge=<span class="n">0</span>, le=<span class="n">10</span>)
-    risk: <span class="t">EmotionRisk</span>   <span class="c"># LOW / MED / HIGH / CRITICAL</span>
-    label: <span class="t">str</span>          <span class="c"># single descriptive word</span>
-    triggers: <span class="t">list</span>[<span class="t">str</span>]
-        <span class="c"># exact 2-5 word phrases that drove the score</span>
-    escalation_signals: <span class="t">list</span>[<span class="t">str</span>]
-        <span class="c"># "mentions lawyer" / "12315" / "media exposure"</span>
-    suggested_tone: <span class="t">str</span>
-        <span class="c"># concrete guidance: "Lead with explicit apology"</span></pre>
-      <p style="font-size: 20px; color: var(--muted); margin-top: 16px;">
-        CRITICAL risk is auto-promoted whenever escalation_signals are non-empty
-        — even if the customer writes calmly. Polite legal threats are still legal threats.
-      </p>
-    </div>
-    <div>
-      <h4>Same damage, two customers — different outcome</h4>
-      <div class="card" style="padding: 24px; margin-bottom: 16px; border-left: 3px solid #10b981;">
-        <div style="font-size: 14px; color: #34d399; font-weight: 700; margin-bottom: 8px;">CALM · score 3 · LOW</div>
-        <div style="font-size: 18px; color: var(--muted); font-style: italic;">"Hi, my mug arrived cracked. Refund please?"</div>
-        <div style="font-size: 20px; margin-top: 12px; color: var(--fg);">→ Full refund $24, auto-approved in 8s</div>
+    <div style="margin-top: 60px; display: flex; gap: 48px; align-items: center;">
+      <div>
+        <div style="font-size: 16px; color: var(--dim); text-transform: uppercase; letter-spacing: 0.1em;">Live demo</div>
+        <div style="font-size: 36px; font-weight: 700; font-family: 'JetBrains Mono', monospace; color: var(--sky); margin-top: 8px;">
+          http://45.32.154.255
+        </div>
       </div>
-      <div class="card" style="padding: 24px; border-left: 3px solid #ef4444;">
-        <div style="font-size: 14px; color: #fca5a5; font-weight: 700; margin-bottom: 8px;">CRITICAL · score 9 · 3 signals</div>
-        <div style="font-size: 18px; color: var(--muted); font-style: italic;">"THIRD TIME I've written. Contacted lawyer and the consumer protection agency!"</div>
-        <div style="font-size: 20px; margin-top: 12px; color: var(--fg);">→ Routed to human within 5s, no auto-pay</div>
-      </div>
-    </div>
-  </div>
-
-  <p style="margin-top: 56px; font-size: 22px; color: var(--muted);">
-    Bilingual at no extra cost (tested EN + ZH, including 12315 / 消协 patterns).
-    The whole pipeline reads emotion <strong class="accent">before</strong> writing the offer.
-  </p>
-
-  <div class="footer">
-    <span class="brand">CLAIMSFORGE</span>
-    <span>05 / 15</span>
-  </div>
-</section>
-
-
-<!-- ═══════════════════════════════════════════════════════════
-     SLIDE 5.5 — NeedsAgent + Multi-turn (the second differentiator)
-     ═══════════════════════════════════════════════════════════ -->
-<section class="slide">
-  <span class="eyebrow">Differentiator · Multi-turn + NeedsAgent</span>
-  <h2>Customer support is <span class="gradient">a conversation,</span><br/>not a form submission.</h2>
-
-  <div class="grid-2" style="margin-top: 48px; gap: 56px; align-items: start;">
-    <div>
-      <h4>Per-session memory — the API remembers</h4>
-<pre><span class="c"># api/main.py</span>
-claim_sessions: <span class="t">dict</span>[<span class="t">str</span>, <span class="t">list</span>[<span class="t">TurnRecord</span>]] = {}
-
-<span class="c"># On every /api/claim:</span>
-prior = claim_sessions.<span class="f">get</span>(session_id, [])
-ctx = <span class="t">ClaimContext</span>(
-    session_id=session_id,
-    user_message=cleaned,
-    image_bytes=image_bytes,
-    history=<span class="f">list</span>(prior),   <span class="c"># ← every agent sees it</span>
-)
-<span class="c"># … pipeline runs …</span>
-prior.<span class="f">append</span>(<span class="t">TurnRecord</span>(role=<span class="s">"user"</span>, content=msg, ...))
-prior.<span class="f">append</span>(<span class="t">TurnRecord</span>(role=<span class="s">"assistant"</span>,
-    decision_summary=<span class="s">f"{offer.offer_type} ${offer.amount/100}"</span>))</pre>
-      <p style="margin-top: 24px; font-size: 20px; color: var(--muted);">
-        Three new IntentLabel exits: <code style="color:var(--sky);">needs_clarification</code> (asks a
-        follow-up question + short-circuits), <code style="color:var(--sky);">followup_on_prior_claim</code>
-        (continuity-aware), and <code style="color:var(--sky);">general_inquiry</code> (skip pipeline).
-      </p>
-    </div>
-    <div>
-      <h4>NeedsAgent — the latent-need surface</h4>
-      <div class="card" style="padding: 20px; margin-bottom: 14px; border-left: 3px solid #ec4899;">
-        <div style="font-size: 13px; color: #f9a8d4; font-weight: 700; margin-bottom: 8px;">CUSTOMER WROTE</div>
-        <div style="font-size: 17px; color: var(--muted); font-style: italic;">"My mug arrived cracked. The mug was a gift for my sister's birthday this Friday."</div>
-      </div>
-      <div class="card" style="padding: 20px; border-left: 3px solid #ec4899;">
-        <div style="font-size: 13px; color: #f9a8d4; font-weight: 700; margin-bottom: 8px;">NEEDSAGENT INFERS</div>
-        <div style="font-size: 16px; line-height: 1.6;">
-          <div style="margin-bottom: 6px;"><span style="color: var(--muted);">surface:</span> replacement</div>
-          <div style="margin-bottom: 6px;"><span style="color: var(--muted);">latent:</span> <strong style="color: #f9a8d4;">"needs a working mug by Friday for the gift"</strong></div>
-          <div style="margin-bottom: 6px;"><span style="color: var(--muted);">retention_risk:</span> 0.20</div>
-          <div><span style="color: var(--muted);">suggested_offer_bias:</span> <code style="color: var(--sky);">lean_replacement</code></div>
+      <div>
+        <div style="font-size: 16px; color: var(--dim); text-transform: uppercase; letter-spacing: 0.1em;">Repo</div>
+        <div style="font-size: 24px; font-family: 'JetBrains Mono', monospace; color: #e5e7eb; margin-top: 8px;">
+          github.com/zhenyueD/claimsforge
         </div>
       </div>
     </div>
   </div>
+  <div class="footer"><div class="brand">CLAIMSFORGE</div><div>01 / 14</div></div>
+</section>
 
-  <p style="margin-top: 56px; font-size: 22px; color: var(--muted);">
-    CompensationAgent sees the full session history + needs + emotion when proposing.
-    A customer rejecting a partial refund triggers a graceful upgrade — not a restart.
+<!-- SLIDE 2 — PROBLEM -->
+<section class="slide">
+  <span class="eyebrow">The Problem</span>
+  <h2>E-commerce claims are <span class="gradient">slow, costly, and now actively spoofed by AI</span>.</h2>
+
+  <div class="grid-4" style="margin-top: 30px;">
+    <div class="card">
+      <div class="num">$743B</div>
+      <div class="label"><b>Annual returns</b><br>US e-commerce, 2025</div>
+      <div class="small">Source: National Retail Federation</div>
+    </div>
+    <div class="card">
+      <div class="num">3 days</div>
+      <div class="label"><b>Mean human resolution time</b><br>per low-value damage claim</div>
+      <div class="small">Industry benchmark, 2025</div>
+    </div>
+    <div class="card" style="border-color: rgba(239,68,68,.35);">
+      <div class="num" style="background: linear-gradient(135deg, #ef4444, #f59e0b); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">99%</div>
+      <div class="label"><b>Insurers have seen<br>AI-tampered evidence</b></div>
+      <div class="small">Verisk 2026 State of Insurance Fraud</div>
+    </div>
+    <div class="card" style="border-color: rgba(239,68,68,.35);">
+      <div class="num" style="background: linear-gradient(135deg, #ef4444, #f59e0b); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">32%</div>
+      <div class="label"><b>Feel confident<br>catching deepfakes</b></div>
+      <div class="small">Verisk 2026 · same study</div>
+    </div>
+  </div>
+
+  <h3 style="margin-top: 56px; font-size: 38px; color: #e5e7eb;">
+    Existing AI agents <span class="accent">automate the dialogue</span>. None of them <span class="accent-warn">prove the AI didn't get fooled</span>.
+  </h3>
+  <p style="margin-top: 18px; font-size: 24px; color: var(--muted); max-width: 1500px;">
+    Sierra, Decagon, Intercom Fin — all impressive at generating empathetic replies.
+    But finance, compliance, and merchant ops teams keep asking the same question: <b>"How do I know the AI just paid the right amount to the right claim?"</b>
   </p>
 
-  <div class="footer">
-    <span class="brand">CLAIMSFORGE</span>
-    <span>06 / 15</span>
-  </div>
+  <div class="footer"><div class="brand">CLAIMSFORGE · PROBLEM</div><div>02 / 14</div></div>
 </section>
 
-
-<!-- ═══════════════════════════════════════════════════════════
-     SLIDE 5 — Agent 1: IntentAgent (with code)
-     ═══════════════════════════════════════════════════════════ -->
+<!-- SLIDE 3 — POSITIONING vs SIERRA -->
 <section class="slide">
-  <span class="eyebrow">Agent #1 · IntentAgent</span>
-  <h2>Routing is a typed function call.</h2>
+  <span class="eyebrow">Positioning</span>
+  <h2>Sierra & Decagon decide <span class="accent-warn">what the AI says</span>.<br>
+      ClaimsForge also <span class="gradient">proves it wasn't fooled</span>.</h2>
 
-  <div class="grid-2" style="margin-top: 48px; align-items: start;">
-    <div>
-      <h4>Schema (single source of truth)</h4>
-<pre><span class="k">class</span> <span class="t">IntentResult</span>(<span class="t">BaseModel</span>):
-    label: <span class="t">IntentLabel</span>
-    order_id: <span class="t">Optional</span>[<span class="t">str</span>] = <span class="k">None</span>
-    product_hint: <span class="t">Optional</span>[<span class="t">str</span>] = <span class="k">None</span>
-    confidence: <span class="t">float</span> = <span class="f">Field</span>(ge=<span class="n">0</span>, le=<span class="n">1</span>)
+  <table style="margin-top: 36px;">
+    <thead>
+      <tr>
+        <th style="width: 28%;">Capability</th>
+        <th style="width: 36%;">Sierra / Decagon / Fin</th>
+        <th style="width: 36%; color: var(--emerald);">ClaimsForge v6</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><b>Multimodal damage adjudication</b></td>
+        <td class="no">❌ Text + voice, no vision</td>
+        <td class="ok">✓ Gemini 2.5 Vision · bbox · 0-10 severity</td>
+      </tr>
+      <tr>
+        <td><b>Hard-rule safety supervisor</b></td>
+        <td class="no">⚠ Model-of-models cross-check (opaque)</td>
+        <td class="ok">✓ Pure-Python · AWS-IAM 3-layer · auditable</td>
+      </tr>
+      <tr>
+        <td><b>Deepfake / fraud detection</b></td>
+        <td class="no">❌ Not exposed publicly</td>
+        <td class="ok">✓ pHash + EXIF age + multimodal consistency</td>
+      </tr>
+      <tr>
+        <td><b>Customer-facing Trust Score</b></td>
+        <td class="no">❌</td>
+        <td class="ok">✓ Stripe-Radar style · 0-100 · 6 factors · rule_id links</td>
+      </tr>
+      <tr>
+        <td><b>Authoring SOPs</b></td>
+        <td class="no">Customer must author AOP upfront</td>
+        <td class="ok">✓ Cases → auto-distill methodology (47 today)</td>
+      </tr>
+      <tr>
+        <td><b>Hot-editable rules (no deploy)</b></td>
+        <td class="no">Configured by Sierra team</td>
+        <td class="ok">✓ Tier-2 JSON DSL + admin UI toggle</td>
+      </tr>
+      <tr>
+        <td><b>Deployment</b></td>
+        <td class="no">Managed service · $200K–2M ARR · 3–6mo PoC</td>
+        <td class="ok">✓ MIT · 1 Vultr VM · 30-min self-deploy</td>
+      </tr>
+      <tr>
+        <td><b>Fine-tune data export</b></td>
+        <td class="no">Black box</td>
+        <td class="ok">✓ Auto-labeled gold/red_flag · Vertex/OpenAI/Anthropic</td>
+      </tr>
+    </tbody>
+  </table>
 
-<span class="c"># Three exit paths, mutually exclusive</span>
-<span class="k">class</span> <span class="t">IntentLabel</span>(<span class="t">str</span>, <span class="t">Enum</span>):
-    CLAIM_WITH_IMAGE  = <span class="s">"claim_with_image"</span>
-    CLAIM_TEXT_ONLY   = <span class="s">"claim_text_only"</span>
-    GENERAL_INQUIRY   = <span class="s">"general_inquiry"</span></pre>
-      <p style="margin-top: 24px; font-size: 20px; color: var(--muted);">
-        <strong style="color: var(--violet);">Why this matters:</strong> a downstream agent receiving
-        <code style="font-size: 16px;">general_inquiry</code> can short-circuit the entire pipeline.
-        Saves ~6 seconds of Gemini calls per non-claim message.
-      </p>
-    </div>
-
-    <div>
-      <h4>Defense in depth — never trust just the LLM</h4>
-<pre><span class="k">def</span> <span class="f">classify</span>(msg: <span class="t">str</span>, has_image: <span class="t">bool</span>) -&gt; <span class="t">IntentResult</span>:
-    result = gemini.<span class="f">structured</span>(
-        prompt=build_prompt(msg, has_image),
-        schema=<span class="t">IntentResult</span>,
-        temperature=<span class="n">0.1</span>,           <span class="c"># near-deterministic</span>
-    )
-
-    <span class="c"># Belt-and-braces: model said image,</span>
-    <span class="c"># but the request body has none → downgrade</span>
-    <span class="k">if</span> result.label == CLAIM_WITH_IMAGE <span class="k">and</span> <span class="k">not</span> has_image:
-        result = result.<span class="f">model_copy</span>(
-            update={<span class="s">"label"</span>: CLAIM_TEXT_ONLY}
-        )
-
-    <span class="c"># Regex fallback for order_id — faster + safer</span>
-    <span class="c"># than relying on LLM token boundaries.</span>
-    <span class="k">if</span> <span class="k">not</span> result.order_id:
-        <span class="k">if</span> match := ORDER_RE.<span class="f">search</span>(msg):
-            result.order_id = match.<span class="f">group</span>(<span class="n">1</span>).<span class="f">upper</span>()
-    <span class="k">return</span> result</pre>
-      <p style="margin-top: 24px; font-size: 20px; color: var(--muted);">
-        <strong style="color: var(--violet);">Validated:</strong> 5/5 test cases pass.
-        Misclassifications are auto-corrected, not silently propagated.
-      </p>
-    </div>
-  </div>
-
-  <div class="footer">
-    <span class="brand">CLAIMSFORGE</span>
-    <span>07 / 15</span>
-  </div>
+  <div class="footer"><div class="brand">CLAIMSFORGE · POSITIONING</div><div>03 / 14</div></div>
 </section>
 
-
-<!-- ═══════════════════════════════════════════════════════════
-     SLIDE 6 — Agent 2: DamageAgent (Gemini Vision)
-     ═══════════════════════════════════════════════════════════ -->
+<!-- SLIDE 4 — ARCHITECTURE -->
 <section class="slide">
-  <span class="eyebrow">Agent #2 · DamageAgent — the multimodal core</span>
-  <h2>Multimodal evidence reading,<br/>in a <span class="gradient">single API call</span>.</h2>
-
-  <div class="grid-2" style="margin-top: 48px; gap: 60px; align-items: start;">
-    <div>
-      <h4>One Gemini call · text + image + JSON schema</h4>
-<pre><span class="k">def</span> <span class="f">assess</span>(
-    user_message: <span class="t">str</span>,
-    image_bytes: <span class="t">Optional</span>[<span class="t">bytes</span>] = <span class="k">None</span>,
-) -&gt; <span class="t">DamageAssessment</span>:
-    <span class="k">return</span> gemini.<span class="f">structured</span>(
-        prompt=<span class="s">f"Customer: {msg}\n\nAssess the damage."</span>,
-        schema=<span class="t">DamageAssessment</span>,         <span class="c"># Pydantic class</span>
-        system=DAMAGE_SYSTEM_PROMPT,     <span class="c"># 2 few-shots</span>
-        image_bytes=image_bytes,         <span class="c"># injected as Part</span>
-        temperature=<span class="n">0.2</span>,
-        max_tokens=<span class="n">512</span>,
-    )
-
-<span class="c"># Under the hood — google-genai 2.x:</span>
-<span class="c">#   contents = [prompt, Part.from_bytes(image_bytes, "image/jpeg")]</span>
-<span class="c">#   cfg.response_mime_type = "application/json"</span>
-<span class="c">#   cfg.response_schema    = DamageAssessment   ← Pydantic class</span></pre>
-    </div>
-
-    <div>
-      <h4>Output schema · what comes back, guaranteed typed</h4>
-      <div class="schema-row"><span class="field">damage_type</span><span class="type">DamageType</span><span class="desc">crack / scratch / tear / water_damage / ...</span></div>
-      <div class="schema-row"><span class="field">severity</span><span class="type">int 0–10</span><span class="desc">0 = unaffected, 10 = total loss</span></div>
-      <div class="schema-row"><span class="field">affected_parts</span><span class="type">list[str]</span><span class="desc">"cup rim", "screen lower-left"</span></div>
-      <div class="schema-row"><span class="field">confidence</span><span class="type">float 0–1</span><span class="desc">drives downstream policy gates</span></div>
-      <div class="schema-row"><span class="field">reasoning</span><span class="type">str</span><span class="desc">1–2 sentences — quoted to customer</span></div>
-      <div class="schema-row"><span class="field">evidence_quote</span><span class="type">Optional[str]</span><span class="desc">cited if photo and text disagree</span></div>
-
-      <p style="margin-top: 32px; font-size: 22px;">
-        <strong class="accent">Safety design:</strong>
-        when <code style="color:var(--sky);">confidence &lt; 0.5</code> on a high-value claim,
-        the orchestrator <span class="accent-3">refuses to auto-pay</span> and routes to a human.
-        Low-confidence model output ≠ confident human decision.
-      </p>
-    </div>
+  <span class="eyebrow">Architecture · v6</span>
+  <h2 style="font-size: 56px;">7 Gemini agents · 3-layer supervisor · self-evolving knowledge</h2>
+  <div style="display: flex; justify-content: center; margin-top: 8px;">
+    <img src="architecture_v6.png" class="arch-img" alt="ClaimsForge v6 architecture" />
   </div>
-
-  <div class="footer">
-    <span class="brand">CLAIMSFORGE</span>
-    <span>08 / 15</span>
-  </div>
+  <div class="footer"><div class="brand">CLAIMSFORGE · ARCHITECTURE</div><div>04 / 14</div></div>
 </section>
 
-
-<!-- ═══════════════════════════════════════════════════════════
-     SLIDE 7 — Agent 3: CompensationAgent (policy DSL + RAG)
-     ═══════════════════════════════════════════════════════════ -->
+<!-- SLIDE 5 — 7 SPECIALIST AGENTS -->
 <section class="slide">
-  <span class="eyebrow">Agent #3 · CompensationAgent — policy DSL + LLM</span>
-  <h2>LLMs propose. <span class="gradient">Policies dispose.</span></h2>
+  <span class="eyebrow">Multi-Agent Pipeline</span>
+  <h2>7 Gemini 2.5 specialists<br><span style="font-size: 40px; font-weight: 500; color: var(--muted);">
+    async fan-out · structured output · GeminiError fallback at every node
+  </span></h2>
 
-  <div class="grid-2" style="margin-top: 48px; gap: 60px; align-items: start;">
-    <div>
-      <h4>Policy as data (10 rules in policies.json)</h4>
-<pre>{
-  <span class="s">"id"</span>: <span class="s">"P-RET-01"</span>,
-  <span class="s">"title"</span>: <span class="s">"Severe damage → full refund"</span>,
-  <span class="s">"applies_when"</span>: {
-    <span class="s">"damage_severity_min"</span>: <span class="n">7</span>,
-    <span class="s">"days_since_delivery_max"</span>: <span class="n">30</span>
-  },
-  <span class="s">"offer_type"</span>: <span class="s">"full_refund"</span>,
-  <span class="s">"amount_basis"</span>: <span class="s">"order_value"</span>,
-  <span class="s">"max_cents"</span>: <span class="n">50000</span>,
-  <span class="s">"requires_return"</span>: <span class="k">false</span>
-}
-
-<span class="c">// Emotion-aware uplift (compounds on any policy)</span>
-{
-  <span class="s">"id"</span>: <span class="s">"P-EMO-01"</span>,
-  <span class="s">"applies_when"</span>: { <span class="s">"emotion_score_min"</span>: <span class="n">8</span> },
-  <span class="s">"adjustment"</span>: { <span class="s">"amount_multiplier"</span>: <span class="n">1.2</span> }
-}</pre>
-      <p style="font-size: 20px; margin-top: 20px; color: var(--muted);">
-        Policies are JSON — readable, diffable, version-controllable.
-        Compliance team owns them, not engineers.
-      </p>
+  <div class="grid-7" style="margin-top: 40px;">
+    <div class="agent-card intent">
+      <span class="ico">🎯</span>
+      <div class="name">IntentAgent</div>
+      <div class="role">Routes claim_with_image / text_only / followup / clarify / inquiry. Extracts order_id.</div>
+      <div class="meta">flash · function-calling</div>
     </div>
-
-    <div>
-      <h4>Hybrid filter · deterministic narrows, LLM chooses</h4>
-<pre><span class="k">def</span> <span class="f">propose</span>(damage, emotion, has_image, value):
-    <span class="c"># Step 1: deterministic policy filter — no LLM</span>
-    matched, escalate_reasons = <span class="f">filter_policies</span>(
-        damage, emotion, has_image, value,
-    )
-    <span class="k">if</span> escalate_reasons:
-        <span class="k">return</span> <span class="k">None</span>, escalate_reasons  <span class="c"># short-circuit</span>
-
-    <span class="c"># Step 2: Gemini picks the best fit from the narrowed set</span>
-    <span class="c"># and writes an empathetic justification.</span>
-    <span class="k">return</span> gemini.<span class="f">structured</span>(
-        prompt=<span class="f">build_offer_prompt</span>(damage, matched, value),
-        schema=<span class="t">CompensationOffer</span>,
-        system=COMPENSATION_SYSTEM_PROMPT,
-        temperature=<span class="n">0.2</span>,
-    ), []</pre>
-
-      <h4 style="margin-top: 28px;">Built-in escalation triggers</h4>
-      <div style="margin-top: 8px;">
-        <span class="chip amber">water damage on electronics → human</span>
-        <span class="chip amber">no image + claim ≥ $50 → human</span>
-        <span class="chip amber">emotion ≥ 9 + legal keywords → human</span>
-        <span class="chip amber">amount &gt; policy max → cap to max</span>
-      </div>
+    <div class="agent-card emotion">
+      <span class="ico">💗</span>
+      <div class="name">EmotionAgent</div>
+      <div class="role">0-10 score · LOW/MED/HIGH/CRITICAL risk · extracts escalation_signals (lawyer / 12315 / media).</div>
+      <div class="meta">flash · 7-trigger schema</div>
+    </div>
+    <div class="agent-card needs">
+      <span class="ico">🧭</span>
+      <div class="name">NeedsAgent</div>
+      <div class="role">Surface vs latent need · retention_risk · suggested_offer_bias (refund / replacement / credit).</div>
+      <div class="meta">flash · biases offer</div>
+    </div>
+    <div class="agent-card damage">
+      <span class="ico">📸</span>
+      <div class="name">DamageAgent</div>
+      <div class="role">Vision. damage_type · severity 0-10 · normalized bounding_boxes · detected_subject (for multimodal gate).</div>
+      <div class="meta">flash · vision · bbox</div>
+    </div>
+    <div class="agent-card comp">
+      <span class="ico">💰</span>
+      <div class="name">CompensationAgent</div>
+      <div class="role">26 policies · hybrid-RAG over 1,329 KB entries · Python amount sandbox clamps LLM dollar values.</div>
+      <div class="meta">flash + embedding</div>
+    </div>
+    <div class="agent-card supervisor">
+      <span class="ico">🛡</span>
+      <div class="name">SupervisorAgent</div>
+      <div class="role"><b>The differentiator.</b> Pure-Python, AWS-IAM 3 layers: DENY → EXEMPT → CAP. Tier-1 code + Tier-2 hot JSON.</div>
+      <div class="meta">deterministic · auditable</div>
+    </div>
+    <div class="agent-card verify">
+      <span class="ico">✅</span>
+      <div class="name">VerifierAgent</div>
+      <div class="role">Soft tone + fit review. Max 1 revise. 2nd-revise auto-escalates (never accept unverified offer).</div>
+      <div class="meta">flash · safety net</div>
     </div>
   </div>
 
-  <div class="footer">
-    <span class="brand">CLAIMSFORGE</span>
-    <span>09 / 15</span>
-  </div>
-</section>
-
-
-<!-- ═══════════════════════════════════════════════════════════
-     SLIDE 8 — Agent 4: VerifierAgent (safety layer)
-     ═══════════════════════════════════════════════════════════ -->
-<section class="slide">
-  <span class="eyebrow">Agent #4 · VerifierAgent — the safety net</span>
-  <h2>One last review before<br/>the customer sees a dollar amount.</h2>
-
-  <div class="grid-2" style="margin-top: 48px; gap: 60px;">
-    <div>
-      <h4>Two-layer verification</h4>
-      <div class="card" style="padding: 28px; margin-bottom: 20px; border-left: 4px solid #f59e0b;">
-        <h3 style="font-size: 24px; color: #fbbf24; margin-bottom: 12px;">Layer 1 · Deterministic hard caps</h3>
-        <ul class="dashed">
-          <li>Offer amount &gt; policy <code style="color:var(--sky);">max_cents</code> × 1.2? → <strong>revise</strong> down</li>
-          <li>Confidence &lt; 0.5 with amount &gt; $50? → <strong>escalate</strong></li>
-          <li>Policy conflict (e.g. <code style="color:var(--sky);">force_escalate</code> matched)? → <strong>escalate</strong></li>
-        </ul>
-      </div>
-      <div class="card" style="padding: 28px; border-left: 4px solid #38bdf8;">
-        <h3 style="font-size: 24px; color: #7dd3fc; margin-bottom: 12px;">Layer 2 · LLM tone review</h3>
-        <ul class="dashed">
-          <li>Customer emotion ≥ 8 but justification is cold? → <strong>revise</strong> wording</li>
-          <li>Justification cites wrong product / wrong policy? → <strong>revise</strong> content</li>
-          <li>Anything that smells off? → <strong>escalate</strong></li>
-        </ul>
-      </div>
-    </div>
-    <div>
-      <h4>One revision loop, then commit</h4>
-<pre><span class="c"># Orchestrator wraps the verifier with a single-revise loop:</span>
-verifier_agent.<span class="f">run</span>(ctx)
-
-<span class="k">if</span> ctx.verification.verdict == REVISE
-   <span class="k">and</span> ctx.verification.revised_offer:
-    <span class="c"># take verifier's suggestion as the new offer,</span>
-    <span class="c"># run it through once more — but no second revise.</span>
-    ctx.offer = ctx.verification.revised_offer
-    verifier_agent.<span class="f">run</span>(ctx)
-    <span class="c"># whatever the verdict, this is final.</span>
-ctx.final_offer = ctx.offer</pre>
-
-      <p style="margin-top: 32px; font-size: 22px;">
-        <strong class="accent-3">Result:</strong> unbounded revision loops are impossible by construction.
-        Total verifier latency p99: <strong>&lt; 3 seconds</strong>.
-      </p>
-
-      <div style="margin-top: 28px;">
-        <h4>Live decision (cracked mug, $24)</h4>
-<pre>verdict: <span class="s">"approve"</span>
-reason : <span class="s">"Amount within policy.</span>
-<span class="s">          Justification empathetic and accurate."</span></pre>
-      </div>
-    </div>
-  </div>
-
-  <div class="footer">
-    <span class="brand">CLAIMSFORGE</span>
-    <span>10 / 15</span>
-  </div>
-</section>
-
-
-<!-- ═══════════════════════════════════════════════════════════
-     SLIDE 8.5 — Eval data (credibility)
-     ═══════════════════════════════════════════════════════════ -->
-<section class="slide">
-  <span class="eyebrow">Evidence · not vibes</span>
-  <h2>We measured. <span class="gradient">96.7%.</span></h2>
-
-  <p class="lead" style="margin-top: 24px;">
-    Built a labeled set of 75 damage images (5 categories × 5 damage types × 3 severities).
-    Ran the live DamageAgent against 30 of them, two columns of accuracy:
-  </p>
-
-  <div class="grid-4" style="margin-top: 64px;">
-    <div class="card">
-      <div class="num">96.7%</div>
-      <div class="label">Joint accuracy<br/>(correct type <em>and</em> ±1 severity)</div>
-    </div>
-    <div class="card">
-      <div class="num">96.7%</div>
-      <div class="label">Type accuracy<br/>(crack vs scratch vs tear vs ...)</div>
-    </div>
-    <div class="card">
-      <div class="num">2.9s</div>
-      <div class="label">p50 latency per image<br/>(includes structured JSON)</div>
-    </div>
-    <div class="card" style="border-color: rgba(239,68,68,.3);">
-      <div class="num" style="background: linear-gradient(135deg, #fca5a5, #f43f5e); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;">0%</div>
-      <div class="label">False positives on the only fail<br/>(model said "unclear" — correct behavior)</div>
-    </div>
-  </div>
-
-  <div class="grid-2" style="margin-top: 56px; gap: 64px;">
-    <div>
-      <h4>Per-category breakdown</h4>
-<pre>mug      · crack/scratch/missing_part/stain  → 15/15 ✓
-phone    · crack/scratch/water_damage/dent   → 14/15 ✓
-  one phone_dent_4 → "unclear" (correct: image
-  too subtle for confident call)</pre>
-    </div>
-    <div>
-      <h4>Why we ran this</h4>
-      <ul class="bullets">
-        <li><strong>You can't ship a CS agent on vibes.</strong> Vibes are how the bad demos at the top of HN ship.</li>
-        <li>The eval harness ships with the repo (<code style="color:var(--sky);">eval/run_damage_eval.py</code>). Re-runs in 30 seconds. Confusion matrix + failure cases auto-generated.</li>
-        <li>Same harness will rerun on every prompt change. Drift gets caught.</li>
-      </ul>
-    </div>
-  </div>
-
-  <div class="footer">
-    <span class="brand">CLAIMSFORGE</span>
-    <span>11 / 15</span>
-  </div>
-</section>
-
-
-<!-- ═══════════════════════════════════════════════════════════
-     SLIDE 9 — Learning loop
-     ═══════════════════════════════════════════════════════════ -->
-<section class="slide">
-  <span class="eyebrow">Continuous learning · not a buzzword</span>
-  <h2>Every claim is <span class="gradient">precedent.</span></h2>
-
-  <div class="grid-2" style="margin-top: 56px; gap: 64px; align-items: start;">
-    <div>
-      <h4>What happens after every resolution</h4>
-<pre><span class="c"># in orchestrator.py, after final_offer is set:</span>
-<span class="f">append_learned_case</span>({
-    <span class="s">"session_id"</span>: ctx.session_id,
-    <span class="s">"emotion"</span>: ctx.emotion.<span class="f">model_dump</span>(),
-    <span class="s">"damage"</span>: ctx.damage.<span class="f">model_dump</span>(),
-    <span class="s">"final_offer"</span>: ctx.final_offer.<span class="f">model_dump</span>(),
-    <span class="s">"escalated"</span>: ctx.escalated_to_human,
-})
-
-<span class="c"># next time CompensationAgent runs:</span>
-recent = <span class="f">retrieve_recent_learned</span>(
-    damage_type=damage.damage_type.value,
-    top_k=<span class="n">3</span>,
-)
-<span class="c"># top 3 most-recent precedents flow into the prompt</span></pre>
-    </div>
-    <div>
-      <h4>What this is (and isn't)</h4>
-      <ul class="bullets">
-        <li><strong>It is:</strong> retrieval-augmented decision-making. Recent live cases ground the next offer — same damage type, same outcome distribution.</li>
-        <li><strong>It is:</strong> auditable. A human can read the jsonl and see exactly why a claim got what it got.</li>
-        <li><strong>It isn't:</strong> fine-tuning. We didn't pretend. Fine-tuning a vision-LLM on 8 cases is a meme. The RAG is what learning loops at this scale actually look like in production.</li>
-        <li><strong>Roadmap:</strong> at ~10k cases, swap to embedding-based retrieval. At ~100k, distill into a fine-tuned Gemma student model.</li>
-      </ul>
-    </div>
-  </div>
-
-  <div class="card" style="margin-top: 40px; padding: 24px; border-color: rgba(167,139,250,.3);">
-    <h4 style="margin-bottom: 12px;">Live in the demo UI</h4>
+  <div style="margin-top: 56px; padding: 24px 28px; border: 1px solid var(--line); border-radius: 14px; background: rgba(56,189,248,.05);">
+    <h4 style="color: var(--sky); margin-bottom: 10px;">⚡ Why this beats LangGraph / CrewAI</h4>
     <p style="font-size: 20px;">
-      The right rail shows the live Learning Queue. Every claim resolved in the session
-      appears there with damage type, severity, emotion, and outcome — and influences
-      the next decision. <code style="color: var(--sky);">/api/claimsforge/learning</code>
-      returns the same data programmatically.
+      Zero framework. One <code style="color: #c4b5fd;">orchestrator.py</code> · 522 lines · pure
+      <code style="color: #c4b5fd;">asyncio.gather</code> + typed
+      <code style="color: #c4b5fd;">ClaimContext</code>. Emotion ‖ Needs ‖ Damage run in parallel —
+      p50 latency 8.9s end-to-end, 6+ Gemini calls per claim.
     </p>
   </div>
 
-  <div class="footer">
-    <span class="brand">CLAIMSFORGE</span>
-    <span>12 / 15</span>
-  </div>
+  <div class="footer"><div class="brand">CLAIMSFORGE · AGENTS</div><div>05 / 14</div></div>
 </section>
 
-
-<!-- ═══════════════════════════════════════════════════════════
-     SLIDE 12 — Live demo (with real screenshot from prod)
-     ═══════════════════════════════════════════════════════════ -->
+<!-- SLIDE 6 — SUPERVISOR IAM 3 LAYERS -->
 <section class="slide">
-  <span class="eyebrow">Live demo · running on Vultr</span>
-  <h2>The whole pipeline,<br/>in <span class="gradient">one screenshot</span>.</h2>
+  <span class="eyebrow">Differentiator #1 · Supervisor</span>
+  <h2>AWS-IAM-style Supervisor —<br><span class="gradient">explicit Deny / Exempt / Cap</span> in pure Python</h2>
 
-  <div class="row" style="margin-top: 56px; align-items: flex-start; gap: 64px;">
-    <div style="flex: 1.3;">
-      <div class="card" style="padding: 16px; background: #0a0c14;">
-        <img src="prod-landing.png" style="width: 100%; border-radius: 12px;" alt="Live ClaimsForge UI" />
+  <div class="grid-2" style="margin-top: 36px;">
+    <div>
+      <div class="layer-box deny">
+        <div class="head">🚫 L1 · DENY <span style="font-size: 14px; color: var(--dim); font-weight: 400; letter-spacing: 0.05em;">— force_escalate · short-circuit</span></div>
+        <div class="rules">
+          <span class="chip red">RULE-FRAUD-REPLAY (pHash)</span>
+          <span class="chip red">RULE-MULTIMODAL-MISMATCH</span>
+          <span class="chip red">RULE-DUPLICATE-ORDER</span>
+          <span class="chip red">RULE-SESSION-FREQ</span>
+          <span class="chip orange">HR-LIQUID-ELECTRONICS · Tier-2</span>
+          <span class="chip orange">HR-LEGAL-THREAT · Tier-2</span>
+          <span class="chip orange">HR-LUXURY · Tier-2</span>
+        </div>
       </div>
-      <p style="text-align: center; margin-top: 16px; font-size: 18px; color: var(--dim);">
-        Live at <code style="color: var(--sky);">http://45.32.154.255</code>
+
+      <div class="layer-box exempt">
+        <div class="head">↩️ L2 · EXEMPT <span style="font-size: 14px; color: var(--dim); font-weight: 400; letter-spacing: 0.05em;">— un-escalate prior block</span></div>
+        <div class="rules">
+          <span class="chip amber">RULE-PERISHABLE-EXEMPT</span>
+          <span style="font-size: 16px; color: var(--muted); padding: 6px 12px;">— food / cosmetic claims skip the no-image rule</span>
+        </div>
+      </div>
+
+      <div class="layer-box cap">
+        <div class="head">📐 L3 · CAP <span style="font-size: 14px; color: var(--dim); font-weight: 400; letter-spacing: 0.05em;">— clamp without escalating</span></div>
+        <div class="rules">
+          <span class="chip emerald">RULE-MAX-CASH-PAYMENT · $500</span>
+          <span class="chip emerald">RULE-MAX-PCT-ORDER · 100%</span>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <h4 style="margin-bottom: 18px;">Why IAM, not LLM judgement?</h4>
+      <p style="font-size: 20px; color: #d1d5db; line-height: 1.55;">
+        LLMs hallucinate policies and overrule cash caps when the customer writing is empathetic.
+        A pure-Python gate <b>cannot</b> be talked out of a hard rule. Every decision logs the
+        <code style="color: #c4b5fd; font-family: 'JetBrains Mono', monospace;">rule_id</code> that fired.
+      </p>
+
+      <h4 style="margin-top: 32px; margin-bottom: 12px;">3-Tier Rule Authority</h4>
+      <p style="font-size: 19px; color: #d1d5db; line-height: 1.55;">
+        <b style="color: #fca5a5;">Tier 1</b> — code constitution, can't toggle at runtime<br>
+        <b style="color: #fdba74;">Tier 2</b> — <code style="font-family: 'JetBrains Mono', monospace; color: #fdba74;">data/hard_rules.json</code>, business toggle via admin UI<br>
+        <b style="color: #6ee7b7;">Tier 3</b> — KB embeddings, soft guidance only
+      </p>
+
+      <pre style="margin-top: 26px; font-size: 14px;"><span class="c"># Tier-2 DSL — strict operator whitelist · no dynamic exec</span>
+{
+  <span class="s">"id"</span>: <span class="s">"HR-LUXURY"</span>,
+  <span class="s">"when"</span>: { <span class="s">"product_hint_in"</span>: [<span class="s">"luxury"</span>, <span class="s">"jewelry"</span>, <span class="s">"watch"</span>] },
+  <span class="s">"verdict"</span>: <span class="s">"force_escalate"</span>,
+  <span class="s">"reason"</span>: <span class="s">"Luxury manual handling regardless of policy"</span>,
+  <span class="s">"owner"</span>: <span class="s">"claims-ops@company.com"</span>,
+  <span class="s">"active"</span>: <span class="k">true</span>
+}</pre>
+    </div>
+  </div>
+
+  <div class="footer"><div class="brand">CLAIMSFORGE · SUPERVISOR</div><div>06 / 14</div></div>
+</section>
+
+<!-- SLIDE 7 — TRUST SCORE -->
+<section class="slide">
+  <span class="eyebrow">Differentiator #2 · Trust Score</span>
+  <h2>Stripe-Radar-style <span class="gradient">Trust Score on every offer</span> —<br>0-100 · 6 weighted factors · rule_id traceable</h2>
+
+  <div class="grid-2" style="margin-top: 36px;">
+    <div>
+      <h4 style="margin-bottom: 12px;">The factor breakdown</h4>
+      <div class="factor-row">
+        <div class="fname">image_uniqueness</div>
+        <div class="fweight">0.20</div>
+        <div class="fdetail">pHash collision against approved-image anchor set</div>
+      </div>
+      <div class="factor-row">
+        <div class="fname">image_provenance</div>
+        <div class="fweight">0.15</div>
+        <div class="fdetail">EXIF DateTimeOriginal age (≥365d → fail)</div>
+      </div>
+      <div class="factor-row">
+        <div class="fname">amount_sandbox</div>
+        <div class="fweight">0.20</div>
+        <div class="fdetail">Python clamp on LLM dollar output</div>
+      </div>
+      <div class="factor-row">
+        <div class="fname">history_coherence</div>
+        <div class="fweight">0.20</div>
+        <div class="fdetail">Duplicate-order detection + session frequency</div>
+      </div>
+      <div class="factor-row">
+        <div class="fname">emotion_gating</div>
+        <div class="fweight">0.10</div>
+        <div class="fdetail">Legal/regulator signals · score 0-10</div>
+      </div>
+      <div class="factor-row" style="border-bottom: none;">
+        <div class="fname">evidence_quality</div>
+        <div class="fweight">0.15</div>
+        <div class="fdetail">DamageAgent confidence + multimodal mismatch</div>
+      </div>
+
+      <p style="margin-top: 24px; font-size: 18px; color: var(--muted); line-height: 1.55;">
+        Weighted sum × 100. Any <span class="accent-fail">fail</span> factor caps the total at 50 —
+        the "do not trust" signal the UI surfaces in red.
       </p>
     </div>
-    <div style="flex: 1; padding-top: 12px;">
-      <h4>What the customer sees</h4>
-      <ul class="bullets">
-        <li><strong>Upload a photo, hit send.</strong> No forms. No selecting categories.</li>
-        <li>Live agent trace — they see each step think, in real time.</li>
-        <li>Damage card with severity bar + Gemini's reasoning, quoted back.</li>
-        <li>Offer card with the dollar amount, type, and policy citation.</li>
-        <li>"Approved" badge from VerifierAgent → final reply.</li>
-      </ul>
 
-      <h4 style="margin-top: 36px;">What ops sees</h4>
-      <ul class="bullets">
-        <li>WebSocket event stream of every <code style="color:var(--sky);">agent_trace</code> across all claims.</li>
-        <li>Per-agent latency, decision distribution, escalation rate.</li>
-        <li>Edge cases queue (auto-routed by VerifierAgent).</li>
-      </ul>
-    </div>
-  </div>
-
-  <div class="footer">
-    <span class="brand">CLAIMSFORGE</span>
-    <span>13 / 15</span>
-  </div>
-</section>
-
-
-<!-- ═══════════════════════════════════════════════════════════
-     SLIDE 10 — Business impact (unit economics)
-     ═══════════════════════════════════════════════════════════ -->
-<section class="slide">
-  <span class="eyebrow">Unit economics</span>
-  <h2>Per 1,000 low-value damage claims:</h2>
-
-  <div class="grid-4" style="margin-top: 64px;">
-    <div class="card">
-      <div class="num">$3,200</div>
-      <div class="label">Labor cost <em>today</em><br/><span class="dim">(15 min × $13/hr × 1,000)</span></div>
-    </div>
-    <div class="card" style="border-color: rgba(16,185,129,.3);">
-      <div class="num" style="background: linear-gradient(135deg, #10b981, #34d399); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;">$320</div>
-      <div class="label">Labor cost <em>with ClaimsForge</em><br/><span class="dim">(90% auto, 10% human at 15 min)</span></div>
-    </div>
-    <div class="card">
-      <div class="num">$8.50</div>
-      <div class="label">Gemini API cost<br/><span class="dim">($0.0085/claim × 1,000)</span></div>
-    </div>
-    <div class="card" style="border-color: rgba(168,85,247,.3);">
-      <div class="num gradient">$2,871</div>
-      <div class="label"><strong>Net savings</strong> per 1,000 claims<br/><span class="dim">(90% margin on labor displaced)</span></div>
-    </div>
-  </div>
-
-  <div class="grid-2" style="margin-top: 64px; gap: 64px;">
     <div>
-      <h4>Downstream effects (modeled)</h4>
+      <h4 style="margin-bottom: 14px;">In the customer-facing UI</h4>
+      <div style="background: var(--bg-2); border: 1px solid var(--line); border-radius: 14px; padding: 24px; box-shadow: 0 30px 80px rgba(0,0,0,.5);">
+        <div style="display: flex; align-items: baseline; gap: 12px; margin-bottom: 16px;">
+          <span style="font-size: 16px; font-weight: 700; color: #c4b5fd;">🛡 Trust Score · IAM deny</span>
+          <span style="font-size: 14px; color: var(--dim); font-family: 'JetBrains Mono', monospace; margin-left: auto;">layer=deny</span>
+        </div>
+        <div style="display: grid; grid-template-columns: 100px 1fr; gap: 16px; align-items: start;">
+          <div style="font-size: 48px; font-weight: 800; color: var(--amber);">50<span style="font-size: 16px; color: var(--dim); font-weight: 400;">/100</span></div>
+          <div style="font-size: 13px; line-height: 1.7;">
+            <div>❌ <b style="color: #fca5a5;">image_uniqueness</b> · pHash collision · <code style="font-size: 11px; background: rgba(255,255,255,.05); padding: 1px 5px; border-radius: 3px;">RULE-FRAUD-REPLAY</code></div>
+            <div>✅ <b style="color: #6ee7b7;">amount_sandbox</b> · LLM within bounds</div>
+            <div>✅ <b style="color: #6ee7b7;">history_coherence</b> · no duplicate order</div>
+            <div>✅ <b style="color: #6ee7b7;">emotion_gating</b> · score 3.0/10</div>
+            <div>✅ <b style="color: #6ee7b7;">evidence_quality</b> · damage conf 90%</div>
+            <div>⚠️ <b style="color: #fcd34d;">image_provenance</b> · photo taken 853 days ago</div>
+          </div>
+        </div>
+      </div>
+
+      <p style="margin-top: 28px; font-size: 19px; color: #d1d5db; line-height: 1.55;">
+        Each factor carries a <code style="font-family: 'JetBrains Mono', monospace; color: #c4b5fd; background: rgba(168,85,247,.12); padding: 2px 6px; border-radius: 4px; font-size: 16px;">rule_id</code>
+        backlink so a finance auditor can jump from "Trust 50" all the way down to the supervisor rule that fired and the JSON predicate that matched.
+      </p>
+    </div>
+  </div>
+
+  <div class="footer"><div class="brand">CLAIMSFORGE · TRUST SCORE</div><div>07 / 14</div></div>
+</section>
+
+<!-- SLIDE 8 — DEMO A: CLEAN CLAIM -->
+<section class="slide">
+  <span class="eyebrow">Demo · Case A</span>
+  <h2><span class="accent-3">Clean claim</span> → 8-second auto-refund · Trust Score 96</h2>
+
+  <div class="grid-2" style="margin-top: 30px;">
+    <div>
+      <div class="demo-step">
+        <div class="step-num">1</div>
+        <div class="step-body"><b>Customer:</b> "My mug arrived cracked, order ORD-MUG-001"  + <code>mug_crack.jpg</code></div>
+      </div>
+      <div class="demo-step">
+        <div class="step-num">2</div>
+        <div class="step-body"><b>IntentAgent</b> · <code>claim_with_image</code> · order_id extracted · 0.4s</div>
+      </div>
+      <div class="demo-step">
+        <div class="step-num">3</div>
+        <div class="step-body"><b>Emotion ‖ Needs ‖ Damage</b> in parallel · 2.1s.<br>
+          Damage: <code>crack</code> · severity 8/10 · conf 0.90 · <b>bbox painted on image</b></div>
+      </div>
+      <div class="demo-step">
+        <div class="step-num">4</div>
+        <div class="step-body"><b>CompensationAgent</b> · hybrid-RAG retrieves 6 KB entries · selects <code>P-RET-01</code> · proposes <code>full_refund $24</code></div>
+      </div>
+      <div class="demo-step">
+        <div class="step-num">5</div>
+        <div class="step-body"><b>Supervisor</b> · all 7 deny rules pass · all 6 trust factors green · <span class="accent-3">approve</span></div>
+      </div>
+      <div class="demo-step">
+        <div class="step-num">6</div>
+        <div class="step-body"><b>VerifierAgent</b> · tone OK · <span class="accent-3">approve</span></div>
+      </div>
+      <div class="demo-step">
+        <div class="step-num">7</div>
+        <div class="step-body"><b>Customer reply</b> · bilingual (auto-detect) · 8.2s end-to-end</div>
+      </div>
+    </div>
+
+    <div>
+      <h4 style="margin-bottom: 14px;">What the customer sees</h4>
+      <div style="background: var(--bg-2); border: 1px solid var(--line); border-radius: 14px; padding: 22px;">
+        <div style="font-size: 16px; color: #e5e7eb; line-height: 1.6; padding: 14px; background: rgba(16,185,129,.06); border-left: 3px solid var(--emerald); border-radius: 8px; margin-bottom: 16px;">
+          "That crack along the rim makes the mug unusable — I've issued a full refund of $24 to your original payment method. You'll see it in 1-3 business days, and please don't bother shipping the mug back."
+        </div>
+        <div style="display: flex; align-items: baseline; gap: 10px; padding: 12px 16px; background: rgba(16,185,129,.06); border: 1px solid rgba(16,185,129,.25); border-radius: 10px;">
+          <span style="font-size: 13px; font-weight: 700; color: #6ee7b7;">🛡 Trust</span>
+          <span style="font-size: 36px; font-weight: 800; color: #10b981;">100<span style="font-size: 13px; color: var(--dim); font-weight: 400;">/100</span></span>
+          <span style="font-size: 12px; color: var(--muted); margin-left: auto; font-family: 'JetBrains Mono', monospace;">layer=approve</span>
+        </div>
+        <div style="margin-top: 12px; font-size: 12px; color: #6ee7b7; line-height: 1.7;">
+          ✅ image_uniqueness · no pHash collision in 47 anchors<br>
+          ✅ image_provenance · photo taken 2 days ago<br>
+          ✅ amount_sandbox · LLM within policy<br>
+          ✅ history_coherence · no duplicate<br>
+          ✅ emotion_gating · score 3.0/10<br>
+          ✅ evidence_quality · damage conf 90% · crack
+        </div>
+      </div>
+
+      <p style="margin-top: 28px; font-size: 19px; color: #d1d5db; line-height: 1.55;">
+        Three buttons under every reply: <code style="background: rgba(16,185,129,.12); color: #6ee7b7; padding: 2px 6px; border-radius: 4px;">✅ Accept</code>
+        · <code style="background: rgba(245,158,11,.12); color: #fcd34d; padding: 2px 6px; border-radius: 4px;">↩ Reject — renegotiate</code>
+        · <code style="background: rgba(239,68,68,.12); color: #fca5a5; padding: 2px 6px; border-radius: 4px;">👤 Talk to human</code>.
+        Accept → labels case <span class="accent-3">gold</span> for SFT export.
+      </p>
+    </div>
+  </div>
+
+  <div class="footer"><div class="brand">CLAIMSFORGE · DEMO A</div><div>08 / 14</div></div>
+</section>
+
+<!-- SLIDE 9 — DEMO B: FRAUD GATE -->
+<section class="slide">
+  <span class="eyebrow">Demo · Case B · Fraud</span>
+  <h2><span class="accent-fail">Three adversarial attacks</span>, three deterministic denies</h2>
+
+  <div class="grid-3" style="margin-top: 30px;">
+    <div class="card" style="border-color: rgba(239,68,68,.35); padding: 24px;">
+      <h4 style="color: #fca5a5; margin-bottom: 8px;">Attack 1 · pHash Replay</h4>
+      <p style="font-size: 17px; color: #d1d5db; line-height: 1.5;">
+        Customer submits a damage photo. <b>Auto-refund approved.</b><br><br>
+        Attacker re-submits <b>same photo</b> from new session, new email.
+      </p>
+      <div style="margin-top: 18px; padding: 14px; background: rgba(239,68,68,.08); border: 1px solid rgba(239,68,68,.3); border-radius: 10px;">
+        <div style="font-size: 13px; color: #fca5a5; font-family: 'JetBrains Mono', monospace; line-height: 1.6;">
+          layer = <b>deny</b><br>
+          matched = [<b>RULE-FRAUD-REPLAY</b>]<br>
+          reason: pHash collision<br>
+          Hamming=0 cross-session
+        </div>
+      </div>
+      <p style="margin-top: 18px; font-size: 16px; color: var(--muted);">Pure Python · &lt;5ms · zero LLM cost</p>
+    </div>
+
+    <div class="card" style="border-color: rgba(245,158,11,.35); padding: 24px;">
+      <h4 style="color: #fcd34d; margin-bottom: 8px;">Attack 2 · Deepfake / Stale Photo</h4>
+      <p style="font-size: 17px; color: #d1d5db; line-height: 1.5;">
+        Customer uploads an "evidence" photo. Looks legit to LLM Vision.<br><br>
+        <b>EXIF DateTimeOriginal: 2024-01-15.</b> Order was placed last week.
+      </p>
+      <div style="margin-top: 18px; padding: 14px; background: rgba(245,158,11,.08); border: 1px solid rgba(245,158,11,.3); border-radius: 10px;">
+        <div style="font-size: 13px; color: #fcd34d; font-family: 'JetBrains Mono', monospace; line-height: 1.6;">
+          factor = <b>image_provenance</b><br>
+          status = <b>fail</b><br>
+          photo taken 853 days ago<br>
+          → Trust cap at 50
+        </div>
+      </div>
+      <p style="margin-top: 18px; font-size: 16px; color: var(--muted);">99% of insurers have seen this · 32% catch it (Verisk 2026)</p>
+    </div>
+
+    <div class="card" style="border-color: rgba(239,68,68,.35); padding: 24px;">
+      <h4 style="color: #fca5a5; margin-bottom: 8px;">Attack 3 · Text/Image Mismatch</h4>
+      <p style="font-size: 17px; color: #d1d5db; line-height: 1.5;">
+        Customer text: <i>"My ceramic mug arrived cracked"</i><br><br>
+        Image actually shows: a smartphone.
+      </p>
+      <div style="margin-top: 18px; padding: 14px; background: rgba(239,68,68,.08); border: 1px solid rgba(239,68,68,.3); border-radius: 10px;">
+        <div style="font-size: 13px; color: #fca5a5; font-family: 'JetBrains Mono', monospace; line-height: 1.6;">
+          layer = <b>deny</b><br>
+          matched = [<b>RULE-MULTIMODAL-MISMATCH</b>]<br>
+          hinted: "ceramic mug"<br>
+          detected: "smartphone"
+        </div>
+      </div>
+      <p style="margin-top: 18px; font-size: 16px; color: var(--muted);">Sierra-impossible — they have no vision channel to cross-check</p>
+    </div>
+  </div>
+
+  <div style="margin-top: 50px; padding: 24px 28px; border: 1px solid rgba(168,85,247,.3); border-radius: 14px; background: rgba(168,85,247,.06);">
+    <h4 style="color: var(--violet); margin-bottom: 8px;">📊 E2E validation</h4>
+    <p style="font-size: 22px;">
+      <b>20/20 = 100% joint accuracy</b> on adversarial test set including all three attacks above
+      + prompt injection + amount overclaim + emotion spoofing + multi-turn inconsistency + duplicate-order.
+      <span class="accent">p50 latency 8.9s</span> end-to-end.
+    </p>
+  </div>
+
+  <div class="footer"><div class="brand">CLAIMSFORGE · DEMO B</div><div>09 / 14</div></div>
+</section>
+
+<!-- SLIDE 10 — DEMO C: DUPLICATE + TIER-2 TOGGLE -->
+<section class="slide">
+  <span class="eyebrow">Demo · Case C · Business Control</span>
+  <h2><span class="accent-fail">Duplicate refund</span> blocked · <span class="accent-3">ops toggle rules live</span></h2>
+
+  <div class="grid-2" style="margin-top: 30px;">
+    <div>
+      <h4 style="margin-bottom: 12px;">Duplicate-order attack</h4>
+      <div class="demo-step">
+        <div class="step-num">T1</div>
+        <div class="step-body"><b>Customer:</b> "Mug cracked, ORD-MUG-T03" → bot refunds $24 → customer clicks <code>✅ Accept</code></div>
+      </div>
+      <div class="demo-step">
+        <div class="step-num">T2</div>
+        <div class="step-body"><b>Same customer 5 min later:</b> "Mug cracked, ORD-MUG-T03 — please refund"</div>
+      </div>
+      <div class="demo-step" style="border-bottom: none;">
+        <div class="step-num">T3</div>
+        <div class="step-body"><b>Supervisor</b> · <code>RULE-DUPLICATE-ORDER</code> scans history → <code>resolve:accept</code> already exists for this order_id → <span class="accent-fail">force_escalate</span></div>
+      </div>
+
+      <div style="margin-top: 24px; padding: 16px 18px; background: rgba(239,68,68,.08); border: 1px solid rgba(239,68,68,.3); border-radius: 10px;">
+        <div style="font-size: 14px; color: #fca5a5; font-family: 'JetBrains Mono', monospace; line-height: 1.7;">
+          {"layer": "deny",<br>
+          &nbsp;"matched_rules": ["<b>RULE-DUPLICATE-ORDER</b>"],<br>
+          &nbsp;"reasons": ["Duplicate claim on ORD-MUG-T03<br>&nbsp;— prior refund already accepted"]}
+        </div>
+      </div>
+      <p style="margin-top: 16px; font-size: 18px; color: var(--muted);">
+        Pure-Python history scan. Cost: 0 LLM calls. Saves merchant from being double-charged on every claim history rewind.
+      </p>
+    </div>
+
+    <div>
+      <h4 style="margin-bottom: 12px;">Tier-2 hot-rule toggle</h4>
+      <p style="font-size: 19px; color: #d1d5db; margin-bottom: 16px; line-height: 1.5;">
+        Ops team needs to disable the <b>HR-LUXURY</b> rule for a flash sale: every luxury claim should
+        auto-pay this weekend. <b>No code deploy.</b>
+      </p>
+
+      <div style="background: var(--bg-2); border: 1px solid var(--line); border-radius: 14px; padding: 20px;">
+        <div style="font-size: 13px; color: var(--dim); font-family: 'JetBrains Mono', monospace; margin-bottom: 12px;">/admin · Tier-2 Hard Rules</div>
+        <div style="border-left: 3px solid var(--violet); padding: 10px 14px; background: rgba(168,85,247,.05); border-radius: 8px; margin-bottom: 10px;">
+          <div style="display: flex; align-items: center; gap: 10px; font-size: 13px;">
+            <code style="color: #c4b5fd; font-family: 'JetBrains Mono', monospace; font-weight: 700;">HR-LIQUID-ELECTRONICS</code>
+            <span style="font-size: 11px; color: var(--muted);">Liquid damage on electronics requires manual warranty</span>
+            <span style="margin-left: auto; color: #6ee7b7;">● ENABLED</span>
+          </div>
+        </div>
+        <div style="border-left: 3px solid var(--violet); padding: 10px 14px; background: rgba(168,85,247,.05); border-radius: 8px; margin-bottom: 10px;">
+          <div style="display: flex; align-items: center; gap: 10px; font-size: 13px;">
+            <code style="color: #c4b5fd; font-family: 'JetBrains Mono', monospace; font-weight: 700;">HR-LEGAL-THREAT</code>
+            <span style="font-size: 11px; color: var(--muted);">Legal / regulator signals require human</span>
+            <span style="margin-left: auto; color: #6ee7b7;">● ENABLED</span>
+          </div>
+        </div>
+        <div style="border-left: 3px solid var(--dim); padding: 10px 14px; background: rgba(100,100,100,.05); border-radius: 8px; opacity: 0.65;">
+          <div style="display: flex; align-items: center; gap: 10px; font-size: 13px;">
+            <code style="color: var(--dim); font-family: 'JetBrains Mono', monospace; font-weight: 700;">HR-LUXURY</code>
+            <span style="font-size: 11px; color: var(--muted);">Luxury category manual handling</span>
+            <span style="margin-left: auto; color: var(--dim);">○ DISABLED</span>
+          </div>
+        </div>
+      </div>
+
+      <p style="margin-top: 22px; font-size: 19px; color: #d1d5db; line-height: 1.5;">
+        Click the switch · atomic temp+rename write to <code style="font-family: 'JetBrains Mono', monospace; color: #fdba74;">hard_rules.json</code> ·
+        supervisor mtime-cache invalidates within 60s · next claim sees the new rule set.
+      </p>
+    </div>
+  </div>
+
+  <div class="footer"><div class="brand">CLAIMSFORGE · DEMO C</div><div>10 / 14</div></div>
+</section>
+
+<!-- SLIDE 11 — SELF-EVOLVING METHODOLOGY LOOP -->
+<section class="slide">
+  <span class="eyebrow">Differentiator #3 · Self-Evolving</span>
+  <h2>Cases → auto-distilled SOPs.<br><span class="gradient">No human SOP authoring required.</span></h2>
+
+  <div class="grid-2" style="margin-top: 36px;">
+    <div>
+      <h4 style="margin-bottom: 14px;">The closed-loop</h4>
+      <div class="card" style="padding: 22px;">
+        <div style="display: flex; align-items: center; gap: 16px; font-size: 17px; line-height: 1.5;">
+          <span style="font-size: 32px;">1️⃣</span>
+          <span>Claim resolved · <code style="font-family: 'JetBrains Mono', monospace; color: #6ee7b7;">append_learned_case(ctx)</code> writes labeled record to <code style="font-family: 'JetBrains Mono', monospace; color: #c4b5fd;">learned_cases.jsonl</code></span>
+        </div>
+      </div>
+      <div style="text-align: center; margin: 6px 0; color: var(--dim); font-size: 22px;">↓</div>
+      <div class="card" style="padding: 22px;">
+        <div style="display: flex; align-items: center; gap: 16px; font-size: 17px; line-height: 1.5;">
+          <span style="font-size: 32px;">2️⃣</span>
+          <span>Every 5 cases · <code style="font-family: 'JetBrains Mono', monospace; color: #6ee7b7;">case_synthesizer</code> clusters by damage_type + category</span>
+        </div>
+      </div>
+      <div style="text-align: center; margin: 6px 0; color: var(--dim); font-size: 22px;">↓</div>
+      <div class="card" style="padding: 22px;">
+        <div style="display: flex; align-items: center; gap: 16px; font-size: 17px; line-height: 1.5;">
+          <span style="font-size: 32px;">3️⃣</span>
+          <span>Cluster ≥ 3 cases · <b>Gemini distills the pattern</b> into reusable methodology · ships as KB entry</span>
+        </div>
+      </div>
+      <div style="text-align: center; margin: 6px 0; color: var(--dim); font-size: 22px;">↓</div>
+      <div class="card" style="padding: 22px; border-color: rgba(168,85,247,.4); background: rgba(168,85,247,.06);">
+        <div style="display: flex; align-items: center; gap: 16px; font-size: 17px; line-height: 1.5;">
+          <span style="font-size: 32px;">4️⃣</span>
+          <span><b>Next CompensationAgent</b> · hybrid-RAG retrieves the new methodology · next decision is smarter</span>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <h4 style="margin-bottom: 14px;">Sample auto-synthesized methodology</h4>
+      <div style="background: var(--bg-2); border: 1px solid var(--line); border-left: 3px solid var(--violet); border-radius: 14px; padding: 22px;">
+        <div style="font-size: 11px; color: var(--dim); font-family: 'JetBrains Mono', monospace; margin-bottom: 10px;">
+          methodology · derived_from_8_cases · quality=0.84
+        </div>
+        <h3 style="font-size: 20px; color: #c4b5fd; margin-bottom: 12px;">
+          Cracked Mug Damage Resolution — auto-distilled
+        </h3>
+        <div style="font-size: 14px; color: var(--muted); margin-bottom: 12px;">
+          <b style="color: #fff; margin-right: 6px;">WHEN:</b>
+          Customer reports a cracked ceramic mug ≤ $30 with photo evidence, low emotion (≤5/10).
+        </div>
+        <div style="font-size: 14px; color: #e5e7eb; line-height: 1.55; padding: 12px; background: rgba(16,185,129,.06); border-left: 2px solid var(--emerald); border-radius: 6px;">
+          <b style="color: var(--emerald); margin-right: 6px;">DO:</b>
+          Issue full_refund equal to order value · do not require return · explicitly name the visible damage location in reply · ship in customer's language.
+        </div>
+      </div>
+
+      <div style="margin-top: 28px; display: flex; gap: 18px; flex-wrap: wrap;">
+        <div class="card" style="flex: 1; min-width: 170px; padding: 18px;">
+          <div style="font-size: 42px; font-weight: 800; color: var(--violet);">47</div>
+          <div style="font-size: 12px; color: var(--muted); margin-top: 4px;">methodologies<br>auto-synthesized</div>
+        </div>
+        <div class="card" style="flex: 1; min-width: 170px; padding: 18px;">
+          <div style="font-size: 42px; font-weight: 800; color: var(--sky);">1,329</div>
+          <div style="font-size: 12px; color: var(--muted); margin-top: 4px;">total KB entries<br>policies + SOP + methodologies</div>
+        </div>
+        <div class="card" style="flex: 1; min-width: 170px; padding: 18px;">
+          <div style="font-size: 42px; font-weight: 800; color: var(--emerald);">100%</div>
+          <div style="font-size: 12px; color: var(--muted); margin-top: 4px;">embedded<br>gemini-embedding-001</div>
+        </div>
+      </div>
+
+      <p style="margin-top: 26px; font-size: 18px; color: var(--muted); line-height: 1.55;">
+        Browse live at <code style="font-family: 'JetBrains Mono', monospace; color: var(--sky);">/methodologies</code> — full text, source case count, quality score, search.
+      </p>
+    </div>
+  </div>
+
+  <div class="footer"><div class="brand">CLAIMSFORGE · METHODOLOGY LOOP</div><div>11 / 14</div></div>
+</section>
+
+<!-- SLIDE 12 — DATA FLYWHEEL -->
+<section class="slide">
+  <span class="eyebrow">Differentiator #4 · Data Flywheel</span>
+  <h2>Every approved claim is <span class="gradient">labeled training data</span> — one-click fine-tune export</h2>
+
+  <div class="grid-2" style="margin-top: 36px;">
+    <div>
+      <h4 style="margin-bottom: 14px;">Auto-labeled at resolution time</h4>
+
+      <div style="display: flex; flex-direction: column; gap: 12px;">
+        <div style="display: flex; gap: 14px; align-items: center; padding: 14px 18px; background: rgba(16,185,129,.06); border-left: 3px solid var(--emerald); border-radius: 10px;">
+          <span class="chip emerald" style="font-size: 11px;">gold</span>
+          <span style="font-size: 16px; color: #d1d5db;">supervisor approved · customer accepted (best signal)</span>
+        </div>
+        <div style="display: flex; gap: 14px; align-items: center; padding: 14px 18px; background: rgba(99,102,241,.06); border-left: 3px solid var(--indigo); border-radius: 10px;">
+          <span class="chip" style="font-size: 11px;">normal</span>
+          <span style="font-size: 16px; color: #d1d5db;">supervisor approved · no explicit accept yet</span>
+        </div>
+        <div style="display: flex; gap: 14px; align-items: center; padding: 14px 18px; background: rgba(239,68,68,.06); border-left: 3px solid var(--red); border-radius: 10px;">
+          <span class="chip red" style="font-size: 11px;">red_flag</span>
+          <span style="font-size: 16px; color: #d1d5db;">escalated / supervisor blocked (anti-examples)</span>
+        </div>
+      </div>
+
+      <h4 style="margin-top: 28px; margin-bottom: 12px;">/api/admin/finetune-dataset</h4>
+      <pre style="font-size: 14px;"><span class="c"># Vertex AI Gemini fine-tuning format</span>
+GET /api/admin/finetune-dataset?
+     <span class="k">format</span>=<span class="s">vertex</span>&<span class="k">quality</span>=<span class="s">gold</span>
+
+<span class="c"># Same endpoint, OpenAI format</span>
+GET /api/admin/finetune-dataset?
+     <span class="k">format</span>=<span class="s">openai</span>&<span class="k">quality</span>=<span class="s">gold</span>
+
+<span class="c"># Same endpoint, Anthropic format</span>
+GET /api/admin/finetune-dataset?
+     <span class="k">format</span>=<span class="s">anthropic</span>&<span class="k">quality</span>=<span class="s">gold</span></pre>
+      <p style="margin-top: 14px; font-size: 16px; color: var(--muted);">
+        Response: streaming NDJSON · headers carry <code>X-Sft-Rows</code>.
+      </p>
+    </div>
+
+    <div>
+      <h4 style="margin-bottom: 14px;">Why this matters commercially</h4>
+      <p style="font-size: 20px; color: #d1d5db; line-height: 1.5;">
+        At <b>~2,000 gold cases</b>, the merchant runs <b>one</b> Vertex AI / OpenAI tuning job that produces
+        a smaller, faster, ClaimsForge-shaped model.
+      </p>
+
+      <div class="grid-2" style="margin-top: 22px; gap: 18px;">
+        <div class="card" style="padding: 20px;">
+          <div style="font-size: 42px; font-weight: 800; color: var(--violet); line-height: 1;">~30%</div>
+          <div style="font-size: 13px; color: var(--muted); margin-top: 6px;">prompt token reduction<br>no 26-policy preamble</div>
+        </div>
+        <div class="card" style="padding: 20px;">
+          <div style="font-size: 42px; font-weight: 800; color: var(--sky); line-height: 1;">~50%</div>
+          <div style="font-size: 13px; color: var(--muted); margin-top: 6px;">per-call latency reduction<br>smaller model + smaller context</div>
+        </div>
+      </div>
+
+      <h4 style="margin-top: 28px; margin-bottom: 12px;">Live admin UI</h4>
+      <div style="background: var(--bg-2); border: 1px solid var(--line); border-radius: 14px; padding: 20px;">
+        <div style="font-size: 13px; color: var(--dim); margin-bottom: 14px;">📥 SFT Dataset Export · data flywheel</div>
+        <div style="display: flex; gap: 12px; flex-wrap: wrap; align-items: center;">
+          <span style="font-size: 12px; color: var(--muted);">Format</span>
+          <span class="chip" style="font-size: 12px;">vertex (Gemini) ▾</span>
+          <span style="font-size: 12px; color: var(--muted); margin-left: 8px;">Quality</span>
+          <span class="chip emerald" style="font-size: 12px;">gold ▾</span>
+          <span style="margin-left: 12px; padding: 8px 16px; background: linear-gradient(135deg, var(--violet), var(--sky)); border-radius: 8px; color: white; font-weight: 700; font-size: 13px;">
+            📥 Download .jsonl
+          </span>
+        </div>
+      </div>
+
+      <p style="margin-top: 22px; font-size: 16px; color: var(--muted); line-height: 1.55;">
+        This is <b>SFT</b> (Supervised Fine-Tuning), not RLAIF. RLAIF requires a reward model + RL trainer — out of scope.
+        We do the supervised pairs export honestly.
+      </p>
+    </div>
+  </div>
+
+  <div class="footer"><div class="brand">CLAIMSFORGE · DATA FLYWHEEL</div><div>12 / 14</div></div>
+</section>
+
+<!-- SLIDE 13 — BUSINESS VALUE -->
+<section class="slide">
+  <span class="eyebrow">Business Value</span>
+  <h2><span class="gradient">Built for SMB merchants</span> Sierra can't reach.</h2>
+
+  <div class="grid-4" style="margin-top: 36px;">
+    <div class="card" style="text-align: left;">
+      <div class="num">90%</div>
+      <div class="label"><b>Auto-resolution rate target</b><br>for low-value damage claims</div>
+      <div class="small">edge cases route to handoff queue with structured P0-P3 briefing</div>
+    </div>
+    <div class="card" style="text-align: left;">
+      <div class="num">~8s</div>
+      <div class="label"><b>End-to-end resolution</b><br>vs. 3 days human back-and-forth</div>
+      <div class="small">p50 of 7-agent async pipeline · 6+ Gemini calls</div>
+    </div>
+    <div class="card" style="text-align: left;">
+      <div class="num">30min</div>
+      <div class="label"><b>Self-deploy from scratch</b><br>vs. Sierra 3-6mo managed PoC</div>
+      <div class="small">single Vultr VM · nginx + systemd · MIT</div>
+    </div>
+    <div class="card" style="text-align: left;">
+      <div class="num">$0</div>
+      <div class="label"><b>License fee</b><br>vs. Sierra $200K-2M ARR</div>
+      <div class="small">MIT · merchant pays only Gemini + Vultr</div>
+    </div>
+  </div>
+
+  <div class="grid-2" style="margin-top: 48px; gap: 32px;">
+    <div>
+      <h4 style="margin-bottom: 14px;">What the merchant gets day 1</h4>
       <ul class="bullets">
-        <li><strong class="accent-3">CSAT +18 points</strong> — instant resolution beats 3-day email loop.</li>
-        <li><strong class="accent-3">Refund rate -7%</strong> — replacement/store-credit options selected by agent are accepted ~30% of the time.</li>
-        <li><strong class="accent-3">Repeat purchase +12%</strong> — customers who get fast claims resolution have measurably higher LTV.</li>
+        <li>26-policy DSL · 1,329 KB entries · 47 auto-synthesized methodologies</li>
+        <li>Customer-facing Trust Score on every offer — built-in compliance artifact</li>
+        <li>P0-P3 handoff queue with structured briefing (Reason · Action · Bot proposal)</li>
+        <li>Admin dashboard · Operations metrics · KB browser · Methodology showcase</li>
+        <li>SSE-streaming UI · in-flight agent traces visible to customer</li>
       </ul>
     </div>
     <div>
-      <h4>Who pays</h4>
+      <h4 style="margin-bottom: 14px;">Where ClaimsForge wins</h4>
       <ul class="bullets">
-        <li>Mid-market Shopify merchants (10k+ orders/mo) — ROI in <strong>&lt;30 days</strong>.</li>
-        <li>Returns aggregators (Loop, Returnly) as a Gemini-Vision feature for their tier.</li>
-        <li>Insurance carriers handling small-goods claims (extension: motor, home, travel).</li>
+        <li><b>Shopify / WooCommerce / Magento SMBs</b> — too small for Sierra, too painful manually</li>
+        <li><b>Insurance MGAs</b> — need deepfake screening + auditable decisions for regulators</li>
+        <li><b>Marketplace operators</b> — high-volume low-value claims with fraud surface</li>
+        <li><b>Cross-border e-commerce (CN / EN)</b> — native bilingual, no translation layer</li>
+        <li><b>SaaS subscription cancels</b> — Trust Score + emotion gating = retention saves</li>
       </ul>
     </div>
   </div>
 
-  <div class="footer">
-    <span class="brand">CLAIMSFORGE</span>
-    <span>14 / 15</span>
-  </div>
+  <div class="footer"><div class="brand">CLAIMSFORGE · BUSINESS VALUE</div><div>13 / 14</div></div>
 </section>
 
-
-<!-- ═══════════════════════════════════════════════════════════
-     SLIDE 11 — Competitive landscape
-     ═══════════════════════════════════════════════════════════ -->
-<section class="slide">
-  <span class="eyebrow">Why we win</span>
-  <h2>What incumbents do · what we do <span class="gradient">differently.</span></h2>
-
-  <div class="card" style="padding: 24px 32px; margin-top: 48px;">
-    <table>
-      <thead>
-        <tr>
-          <th>Capability</th>
-          <th>Zendesk macros</th>
-          <th>Gorgias rules</th>
-          <th>Loop manual review</th>
-          <th style="color: var(--violet);">ClaimsForge</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>Reads damage photos</td>
-          <td class="no">✗</td>
-          <td class="no">✗</td>
-          <td class="ok">✓ (human)</td>
-          <td class="ok">✓ Gemini Vision</td>
-        </tr>
-        <tr>
-          <td>Policy-grounded amount</td>
-          <td class="no">— template</td>
-          <td class="ok">✓ if-then</td>
-          <td class="ok">✓ (human)</td>
-          <td class="ok">✓ JSON policy DSL + RAG</td>
-        </tr>
-        <tr>
-          <td>Empathetic, tone-reviewed reply</td>
-          <td class="no">— template</td>
-          <td class="no">— template</td>
-          <td class="ok">✓ (human)</td>
-          <td class="ok">✓ Verifier LLM tone pass</td>
-        </tr>
-        <tr>
-          <td>Median time to resolution</td>
-          <td>~24 h</td>
-          <td>~2 h</td>
-          <td>~48 h</td>
-          <td class="ok"><strong>~8 s</strong></td>
-        </tr>
-        <tr>
-          <td>Marginal cost per claim</td>
-          <td>~$3.20</td>
-          <td>~$0.40</td>
-          <td>~$3.20</td>
-          <td class="ok"><strong>~$0.32</strong></td>
-        </tr>
-        <tr>
-          <td>Auto-escalates legal threats</td>
-          <td class="no">✗ keyword</td>
-          <td class="no">✗ keyword</td>
-          <td class="ok">✓ (human)</td>
-          <td class="ok">✓ emotion + keyword + policy</td>
-        </tr>
-        <tr>
-          <td>Open source</td>
-          <td class="no">✗</td>
-          <td class="no">✗</td>
-          <td class="no">✗</td>
-          <td class="ok"><strong>✓ MIT</strong></td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-
-  <p class="lead" style="margin-top: 48px; font-size: 26px;">
-    The category gap is multimodal evidence + policy reasoning + tone-aware response —
-    <span class="accent">in one box, at machine cost, in seconds.</span>
-  </p>
-
-  <div class="footer">
-    <span class="brand">CLAIMSFORGE</span>
-    <span>15 / 15</span>
-  </div>
-</section>
-
-
-<!-- ═══════════════════════════════════════════════════════════
-     SLIDE 12 — CTA
-     ═══════════════════════════════════════════════════════════ -->
+<!-- SLIDE 14 — CTA -->
 <section class="slide" style="text-align: center;">
-  <span class="eyebrow">Try it. Fork it. Ship it.</span>
-  <h1 style="font-size: 200px; margin-top: 64px;"><span class="gradient">ClaimsForge</span></h1>
-  <p class="lead" style="margin: 48px auto 0; font-size: 36px;">
-    Multi-agent Gemini-powered claims resolution.<br/>
-    Open source under MIT. Deployed on Vultr.
-  </p>
-
-  <div class="row" style="justify-content: center; margin-top: 96px; gap: 80px;">
-    <div style="text-align: center;">
-      <h4 style="margin-bottom: 12px;">LIVE</h4>
-      <code style="font-size: 32px; color: var(--sky);">http://45.32.154.255</code>
-    </div>
-    <img class="qr" id="qr-img-2" alt="QR" style="width: 280px; height: 280px;" />
-    <div style="text-align: center;">
-      <h4 style="margin-bottom: 12px;">CODE</h4>
-      <code style="font-size: 28px; color: var(--violet);">github.com/zhenyueD/<br/>claimsforge</code>
-    </div>
-  </div>
-
-  <div style="position: absolute; bottom: 120px; left: 96px; right: 96px;">
-    <p style="font-size: 20px; color: var(--muted);">
-      Submitted by <strong style="color: var(--fg);">zhenyueD</strong> · Solo build · Milan AI Week 2026
+  <div style="height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center;">
+    <span class="eyebrow">Try it now</span>
+    <h1 style="font-size: 120px;">
+      <span class="gradient">ClaimsForge</span>
+    </h1>
+    <p class="lead" style="margin-top: 24px; font-size: 38px; max-width: 1500px; text-align: center;">
+      The Trust Layer for AI Claims Resolution — <span class="accent">built for the deepfake era</span>.
     </p>
-    <p style="font-size: 20px; color: var(--dim); margin-top: 8px;">
-      Eligible · <span style="color: var(--violet);">Best Use of Gemini</span> · <span style="color: var(--emerald);">Vultr Award</span>
-    </p>
-  </div>
 
-  <div class="footer">
-    <span class="brand">CLAIMSFORGE</span>
-    <span>15 / 15</span>
+    <div style="margin-top: 64px; display: flex; gap: 80px; justify-content: center; align-items: center;">
+      <div style="text-align: left;">
+        <div style="font-size: 14px; color: var(--dim); text-transform: uppercase; letter-spacing: 0.12em;">Live demo</div>
+        <div style="font-size: 44px; font-weight: 700; font-family: 'JetBrains Mono', monospace; color: var(--sky); margin-top: 12px;">
+          http://45.32.154.255
+        </div>
+        <div style="font-size: 18px; color: var(--muted); margin-top: 14px; line-height: 1.5;">
+          Pre-loaded with 5 demo scenarios:<br>
+          Cracked mug · Scratched laptop · Torn jacket ·<br>
+          Angry customer + legal threat · Vague claim
+        </div>
+      </div>
+
+      <div style="text-align: left;">
+        <div style="font-size: 14px; color: var(--dim); text-transform: uppercase; letter-spacing: 0.12em;">Source · MIT</div>
+        <div style="font-size: 28px; font-weight: 700; font-family: 'JetBrains Mono', monospace; color: var(--violet); margin-top: 14px;">
+          github.com/zhenyueD/<br>claimsforge
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top: 80px; display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; max-width: 1500px;">
+      <span class="chip">Gemini 2.5 Flash + Vision + Embedding</span>
+      <span class="chip emerald">FastAPI · Pydantic · asyncio</span>
+      <span class="chip orange">AWS-IAM Supervisor</span>
+      <span class="chip">Stripe-Radar Trust Score</span>
+      <span class="chip amber">pHash · EXIF Provenance</span>
+      <span class="chip emerald">Hybrid-RAG · 1329 entries</span>
+      <span class="chip">SFT Export · Vertex/OpenAI/Anthropic</span>
+    </div>
+
+    <div style="margin-top: 100px; font-size: 18px; color: var(--muted);">
+      Built by <b style="color: var(--fg);">zhenyueD</b> · Milan AI Week 2026 / AI Agent Olympics
+      · Powered by <b style="color: var(--sky);">Google Gemini</b> + <b style="color: #38bdf8;">Vultr Cloud Compute (Frankfurt)</b>
+    </div>
   </div>
+  <div class="footer"><div class="brand">CLAIMSFORGE</div><div>14 / 14 · END</div></div>
 </section>
 
-<script>
-  // Inline QR (no external fetch)
-  const QR_DATA = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAUoAAAFKAQAAAABTUiuoAAACQElEQVR4nO1ZQU7tMAwcu5FYPiQOwFHSG3AkxJG4QXuUHuBL7RKplZGdpDxA+gqL8iLqWTxSMwvLjpOJTYJKjFzLBJzKHiz4dqkGOxUerGqwU6GgjJBWGO83ApZi7j1YTW2XKIoZkAGd0PN0p+qjM6s05msN+G9Tl1JCcdbfy5rMVm+/4kAFuIZ0Kir1mqjxXlc3ceA/YJydGr5Zlgetqy0Ilt9wgJ2KHwfrIiJDMdrllVYi+UyExxWt1NZI9qdLXxSnsFJ8VWF4tAPsVPwwW3JluawQLBvJZzM8rmhkZ5EqCuoXyq+sXmV8wofe4DZ8PTM12K+YrBgf16C1FTA+vmltbSHrjTZ8ZadCkdoYz1NRiNFWS4AMi72TPVgtRSCa9LuI2FMrwVZx3qUGH+lADRhnpyL3llLzohPrZSQFH+cuq3rrSw0395VPT0XpBFpPsBRYSplmUIsudQsHDxa3sV1E5o2oX+60mDbtwZu5E3khv7ea7DwJsGZtMT79CxQnMrGo6rAJX52KL/eWyKxNJz0OM/LYRPwkRCPbRTRHdm/ZS1gGfSertsgDlMMdqALj7FRczxutl6v9XbOpJvz4FK8ttDc7limUHpSdjrY63oEaMM5ORakjewmXOck+Mcn/8NpqcxopOo2kqLmKrw/rVWsDN/eVT08NXyMwPr0RRurWNDuO4l3d9k5CsXvLFHxuY6Rexk4RVxloJVsZ+1NrV4KaPL+3Wp0dy+dPzduxDrBT4cGqBjsVHqxqsFPxJ4P1DkUhPRQ8SGRBAAAAAElFTkSuQmCC";
-  document.getElementById('qr-img').src = QR_DATA;
-  document.getElementById('qr-img-2').src = QR_DATA;
-</script>
 </body>
 </html>
