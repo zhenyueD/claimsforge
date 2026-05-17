@@ -159,6 +159,29 @@ def parse_text(blob: bytes) -> str:
     return blob.decode("utf-8", errors="replace").strip()
 
 
+def parse_doc_via_antiword(blob: bytes) -> str:
+    """Legacy .doc (MS Word 97-2003) — Gemini File API stopped accepting
+    application/msword in 2026-Q1, so we shell out to `antiword` (Homebrew).
+    Pure stdout capture, no temp files exposed."""
+    import subprocess
+    # antiword reads from stdin when given '-', but only via file argument
+    # on this build — use a temp file for safety.
+    import tempfile
+    with tempfile.NamedTemporaryFile(suffix=".doc", delete=True) as tmp:
+        tmp.write(blob)
+        tmp.flush()
+        try:
+            out = subprocess.run(
+                ["antiword", "-t", "-w", "0", tmp.name],
+                capture_output=True, timeout=30,
+            )
+            if out.returncode == 0 and out.stdout:
+                return out.stdout.decode("utf-8", errors="replace")
+            raise RuntimeError(f"antiword exit={out.returncode}: {out.stderr[:120]!r}")
+        except FileNotFoundError:
+            raise RuntimeError("antiword not installed (brew install antiword)")
+
+
 def parse_document(filename: str, blob: bytes) -> str:
     lower = filename.lower()
     try:
@@ -179,9 +202,12 @@ def parse_document(filename: str, blob: bytes) -> str:
             return parse_xlsx(blob)
         if lower.endswith(".xls"):
             return parse_xls(blob)
-        # Legacy formats: Gemini File API can parse them directly
-        if lower.endswith(".doc") or lower.endswith(".ppt"):
-            logger.info("legacy format %s → Gemini File API fallback", filename)
+        # Legacy .doc: antiword (Gemini File API rejects msword as of 2026-Q1)
+        if lower.endswith(".doc"):
+            return parse_doc_via_antiword(blob)
+        # Legacy .ppt: still goes through Gemini File API (powerpoint accepted)
+        if lower.endswith(".ppt"):
+            logger.info("legacy .ppt %s → Gemini File API fallback", filename)
             return parse_via_gemini_file_api(blob, filename)
         # Plain text / markdown / json / csv
         return parse_text(blob)
