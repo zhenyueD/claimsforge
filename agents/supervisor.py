@@ -166,18 +166,18 @@ def evaluate(ctx: ClaimContext, estimated_value_cents: int = 5000) -> Supervisor
     verdict = SupervisorVerdict.APPROVE
 
     # ── Rule 0: visual fraud replay (pHash collision against approved set)
-    # This is the highest-confidence escalation signal — pure deterministic
-    # bitwise check, no LLM. Runs FIRST so a hit short-circuits everything.
+    # Only CROSS-session collisions escalate. Same-session is the customer
+    # accidentally re-uploading the same photo on a follow-up turn (or
+    # re-running a demo) — not fraud.
     if ctx.image_phash:
         try:
             import fraud as _fraud
             hit = _fraud.find_collision(ctx.image_phash, current_session_id=ctx.session_id)
-            if hit:
+            if hit and hit.get("_cross_session"):
                 dist = hit.get("_hamming_distance", "?")
-                cross = "cross-session" if hit.get("_cross_session") else "same-session"
                 prior_id = (hit.get("image_id") or "")[:16]
                 msg = (
-                    f"Image pHash collision ({cross}, Hamming={dist} bits) with "
+                    f"Image pHash collision (cross-session, Hamming={dist} bits) with "
                     f"previously-approved claim image {prior_id}…"
                 )
                 blocked.append(msg)
@@ -188,6 +188,33 @@ def evaluate(ctx: ClaimContext, estimated_value_cents: int = 5000) -> Supervisor
                 return SupervisorDecision(verdict=verdict, reasons=reasons, blocked_rules=blocked)
         except Exception as e:
             logger.warning("fraud gate scan failed (non-fatal): %s", e)
+
+    # ── Rule 0.5: duplicate-claim on already-resolved order
+    # Customer accepts a refund, then re-opens the same order_id hoping the
+    # bot's amnesia will double-pay. Pure-Python history scan — if any prior
+    # user turn mentioned this order_id AND was followed by a 'resolve:accept'
+    # marker, force-escalate.
+    if ctx.intent and ctx.intent.order_id and ctx.history:
+        oid = ctx.intent.order_id.upper()
+        h = ctx.history
+        accept_idx = next(
+            (i for i, t in enumerate(h)
+             if t.role == "user" and (t.decision_summary or "") == "resolve:accept"),
+            -1,
+        )
+        if accept_idx > 0:
+            mentioned_before = any(
+                t.role == "user" and oid in (t.content or "").upper()
+                for t in h[:accept_idx]
+            )
+            if mentioned_before:
+                msg = f"Duplicate claim on order {oid} — prior refund already accepted"
+                blocked.append(msg)
+                reasons.append(f"DUPLICATE_CLAIM: {msg}")
+                verdict = SupervisorVerdict.FORCE_ESCALATE
+                ctx.escalated_to_human = True
+                ctx.final_offer = None
+                return SupervisorDecision(verdict=verdict, reasons=reasons, blocked_rules=blocked)
 
     # ── Rule 1: NEVER_AUTO_PAY patterns
     for predicate, msg in NEVER_AUTO_PAY_RULES:
