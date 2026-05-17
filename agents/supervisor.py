@@ -139,6 +139,62 @@ def _save_counts() -> None:
         logger.warning("session_claim_counts save failed: %s", e)
 
 
+# Equivalence classes for the multimodal consistency check (Rule 0.3).
+# Each tuple is a synonym cluster — if hinted and detected words both live in
+# the same cluster (or share a substring), they're considered the same item.
+# Keep this tight: false positives here become legitimate claims that get
+# wrongly escalated. False negatives (mismatches we miss) get caught by the
+# verifier downstream.
+_SUBJECT_SYNONYMS = [
+    {"mug", "cup", "tumbler", "glass", "teacup", "杯", "杯子", "马克杯", "茶杯"},
+    {"laptop", "notebook", "macbook", "computer", "笔记本", "电脑", "笔电"},
+    {"phone", "smartphone", "iphone", "android", "mobile", "手机"},
+    {"tablet", "ipad", "平板"},
+    {"jacket", "coat", "hoodie", "sweater", "shirt", "tshirt", "dress", "外套", "衣服", "上衣", "夹克"},
+    {"shoe", "shoes", "sneaker", "boot", "sandal", "鞋", "鞋子", "运动鞋"},
+    {"bag", "backpack", "handbag", "purse", "suitcase", "luggage", "包", "背包", "手提包", "行李"},
+    {"cake", "bread", "cookie", "food", "drink", "beverage", "fruit", "蛋糕", "面包", "食物", "饮料", "水果"},
+    {"cosmetic", "skincare", "lipstick", "perfume", "makeup", "化妆品", "护肤品", "口红", "香水"},
+    {"watch", "jewelry", "necklace", "ring", "bracelet", "手表", "首饰", "项链", "戒指"},
+    {"headphones", "earbuds", "speaker", "soundbar", "耳机", "音箱", "蓝牙音箱"},
+    {"camera", "lens", "tripod", "相机", "镜头"},
+    {"toy", "doll", "lego", "玩具", "积木"},
+    {"book", "magazine", "书", "杂志"},
+    {"furniture", "chair", "table", "desk", "sofa", "shelf", "家具", "椅子", "桌子", "沙发"},
+]
+
+
+def _normalize_subject(s: str) -> str:
+    """Lowercase, strip punctuation. Keeps CJK chars intact."""
+    if not s:
+        return ""
+    return "".join(c for c in s.lower() if c.isalnum() or c in " 一二三四五六七八九十" or '一' <= c <= '鿿').strip()
+
+
+def _subjects_compatible(a: str, b: str) -> bool:
+    """True if two subject strings plausibly name the same physical item.
+    Conservative — defaults to compatible when uncertain, so legitimate
+    claims aren't escalated for borderline word choices."""
+    if not a or not b:
+        return True
+    if a == b:
+        return True
+    # Substring match either way (e.g. "ceramic mug" contains "mug")
+    if a in b or b in a:
+        return True
+    a_words = set(a.split())
+    b_words = set(b.split())
+    if a_words & b_words:
+        return True
+    # Synonym cluster lookup — any word from each lands in the same cluster?
+    for cluster in _SUBJECT_SYNONYMS:
+        a_hit = any(w in cluster for w in a_words) or any(c in a for c in cluster)
+        b_hit = any(w in cluster for w in b_words) or any(c in b for c in cluster)
+        if a_hit and b_hit:
+            return True
+    return False
+
+
 def _check_session_frequency(session_id: str) -> tuple[bool, Optional[str]]:
     """Returns (within_limit, reason_if_exceeded)."""
     n = _session_claim_counts.get(session_id, 0)
@@ -164,6 +220,27 @@ def evaluate(ctx: ClaimContext, estimated_value_cents: int = 5000) -> Supervisor
     reasons: list[str] = []
     blocked: list[str] = []
     verdict = SupervisorVerdict.APPROVE
+
+    # ── Rule 0.3: multimodal consistency — text vs image subject mismatch
+    # Customer says "my ceramic mug arrived cracked" but the image shows a
+    # smartphone. The LLM correctly assessed the smartphone, but the claim
+    # context is incoherent — either confused customer or active fraud.
+    # Either way: human must adjudicate. This is Sierra-impossible (they
+    # have no vision channel to cross-check against).
+    if ctx.intent and ctx.intent.product_hint and ctx.damage and ctx.damage.detected_subject:
+        hinted = _normalize_subject(ctx.intent.product_hint)
+        detected = _normalize_subject(ctx.damage.detected_subject)
+        if hinted and detected and not _subjects_compatible(hinted, detected):
+            msg = (
+                f"Text/image mismatch — customer described '{ctx.intent.product_hint}' "
+                f"but image shows '{ctx.damage.detected_subject}'"
+            )
+            blocked.append(msg)
+            reasons.append(f"MULTIMODAL_MISMATCH: {msg}")
+            verdict = SupervisorVerdict.FORCE_ESCALATE
+            ctx.escalated_to_human = True
+            ctx.final_offer = None
+            return SupervisorDecision(verdict=verdict, reasons=reasons, blocked_rules=blocked)
 
     # ── Rule 0: visual fraud replay (pHash collision against approved set)
     # Only CROSS-session collisions escalate. Same-session is the customer

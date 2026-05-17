@@ -83,6 +83,17 @@ class IntentResult(BaseModel):
     )
 
 
+class BoundingBox(BaseModel):
+    """One damage region with normalized 0-1 coordinates so the frontend can
+    overlay the box on any image size without knowing pixel dimensions."""
+    x: float = Field(ge=0, le=1, description="Left edge, fraction of width")
+    y: float = Field(ge=0, le=1, description="Top edge, fraction of height")
+    w: float = Field(ge=0, le=1, description="Box width, fraction of image width")
+    h: float = Field(ge=0, le=1, description="Box height, fraction of image height")
+    label: str = Field(description="Short noun for the damage region (e.g. 'crack', 'chip', 'tear')")
+    confidence: float = Field(default=0.7, ge=0, le=1)
+
+
 class DamageAssessment(BaseModel):
     """Gemini Vision 输出的结构化损坏评估。"""
     damage_type: DamageType
@@ -91,6 +102,19 @@ class DamageAssessment(BaseModel):
     confidence: float = Field(ge=0, le=1)
     reasoning: str = Field(description="为什么这么判断（1-2 句话）")
     evidence_quote: Optional[str] = Field(default=None, description="如果用户文字与图片矛盾，引用矛盾点")
+    # Multimodal forensics fields — for visual evidence overlay + consistency gate
+    detected_subject: Optional[str] = Field(
+        default=None,
+        description="The actual object Vision sees, in 1-3 words (e.g. 'ceramic mug', "
+                    "'smartphone', 'leather jacket'). Used by SupervisorAgent to catch "
+                    "text/image mismatches (customer claims 'mug' but image shows 'phone')."
+    )
+    bounding_boxes: list[BoundingBox] = Field(
+        default_factory=list,
+        description="Damage regions with normalized 0-1 coordinates. Empty if no clear "
+                    "region (e.g. uniform discoloration). Frontend overlays these on the "
+                    "uploaded image so the customer + evaluator see WHAT the AI saw."
+    )
 
 
 class CompensationOffer(BaseModel):

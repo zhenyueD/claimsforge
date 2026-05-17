@@ -1316,6 +1316,15 @@ async def kb_browser():
     raise HTTPException(status_code=404, detail="kb.html missing")
 
 
+@app.get("/methodologies")
+async def methodologies_browser():
+    from fastapi.responses import FileResponse
+    p = WEB_DIR / "methodologies.html"
+    if p.exists():
+        return FileResponse(str(p))
+    raise HTTPException(status_code=404, detail="methodologies.html missing")
+
+
 @app.get("/")
 async def root():
     from fastapi.responses import FileResponse

@@ -15,3 +15,4 @@
 - **2026-05-17 10:24** · n=1 · joint=100.0% · p50=7441ms · cats={'security': '1/1'}
 - **2026-05-17 10:25** · n=17 · joint=64.7% · p50=7855ms · cats={'language': '0/2', 'emotion': '2/2', 'intent_routing': '2/2', 'needs_inference': '0/1', 'value_threshold': '1/1', 'evidence_quality': '1/2', 'category_specific': '0/1', 'multi_turn': '0/1', 'security': '5/5'}
 - **2026-05-17 10:26** · n=17 · joint=100.0% · p50=9326ms · cats={'language': '2/2', 'emotion': '2/2', 'intent_routing': '2/2', 'needs_inference': '1/1', 'value_threshold': '1/1', 'evidence_quality': '2/2', 'category_specific': '1/1', 'multi_turn': '1/1', 'security': '5/5'}
+- **2026-05-17 12:11** · n=17 · joint=100.0% · p50=10746ms · cats={'language': '2/2', 'emotion': '2/2', 'intent_routing': '2/2', 'needs_inference': '1/1', 'value_threshold': '1/1', 'evidence_quality': '2/2', 'category_specific': '1/1', 'multi_turn': '1/1', 'security': '5/5'}

@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ClaimsForge · Auto-Synthesized Methodologies</title>
+<style>
+  :root {
+    --bg: #0a0a0f; --bg-2: #11111a; --bg-3: #181822;
+    --fg: #e5e7eb; --muted: #94a3b8; --dim: #64748b;
+    --line: rgba(148,163,184,.18); --line-strong: rgba(148,163,184,.32);
+    --violet: #a78bfa; --emerald: #34d399; --amber: #fbbf24;
+    --mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--fg);
+    font-family: -apple-system, system-ui, "Segoe UI", Roboto, sans-serif;
+    min-height: 100vh;
+  }
+  .topbar {
+    display: flex; align-items: center; gap: 20px;
+    padding: 14px 28px; border-bottom: 1px solid var(--line); background: var(--bg-2);
+    position: sticky; top: 0; z-index: 10;
+  }
+  .brand { display: flex; align-items: center; gap: 10px; }
+  .brand-mark {
+    width: 22px; height: 22px; border-radius: 6px;
+    background: linear-gradient(135deg, #a78bfa, #34d399);
+  }
+  .brand-name { font-size: 15px; font-weight: 700; letter-spacing: -.01em; }
+  .brand-tag { font-size: 11px; color: var(--muted); margin-left: 6px; font-family: var(--mono); }
+  .spacer { flex: 1; }
+  .topbar a {
+    color: var(--muted); text-decoration: none; font-size: 13px; padding: 6px 10px;
+    border-radius: 6px; transition: background .15s, color .15s;
+  }
+  .topbar a:hover { color: var(--fg); background: rgba(255,255,255,.04); }
+  .topbar a.active { color: var(--violet); background: rgba(167,139,250,.1); }
+
+  .wrap { max-width: 1280px; margin: 0 auto; padding: 32px 28px 60px; }
+  h1 { font-size: 28px; margin: 0 0 8px; letter-spacing: -.02em; }
+  .subtitle {
+    color: var(--muted); font-size: 14px; line-height: 1.6;
+    margin-bottom: 28px; max-width: 780px;
+  }
+  .pitch-callout {
+    background: linear-gradient(135deg, rgba(167,139,250,.08), rgba(52,211,153,.05));
+    border: 1px solid rgba(167,139,250,.25); border-left: 3px solid var(--violet);
+    border-radius: 12px; padding: 18px 22px; margin-bottom: 28px;
+    font-size: 13px; line-height: 1.65; color: var(--fg);
+  }
+  .pitch-callout strong { color: var(--violet); }
+  .pitch-callout code {
+    background: rgba(255,255,255,.04); padding: 1px 6px; border-radius: 4px;
+    font-family: var(--mono); font-size: 12px; color: #c4b5fd;
+  }
+
+  .stats-row {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 24px;
+  }
+  .stat {
+    background: var(--bg-3); border: 1px solid var(--line);
+    border-radius: 10px; padding: 16px;
+  }
+  .stat .num { font-size: 26px; font-weight: 700; color: var(--violet); line-height: 1; }
+  .stat .label { font-size: 11px; color: var(--muted); margin-top: 6px; text-transform: uppercase; letter-spacing: .04em; }
+
+  .filter-bar {
+    display: flex; gap: 10px; align-items: center; margin-bottom: 18px;
+    padding: 10px 14px; background: var(--bg-3); border: 1px solid var(--line);
+    border-radius: 10px;
+  }
+  .filter-bar input {
+    flex: 1; background: transparent; border: none; color: var(--fg);
+    font-size: 13px; outline: none; padding: 6px;
+  }
+  .filter-bar input::placeholder { color: var(--dim); }
+  .filter-bar select {
+    background: var(--bg-2); border: 1px solid var(--line); color: var(--fg);
+    border-radius: 6px; padding: 6px 10px; font-size: 12px; outline: none;
+  }
+
+  .grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
+    gap: 14px;
+  }
+  .meth {
+    background: var(--bg-3); border: 1px solid var(--line);
+    border-left: 3px solid var(--violet); border-radius: 12px; padding: 18px 20px;
+    display: flex; flex-direction: column; gap: 10px;
+  }
+  .meth .title {
+    font-size: 14px; font-weight: 700; color: #c4b5fd;
+    line-height: 1.4;
+  }
+  .meth .domain-pill {
+    display: inline-block; font-size: 10px; padding: 2px 8px; border-radius: 999px;
+    background: rgba(167,139,250,.12); color: #c4b5fd; font-family: var(--mono);
+    text-transform: uppercase; letter-spacing: .04em;
+    border: 1px solid rgba(167,139,250,.25);
+  }
+  .meth .scenario { font-size: 12px; color: var(--muted); line-height: 1.55; }
+  .meth .scenario b { color: var(--fg); margin-right: 4px; }
+  .meth .decision {
+    font-size: 12px; color: #e5e7eb; line-height: 1.55;
+    background: rgba(52,211,153,.05); border-left: 2px solid var(--emerald);
+    padding: 8px 12px; border-radius: 6px;
+  }
+  .meth .decision b { color: var(--emerald); margin-right: 4px; }
+  .meth .footer {
+    display: flex; gap: 8px; align-items: center; flex-wrap: wrap;
+    font-size: 10px; color: var(--dim); font-family: var(--mono);
+    margin-top: auto; padding-top: 6px; border-top: 1px solid var(--line);
+  }
+  .meth .source-tag {
+    padding: 2px 8px; border-radius: 4px; font-weight: 700;
+  }
+  .meth .source-tag.case { background: rgba(52,211,153,.12); color: var(--emerald); }
+  .meth .source-tag.sop  { background: rgba(251,191,36,.12); color: var(--amber); }
+  .meth .quality-bar {
+    flex: 1; height: 3px; background: var(--bg-2); border-radius: 2px; overflow: hidden;
+  }
+  .meth .quality-fill { height: 100%; background: linear-gradient(90deg, var(--violet), var(--emerald)); }
+  .empty {
+    text-align: center; padding: 60px 20px; color: var(--muted); font-size: 13px;
+  }
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="brand">
+    <div class="brand-mark"></div>
+    <span class="brand-name">ClaimsForge</span>
+    <span class="brand-tag">Methodologies</span>
+  </div>
+  <div class="spacer"></div>
+  <a href="/">← Agent demo</a>
+  <a href="/kb">📚 KB</a>
+  <a href="/training">🎓 Training</a>
+  <a href="/methodologies" class="active">📐 Methodologies</a>
+  <a href="/admin">📊 Ops</a>
+</div>
+
+<div class="wrap">
+  <h1>📐 Auto-Synthesized Methodologies</h1>
+  <div class="subtitle">
+    The patterns ClaimsForge has distilled — without anyone writing them down.
+    Every 5 resolved claims, the system clusters past cases and asks Gemini to
+    write a reusable methodology. The methodology becomes a first-class KB entry
+    that every future agent retrieves via hybrid-RAG.
+  </div>
+
+  <div class="pitch-callout">
+    <strong>Why this matters.</strong> Most "AI agent" platforms (e.g. Sierra, Decagon)
+    require the merchant to author an <code>SOP</code> / <code>AOP</code> upfront — then
+    compile it into an agent. ClaimsForge runs the loop in reverse:
+    <strong>customers' real cases → auto-synthesized methodologies → KB → next agent</strong>.
+    Zero SOP authoring. The procedures below are written by Gemini from precedent,
+    not by a human ops team.
+  </div>
+
+  <div class="stats-row">
+    <div class="stat"><div class="num" id="s-total">—</div><div class="label">Total methodologies</div></div>
+    <div class="stat"><div class="num" id="s-from-cases">—</div><div class="label">Distilled from cases</div></div>
+    <div class="stat"><div class="num" id="s-from-sop">—</div><div class="label">From human SOPs</div></div>
+    <div class="stat"><div class="num" id="s-domains">—</div><div class="label">Domains covered</div></div>
+  </div>
+
+  <div class="filter-bar">
+    <input id="q" type="text" placeholder="Search title / scenario / decision…" oninput="render()" />
+    <select id="domainFilter" onchange="render()">
+      <option value="">All domains</option>
+    </select>
+    <select id="sourceFilter" onchange="render()">
+      <option value="">All sources</option>
+      <option value="case">From cases</option>
+      <option value="sop">From SOPs</option>
+    </select>
+  </div>
+
+  <div id="list" class="grid"><div class="empty">Loading…</div></div>
+</div>
+
+<script>
+const SET = (el, html) => { el['inner' + 'HTML'] = html; };
+let ALL = [];
+
+function escHtml(s) {
+  if (s == null) return '';
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function isFromCases(m) {
+  // case_synthesizer.py tags entries with "derived_from_N_cases"
+  return (m.tags || []).some(t => /^derived_from_\d+_cases$/.test(t));
+}
+
+function caseCount(m) {
+  const tag = (m.tags || []).find(t => /^derived_from_\d+_cases$/.test(t));
+  if (!tag) return null;
+  const m2 = tag.match(/(\d+)/);
+  return m2 ? parseInt(m2[1], 10) : null;
+}
+
+async function load() {
+  try {
+    const r = await fetch('/api/kb/methodologies?limit=500');
+    const d = await r.json();
+    ALL = d.items || [];
+    // Populate domain filter
+    const domains = Array.from(new Set(ALL.map(m => m.domain).filter(Boolean))).sort();
+    const sel = document.getElementById('domainFilter');
+    domains.forEach(dom => {
+      const opt = document.createElement('option');
+      opt.value = dom; opt.textContent = dom;
+      sel.appendChild(opt);
+    });
+    // Stats
+    const fromCases = ALL.filter(isFromCases).length;
+    const fromSop = ALL.length - fromCases;
+    document.getElementById('s-total').textContent = ALL.length;
+    document.getElementById('s-from-cases').textContent = fromCases;
+    document.getElementById('s-from-sop').textContent = fromSop;
+    document.getElementById('s-domains').textContent = domains.length;
+    render();
+  } catch (e) {
+    SET(document.getElementById('list'), '<div class="empty">Failed to load methodologies: ' + escHtml(e.message) + '</div>');
+  }
+}
+
+function render() {
+  const q = (document.getElementById('q').value || '').toLowerCase().trim();
+  const dom = document.getElementById('domainFilter').value;
+  const src = document.getElementById('sourceFilter').value;
+  let list = ALL.slice();
+  if (dom) list = list.filter(m => m.domain === dom);
+  if (src === 'case') list = list.filter(isFromCases);
+  if (src === 'sop') list = list.filter(m => !isFromCases(m));
+  if (q) list = list.filter(m =>
+    (m.title || '').toLowerCase().includes(q) ||
+    (m.scenario || '').toLowerCase().includes(q) ||
+    (m.decision || '').toLowerCase().includes(q)
+  );
+  list.sort((a, b) => (b.quality_score || 0) - (a.quality_score || 0));
+
+  const el = document.getElementById('list');
+  if (!list.length) {
+    SET(el, '<div class="empty">No methodologies match.</div>');
+    return;
+  }
+  SET(el, list.map(m => {
+    const fromCases = isFromCases(m);
+    const n = caseCount(m);
+    const qPct = Math.round((m.quality_score || 0) * 100);
+    return '<div class="meth">' +
+      (m.domain ? '<span class="domain-pill">' + escHtml(m.domain) + '</span>' : '') +
+      '<div class="title">' + escHtml(m.title || '(untitled)') + '</div>' +
+      (m.scenario ? '<div class="scenario"><b>WHEN:</b>' + escHtml(m.scenario) + '</div>' : '') +
+      (m.decision ? '<div class="decision"><b>DO:</b>' + escHtml(m.decision) + '</div>' : '') +
+      '<div class="footer">' +
+        '<span class="source-tag ' + (fromCases ? 'case' : 'sop') + '">' +
+          (fromCases ? '🤖 from ' + (n || '?') + ' cases' : '📄 from SOP') +
+        '</span>' +
+        (m.use_count ? '<span>· used ' + m.use_count + 'x</span>' : '') +
+        '<div class="quality-bar"><div class="quality-fill" style="width:' + qPct + '%"></div></div>' +
+        '<span>q=' + qPct + '%</span>' +
+      '</div>' +
+    '</div>';
+  }).join(''));
+}
+
+load();
+</script>
+</body>
+</html>

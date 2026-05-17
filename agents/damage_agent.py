@@ -43,6 +43,18 @@ SCORING
   reasoning: 1-2 sentence justification.
   evidence_quote: if the customer's text contradicts what you see in the image,
                   quote the contradiction; otherwise null.
+  detected_subject: 1-3 words naming WHAT the object actually is in the image
+                    (e.g. "ceramic mug", "smartphone", "leather jacket", "laptop").
+                    This is independent of what the customer SAID — base it on
+                    what you SEE. Used by the safety supervisor to catch text/
+                    image mismatches. Null only if there's no image.
+  bounding_boxes: list of damage regions with NORMALIZED 0-1 coordinates
+                  (NOT pixels). x/y is the top-left corner as a fraction of
+                  image width/height; w/h are box dimensions same way. Add
+                  one box per distinct damage region. Empty list if damage is
+                  diffuse (e.g. uniform discoloration) or there's no image.
+                  Each box also carries a short `label` (e.g. "crack",
+                  "chip", "scratch", "stain") and a per-box confidence.
 
 PRINCIPLES
   - Stay strictly evidence-based. Blurry / irrelevant image → low confidence (<0.4).
@@ -63,8 +75,10 @@ EXAMPLES
 
 Example 1 — clear photo, English customer
   user: "My mug arrived with a crack along the rim, can't use it"
-  image: ceramic mug with ~2cm rim crack
+  image: ceramic mug with ~2cm rim crack near the upper-left of the cup
   → {damage_type:"crack", severity:8, affected_parts:["rim"], confidence:0.9,
+     detected_subject:"ceramic mug",
+     bounding_boxes:[{x:0.15,y:0.08,w:0.30,h:0.12,label:"crack",confidence:0.9}],
      reasoning:"Visible ~2cm crack along the rim — the mug can't hold liquid safely",
      evidence_quote:null}
 
@@ -72,14 +86,26 @@ Example 2 — clear photo, Chinese customer
   user: "我的马克杯杯口裂了一道2cm的口子，没法用了"
   image: 陶瓷马克杯，杯口约 2cm 裂纹
   → {damage_type:"crack", severity:8, affected_parts:["杯口"], confidence:0.9,
+     detected_subject:"ceramic mug",
+     bounding_boxes:[{x:0.20,y:0.05,w:0.35,h:0.10,label:"裂纹",confidence:0.85}],
      reasoning:"杯口可见约 2cm 裂纹，已无法正常盛装液体", evidence_quote:null}
 
 Example 3 — no image, vague text
   user: "something seems off, I want to return it"
   image: none
   → {damage_type:"unclear", severity:0, affected_parts:[], confidence:0.1,
+     detected_subject:null, bounding_boxes:[],
      reasoning:"Customer gave no specific damage description and no photo — can't assess",
      evidence_quote:null}
+
+Example 4 — text/image mismatch (CRITICAL — supervisor will catch this)
+  user: "My ceramic mug arrived cracked, want refund"
+  image: a smartphone with a cracked screen (NOT a mug)
+  → {damage_type:"crack", severity:7, affected_parts:["screen"], confidence:0.85,
+     detected_subject:"smartphone",
+     bounding_boxes:[{x:0.1,y:0.2,w:0.7,h:0.5,label:"screen crack",confidence:0.9}],
+     reasoning:"Image shows a smartphone with a cracked screen, not a mug",
+     evidence_quote:"Customer text says 'ceramic mug' but image shows a smartphone — mismatch."}
 """
 
 

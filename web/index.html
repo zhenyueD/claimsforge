@@ -516,7 +516,12 @@
   }
   .emo-signal::before { content: '⚠ '; }
 
-  .damage-grid { display: grid; grid-template-columns: 90px 1fr; gap: 14px; align-items: start; }
+  .damage-grid { display: grid; grid-template-columns: 140px 1fr; gap: 14px; align-items: start; }
+  /* Vision evidence with bbox overlay */
+  .dmg-evidence { position: relative; display: inline-block; line-height: 0; width: 140px; }
+  .dmg-evidence .damage-thumb { width: 140px; height: auto; display: block; border-radius: 6px; border: 1px solid var(--line); }
+  .dmg-overlay-canvas { position: absolute; top: 0; left: 0; width: 140px; height: auto; pointer-events: none; }
+  .dmg-overlay-caption { font-size: 10px; color: #fbbf24; margin-top: 4px; text-align: center; font-family: var(--mono); }
   .damage-thumb {
     width: 90px; height: 90px;
     object-fit: cover;
@@ -906,7 +911,8 @@
   </div>
   <div class="topbar-spacer"></div>
   <a href="/kb" style="color:var(--muted);font-size:12px;text-decoration:none;padding:6px 12px;border-radius:8px;margin-right:6px;border:1px solid var(--line);background:var(--surface);">📚 Knowledge Base</a>
-  <a href="/training" style="color:var(--muted);font-size:12px;text-decoration:none;padding:6px 12px;border-radius:8px;margin-right:6px;border:1px solid rgba(236,72,153,.3);background:rgba(236,72,153,.05);color:#f9a8d4;">🎓 Training Mode</a>
+  <a href="/methodologies" style="color:#c4b5fd;font-size:12px;text-decoration:none;padding:6px 12px;border-radius:8px;margin-right:6px;border:1px solid rgba(167,139,250,.3);background:rgba(167,139,250,.05);">📐 Methodologies</a>
+  <a href="/training" style="color:#f9a8d4;font-size:12px;text-decoration:none;padding:6px 12px;border-radius:8px;margin-right:6px;border:1px solid rgba(236,72,153,.3);background:rgba(236,72,153,.05);">🎓 Training Mode</a>
   <div class="topbar-stat"><span class="ws-dot" id="wsDot"></span><span id="wsLabel">Connected</span></div>
   <div class="topbar-stat">Session turns <span class="v" id="turnsCount">0</span></div>
   <div class="topbar-stat">Avg latency <span class="v" id="avgLatency">—</span></div>
@@ -1477,7 +1483,7 @@ function renderResult(d) {
       '</div>';
   }
 
-  // Damage card
+  // Damage card — with bbox overlay on the evidence image
   if (d.damage) {
     const dm = d.damage;
     const sevPct = (dm.severity || 0) * 10;
@@ -1485,15 +1491,27 @@ function renderResult(d) {
     const thumbSrc = d.image_id
       ? (d.image_id.startsWith('demo:') ? '/api/demo-images/' + d.image_id.slice(5) : '/api/uploads/' + d.image_id)
       : '';
+    const bboxes = Array.isArray(dm.bounding_boxes) ? dm.bounding_boxes : [];
+    const overlayId = 'dmg-overlay-' + Math.random().toString(36).slice(2, 8);
+    const subjectChip = dm.detected_subject
+      ? '<span class="chip" style="background:rgba(167,139,250,.12);color:#c4b5fd;border-color:rgba(167,139,250,.3);">👁 ' + escapeHtml(dm.detected_subject) + '</span>'
+      : '';
+    const evidenceCell = thumbSrc
+      ? '<div class="dmg-evidence" id="' + overlayId + '">' +
+          '<img src="' + escapeHtml(thumbSrc) + '" class="damage-thumb" alt="evidence" onload="drawBoxes(\'' + overlayId + '\',' + (bboxes.length) + ')" />' +
+          '<canvas class="dmg-overlay-canvas" data-bboxes=\'' + encodeURIComponent(JSON.stringify(bboxes)) + '\'></canvas>' +
+          (bboxes.length ? '<div class="dmg-overlay-caption">' + bboxes.length + ' damage region' + (bboxes.length > 1 ? 's' : '') + ' detected</div>' : '') +
+        '</div>'
+      : '<div></div>';
     body += '<div class="result-card damage"><div class="rc-header">📸 DamageAgent · Gemini Vision</div>' +
       '<div class="damage-grid">' +
-        (thumbSrc ? '<img src="' + escapeHtml(thumbSrc) + '" class="damage-thumb" alt="evidence" />' : '<div></div>') +
+        evidenceCell +
         '<div>' +
           '<div class="dmg-row"><span style="font-size:13px;color:var(--muted);">Type</span><span class="v">' + escapeHtml(dm.damage_type || '') + '</span></div>' +
           '<div class="dmg-row" style="margin-top:6px;"><span style="font-size:13px;color:var(--muted);">Severity</span><span class="v">' + (dm.severity || 0) + ' / 10</span></div>' +
           '<div class="severity-bar"><div class="severity-fill" style="width:' + sevPct + '%"></div></div>' +
           '<div class="dmg-row"><span style="font-size:13px;color:var(--muted);">Confidence</span><span class="v">' + Math.round((dm.confidence || 0) * 100) + '%</span></div>' +
-          (chips ? '<div style="margin-top:8px;">' + chips + '</div>' : '') +
+          (subjectChip || chips ? '<div style="margin-top:8px;display:flex;flex-wrap:wrap;gap:4px;">' + subjectChip + chips + '</div>' : '') +
         '</div>' +
       '</div>' +
       (dm.reasoning ? '<div class="reasoning-quote">"' + escapeHtml(dm.reasoning) + '"</div>' : '') +
@@ -1597,6 +1615,43 @@ function updateMetrics(d, latencyMs) {
   if (typeof d.history_length === 'number') {
     $('turnsCount').textContent = d.history_length;
   }
+}
+
+// Draw bounding-box overlay on a damage evidence image.
+// Called from img onload so we know the actual rendered dimensions.
+function drawBoxes(containerId, count) {
+  const wrap = document.getElementById(containerId);
+  if (!wrap || count === 0) return;
+  const img = wrap.querySelector('img');
+  const canvas = wrap.querySelector('canvas');
+  if (!img || !canvas) return;
+  const W = img.clientWidth, H = img.clientHeight;
+  canvas.width = W;
+  canvas.height = H;
+  canvas.style.width = W + 'px';
+  canvas.style.height = H + 'px';
+  let boxes = [];
+  try { boxes = JSON.parse(decodeURIComponent(canvas.dataset.bboxes || '[]')); } catch (e) {}
+  if (!boxes.length) return;
+  const ctx = canvas.getContext('2d');
+  ctx.lineWidth = 2;
+  ctx.font = 'bold 10px ui-monospace, SFMono-Regular, Menlo, monospace';
+  ctx.textBaseline = 'top';
+  boxes.forEach((b, i) => {
+    const x = (b.x || 0) * W, y = (b.y || 0) * H;
+    const w = (b.w || 0) * W, h = (b.h || 0) * H;
+    ctx.strokeStyle = 'rgba(251, 191, 36, 0.95)';
+    ctx.fillStyle = 'rgba(251, 191, 36, 0.18)';
+    ctx.fillRect(x, y, w, h);
+    ctx.strokeRect(x, y, w, h);
+    // Label tag in top-left of box
+    const label = (b.label || ('#' + (i + 1)));
+    const tagW = ctx.measureText(label).width + 8;
+    ctx.fillStyle = 'rgba(251, 191, 36, 0.95)';
+    ctx.fillRect(x, Math.max(0, y - 14), tagW, 14);
+    ctx.fillStyle = '#000';
+    ctx.fillText(label, x + 4, Math.max(0, y - 12));
+  });
 }
 
 async function resolveClaim(btn, sid, action) {
